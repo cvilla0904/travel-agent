@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel Agent</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #172033;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .hero h1 {
+      font-size: 42px;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      color: #667085;
+      font-size: 18px;
+    }
+
+    .search-box,
+    .chat-box,
+    #results {
+      background: white;
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input,
+    select,
+    textarea {
+      padding: 13px;
+      border: 1px solid #d0d5dd;
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .preferences {
+      margin-top: 20px;
+    }
+
+    .preferences label {
+      margin-right: 18px;
+      font-weight: normal;
+    }
+
+    button {
+      margin-top: 25px;
+      width: 100%;
+      padding: 15px;
+      border: 0;
+      border-radius: 10px;
+      background: #172033;
+      color: white;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    #results {
+      margin-top: 30px;
+      min-height: 100px;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      display: none;
+    }
+
+    .chat-box {
+      margin-top: 30px;
+      display: none;
+    }
+
+    .chat-box h2 {
+      margin-top: 0;
+      font-size: 22px;
+    }
+
+    .chat-input {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .chat-input textarea {
+      flex: 1;
+    }
+
+    .send-button {
+      width: 140px;
+      margin-top: 0;
+      flex-shrink: 0;
+    }
+
+    .loading {
+      color: #667085;
+    }
+
+    @media (max-width: 700px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 32px;
+      }
+
+      .search-box,
+      .chat-box,
+      #results {
+        padding: 20px;
+      }
+
+      .chat-input {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .send-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="hero">
+      <h1>✈️ Travel Agent</h1>
+      <p>Tu viaje, diseñado con datos reales y adaptado a ti.</p>
+    </div>
+
+    <!-- FORMULARIO INICIAL -->
+
+    <div class="search-box">
+
+      <div class="grid">
+
+        <div class="field">
+          <label for="origen">Origen</label>
+          <input
+            id="origen"
+            placeholder="Ej. Bilbao"
+          >
+        </div>
+
+        <div class="field">
+          <label for="destino">Destino</label>
+          <input
+            id="destino"
+            placeholder="Ej. Florencia"
+          >
+        </div>
+
+        <div class="field">
+          <label for="ida">Fecha de ida</label>
+          <input
+            id="ida"
+            type="date"
+          >
+        </div>
+
+        <div class="field">
+          <label for="vuelta">Fecha de vuelta</label>
+          <input
+            id="vuelta"
+            type="date"
+          >
+        </div>
+
+        <div class="field">
+          <label for="viajeros">Viajeros</label>
+          <input
+            id="viajeros"
+            type="number"
+            min="1"
+            value="2"
+          >
+        </div>
+
+        <div class="field">
+          <label for="presupuesto">Presupuesto (€)</label>
+          <input
+            id="presupuesto"
+            type="number"
+            min="0"
+            placeholder="Ej. 1500"
+          >
+        </div>
+
+      </div>
+
+      <div class="preferences">
+
+        <label>
+          <input
+            type="checkbox"
+            value="cultura"
+          >
+          Cultura
+        </label>
+
+        <label>
+          <input
+            type="checkbox"
+            value="gastronomía"
+          >
+          Gastronomía
+        </label>
+
+        <label>
+          <input
+            type="checkbox"
+            value="naturaleza"
+          >
+          Naturaleza
+        </label>
+
+        <label>
+          <input
+            type="checkbox"
+            value="aventura"
+          >
+          Aventura
+        </label>
+
+      </div>
+
+      <button onclick="buscarViaje()">
+        Buscar mi viaje
+      </button>
+
+    </div>
+
+    <!-- RESULTADOS -->
+
+    <div id="results"></div>
+
+    <!-- CHAT -->
+
+    <div id="chatBox" class="chat-box">
+
+      <h2>💬 Continúa planificando tu viaje</h2>
+
+      <p>
+        Puedes pedir cambios, seleccionar vuelos,
+        alojamientos o actividades y seguir hablando
+        con el agente.
+      </p>
+
+      <div class="chat-input">
+
+        <textarea
+          id="chatMessage"
+          placeholder="Ej. Quiero el vuelo easyJet y el hotel Boccaccio’s Flats"
+        ></textarea>
+
+        <button
+          class="send-button"
+          onclick="enviarMensaje()"
+        >
+          Enviar
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    /*
+      Cada navegador mantiene su propia sesión.
+    */
+
+    const sessionId =
+      localStorage.getItem('travelAgentSessionId') ||
+      crypto.randomUUID();
+
+    localStorage.setItem(
+      'travelAgentSessionId',
+      sessionId
+    );
+
+
+    /*
+      Función común para comunicarnos con el agente.
+    */
+
+    async function consultarAgente(message) {
+
+      const response =
+        await fetch('/api/chat', {
+
+          method: 'POST',
+
+          headers: {
+            'Content-Type': 'application/json'
+          },
+
+          body: JSON.stringify({
+            message,
+            sessionId
+          })
+
+        });
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.error ||
+          'Error en la búsqueda'
+        );
+
+      }
+
+      return data.response;
+    }
+
+
+    /*
+      Primera búsqueda.
+    */
+
+    async function buscarViaje() {
+
+      const origen =
+        document.getElementById('origen').value;
+
+      const destino =
+        document.getElementById('destino').value;
+
+      const ida =
+        document.getElementById('ida').value;
+
+      const vuelta =
+        document.getElementById('vuelta').value;
+
+      const viajeros =
+        document.getElementById('viajeros').value;
+
+      const presupuesto =
+        document.getElementById('presupuesto').value;
+
+      const preferencias =
+        Array.from(
+          document.querySelectorAll(
+            '.preferences input:checked'
+          )
+        ).map(input => input.value);
+
+
+      const partes = [
+
+        `Quiero viajar de ${origen} a ${destino}`,
+
+        `del ${ida} al ${vuelta}`,
+
+        `para ${viajeros} personas`
+
+      ];
+
+
+      if (presupuesto) {
+
+        partes.push(
+          `con un presupuesto total de ${presupuesto} euros`
+        );
+
+      }
+
+
+      if (preferencias.length) {
+
+        partes.push(
+          `y me interesan actividades relacionadas con ${preferencias.join(', ')}`
+        );
+
+      }
+
+
+      const message =
+        partes.join(' ');
+
+
+      const results =
+        document.getElementById('results');
+
+      results.style.display = 'block';
+
+      results.innerHTML =
+        '<div class="loading">🔎 Buscando vuelos, alojamientos y actividades reales...</div>';
+
+
+      try {
+
+        const respuesta =
+          await consultarAgente(message);
+
+        results.textContent =
+          respuesta;
+
+        document.getElementById('chatBox')
+          .style.display = 'block';
+
+      } catch (error) {
+
+        results.textContent =
+          'Ha ocurrido un error: ' +
+          error.message;
+
+      }
+
+    }
+
+
+    /*
+      Conversación posterior.
+    */
+
+    async function enviarMensaje() {
+
+      const input =
+        document.getElementById('chatMessage');
+
+      const message =
+        input.value.trim();
+
+
+      if (!message) {
+        return;
+      }
+
+
+      const results =
+        document.getElementById('results');
+
+
+      results.style.display = 'block';
+
+
+      results.innerHTML =
+        '<div class="loading">🤖 Pensando...</div>';
+
+
+      input.value = '';
+
+
+      try {
+
+        const respuesta =
+          await consultarAgente(message);
+
+        results.textContent =
+          respuesta;
+
+      } catch (error) {
+
+        results.textContent =
+          'Ha ocurrido un error: ' +
+          error.message;
+
+      }
+
+    }
+
+
+    /*
+      Permitir enviar con Ctrl + Enter.
+    */
+
+    document
+      .getElementById('chatMessage')
+      .addEventListener(
+        'keydown',
+        function(event) {
+
+          if (
+            event.key === 'Enter' &&
+            event.ctrlKey
+          ) {
+
+            enviarMensaje();
+
+          }
+
+        }
+      );
+
+  </script>
+
+</body>
+</html>
