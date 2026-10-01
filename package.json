@@ -21,6 +21,7 @@
   "homepage": "https://github.com/cvilla0904/travel-agent#readme",
   "dependencies": {
     "@openai/agents": "^0.17.0",
+    "@upstash/redis": "^1.39.0",
     "apify-client": "^2.25.0",
     "express": "^5.2.1",
     "zod": "^4.5.4"
