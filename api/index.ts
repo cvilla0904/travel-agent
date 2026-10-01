@@ -1,12 +1,14 @@
 import express from 'express';
-import { run, MemorySession } from '@openai/agents';
+import { run, MemorySession, type AgentInputItem } from '@openai/agents';
+import { Redis } from '@upstash/redis';
 import { travelAgent } from '../src/index.js';
 
 const app = express();
 
 app.use(express.json());
 
-const sessions = new Map<string, MemorySession>();
+const redis = Redis.fromEnv();
+const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 
 app.post('/api/chat', async (req, res) => {
   try {
@@ -25,12 +27,11 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
-    let session = sessions.get(sessionId);
-
-    if (!session) {
-      session = new MemorySession();
-      sessions.set(sessionId, session);
-    }
+    const history = await redis.get<AgentInputItem[]>(`chat:session:${sessionId}`);
+    const session = new MemorySession({
+      sessionId,
+      initialItems: history ?? [],
+    });
 
     const result = await run(
       travelAgent,
@@ -38,6 +39,12 @@ app.post('/api/chat', async (req, res) => {
       {
         session,
       },
+    );
+
+    await redis.set(
+      `chat:session:${sessionId}`,
+      await session.getItems(),
+      { ex: SESSION_TTL_SECONDS },
     );
 
     return res.json({
