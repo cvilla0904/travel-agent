@@ -248,7 +248,7 @@
 
     function renderResultados(respuesta) {
       const results = document.getElementById('results');
-      const flightMatch = respuesta.match(/### (Vuelos[^\\n]*)\\n\\n([\\s\\S]*?)(?=\\n### |\\n## |$)/i);
+      const flightMatch = respuesta.match(/### (Vuelos[^\n]*)\n\n([\s\S]*?)(?=\n### |\n## |$)/i);
 
       if (!flightMatch) {
         results.textContent = respuesta;
@@ -257,12 +257,12 @@
 
       const heading = flightMatch[1].trim();
       const blocks = flightMatch[2]
-        .split(/\\n(?=- \\*\\*)/)
+        .split(/\n(?=- \\*\\*)/)
         .map(block => block.trim())
         .filter(Boolean);
 
       const flightCards = blocks.map((block, index) => {
-        const lines = block.split('\\n').map(line => line.trim()).filter(Boolean);
+        const lines = block.split('\n').map(line => line.trim()).filter(Boolean);
         const first = lines[0].replace(/^- \\*\\*/, '').replace(/\\*\\*.*$/, '').trim();
         const priceMatch = block.match(/\\*\\*([0-9]+(?:[.,][0-9]+)?\\s*€)\\*\\*/);
         const price = priceMatch ? priceMatch[1] : '';
