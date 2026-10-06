@@ -34,7 +34,30 @@ async function resolverIdsAeropuerto(
     );
   }
 
+  const normalizar = (texto: string) =>
+    texto
+      .normalize('NFD')
+      .replace(/[\\u0300-\\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+
+  const consultaNormalizada = normalizar(texto);
+
   const sugerenciaCiudad =
+    sugerencias.find(
+      (sugerencia: any) =>
+        sugerencia?.type === 'city' &&
+        Array.isArray(sugerencia?.airports) &&
+        sugerencia.airports.length > 0 &&
+        (
+          normalizar(sugerencia.name ?? '') === consultaNormalizada ||
+          normalizar(sugerencia.name ?? '').startsWith(consultaNormalizada + ',') ||
+          sugerencia.airports.some(
+            (airport: any) =>
+              normalizar(airport?.city ?? '') === consultaNormalizada,
+          )
+        ),
+    ) ??
     sugerencias.find(
       (sugerencia: any) =>
         sugerencia?.type === 'city' &&
@@ -560,6 +583,44 @@ const buscarVuelos = tool({
               ),
             ];
 
+            const departureAirportIds = new Set(
+              departureId
+                .split(',')
+                .map((id) => id.trim().toUpperCase())
+                .filter(Boolean),
+            );
+
+            const arrivalAirportIds = new Set(
+              arrivalId
+                .split(',')
+                .map((id) => id.trim().toUpperCase())
+                .filter(Boolean),
+            );
+
+            const idaValida =
+              idaSegmentos.length > 0 &&
+              departureAirportIds.has(
+                idaSegmentos[0].codigoSalida.toUpperCase(),
+              ) &&
+              arrivalAirportIds.has(
+                idaSegmentos[idaSegmentos.length - 1].codigoLlegada.toUpperCase(),
+              );
+
+            const vueltaValida =
+              vueltaSegmentos.length === 0 ||
+              (
+                departureAirportIds.has(
+                  vueltaSegmentos[vueltaSegmentos.length - 1].codigoLlegada.toUpperCase(),
+                ) &&
+                arrivalAirportIds.has(
+                  vueltaSegmentos[0].codigoSalida.toUpperCase(),
+                )
+              );
+
+            if (!idaValida || !vueltaValida) {
+              return null;
+            }
+
             const escalasIda =
               Math.max(
                 0,
@@ -663,6 +724,7 @@ const buscarVuelos = tool({
       vuelosCompletos
         .filter(
           (vuelo) =>
+            vuelo !== null &&
             vuelo.precioTotal > 0,
         )
         .sort(
