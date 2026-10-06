@@ -5,6 +5,7 @@ export async function buscarGoogleFlights(params: {
   returnDate: string;
   adults: number;
   departureToken?: string;
+  deepSearch?: boolean;
 }) {
   const apiKey = process.env.SERPAPI_API_KEY;
 
@@ -53,10 +54,22 @@ export async function buscarGoogleFlights(params: {
     'EUR',
   );
 
+  url.searchParams.set(
+    'no_cache',
+    'true',
+  );
+
   if (params.departureToken) {
     url.searchParams.set(
       'departure_token',
       params.departureToken,
+    );
+  }
+
+  if (params.deepSearch) {
+    url.searchParams.set(
+      'deep_search',
+      'true',
     );
   }
 
