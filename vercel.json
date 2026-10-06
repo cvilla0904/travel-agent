@@ -8,12 +8,20 @@
     {
       "src": "index.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "travel-agent-illustration.jpg",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/api/chat",
       "dest": "/api/chat.ts"
+    },
+    {
+      "src": "/travel-agent-illustration.jpg",
+      "dest": "/travel-agent-illustration.jpg"
     },
     {
       "src": "/(.*)",
