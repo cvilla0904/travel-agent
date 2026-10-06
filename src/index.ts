@@ -388,7 +388,7 @@ const buscarVuelos = tool({
      * las opciones reales de vuelta.
      */
 
-    const data =
+    let data =
       await buscarGoogleFlights({
         departureId,
         arrivalId,
@@ -397,10 +397,33 @@ const buscarVuelos = tool({
         adults: pasajeros,
       });
 
-    const resultadosIniciales = [
+    let resultadosIniciales = [
       ...(data.best_flights ?? []),
       ...(data.other_flights ?? []),
-    ]
+    ];
+
+    /*
+     * Si Google Flights no devuelve resultados en la primera consulta,
+     * repetimos con una búsqueda profunda. SerpApi indica que
+     * deep_search puede producir resultados más completos.
+     */
+    if (resultadosIniciales.length === 0) {
+      data = await buscarGoogleFlights({
+        departureId,
+        arrivalId,
+        outboundDate: fechaIda,
+        returnDate: fechaVuelta,
+        adults: pasajeros,
+        deepSearch: true,
+      });
+
+      resultadosIniciales = [
+        ...(data.best_flights ?? []),
+        ...(data.other_flights ?? []),
+      ];
+    }
+
+    resultadosIniciales = resultadosIniciales
       .filter(
         (vuelo: any) =>
           typeof vuelo.price === 'number' &&
