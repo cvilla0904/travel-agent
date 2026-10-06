@@ -248,12 +248,36 @@
     }
 
     function linkifyText(value) {
-      const escaped = escapeHtml(value);
-      return escaped.replace(
+      // Primero preservamos los enlaces Markdown que ya devuelve el agente.
+      // Así evitamos convertir de nuevo la URL que está dentro de [texto](URL).
+      const placeholders = [];
+      const withPlaceholders = String(value).replace(
+        /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
+        function(match, label, url) {
+          const index = placeholders.length;
+          placeholders.push(
+            '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer" class="result-link">' +
+            escapeHtml(label) +
+            ' ↗</a>'
+          );
+          return '__MARKDOWN_LINK_' + index + '__';
+        }
+      );
+
+      const escaped = escapeHtml(withPlaceholders);
+
+      const linked = escaped.replace(
         /https?:\/\/[^\s<]+/g,
-        url => {
+        function(url) {
           const cleanUrl = url.replace(/[),.;]+$/, '');
           return '<a href="' + cleanUrl + '" target="_blank" rel="noopener noreferrer" class="result-link">Ver oferta ↗</a>';
+        }
+      );
+
+      return linked.replace(
+        /__MARKDOWN_LINK_(\d+)__/g,
+        function(match, index) {
+          return placeholders[Number(index)] || match;
         }
       );
     }
