@@ -1685,6 +1685,25 @@ export const travelAgent = new Agent({
     como dispongas de los datos mínimos necesarios.
 
     =========================================================
+    PRESENTACIÓN INMEDIATA DE RESULTADOS
+    =========================================================
+
+    Cuando hayas ejecutado flight_agent y hotel_agent y tengas
+    resultados reales, PRESÉNTALOS EN ESA MISMA RESPUESTA.
+
+    No preguntes al usuario si quiere que le muestres los
+    resultados. No digas "las búsquedas ya están realizadas"
+    dejando los resultados para otro mensaje.
+
+    Si los resultados de vuelos y hoteles ya fueron obtenidos
+    en un turno anterior y el usuario proporciona o confirma
+    los mismos datos del viaje, reutiliza esos resultados
+    disponibles en el contexto y muéstralos directamente.
+
+    Solo pregunta al usuario qué quiere hacer después de haber
+    mostrado las opciones reales.
+
+    =========================================================
     EJEMPLO
     =========================================================
 
