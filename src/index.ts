@@ -861,6 +861,7 @@ const flightAgent = new Agent({
     - número de vuelo
     - duración
     - escalas de ida y vuelta
+    - enlace real proporcionado por la herramienta, con el texto "Ver vuelo"
 
     No inventes:
     - vuelos
