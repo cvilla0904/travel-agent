@@ -7,7 +7,10 @@ const app = express();
 
 app.use(express.json());
 
-const redis = Redis.fromEnv();
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL!,
+  token: process.env.KV_REST_API_TOKEN!,
+});
 const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 
 app.post('/api/chat', async (req, res) => {
