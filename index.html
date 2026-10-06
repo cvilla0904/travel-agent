@@ -248,57 +248,64 @@
 
     function renderResultados(respuesta) {
       const results = document.getElementById('results');
-      const flightMatch = respuesta.match(/### (Vuelos[^\n]*)\n\n([\s\S]*?)(?=\n### |\n## |$)/i);
+      const lines = respuesta.replace(/\r/g, '').split('\n');
+      const headingIndex = lines.findIndex(line => /^###\s+Vuelos\s*$/i.test(line.trim()));
 
-      if (!flightMatch) {
+      if (headingIndex === -1) {
         results.textContent = respuesta;
         return;
       }
 
-      const heading = flightMatch[1].trim();
-      const blocks = flightMatch[2]
-        .split(/\n(?=-\s)/)
-        .map(block => block.trim())
+      const before = lines.slice(0, headingIndex).join('\n').trim();
+      const afterStart = lines.findIndex((line, index) => index > headingIndex && /^###\s+/.test(line.trim()));
+      const flightEnd = afterStart === -1 ? lines.length : afterStart;
+
+      const flightLines = lines.slice(headingIndex + 1, flightEnd);
+      const flights = flightLines
+        .map(line => line.trim())
+        .filter(line => /^-\s+\*\*.+?\*\*:/i.test(line))
+        .map((line, index) => {
+          const match = line.match(/^-\s+\*\*(.+?)\*\*:\s*(.*)$/);
+          if (!match) return null;
+
+          const airline = match[1].trim();
+          const details = match[2].trim();
+          const priceMatch = details.match(/([0-9]+(?:[.,][0-9]+)?)\s*€/);
+          const price = priceMatch ? priceMatch[1] + ' €' : 'Precio no disponible';
+
+          return {
+            airline,
+            details,
+            price,
+            selection: airline + ': ' + details
+          };
+        })
         .filter(Boolean);
 
-      const flightCards = blocks.map((block, index) => {
-        const lines = block.split('\n').map(line => line.trim()).filter(Boolean);
-        const cleanFirst = lines[0]
-          .replace(/^-\s*/, '')
-          .replace(/\*\*/g, '')
-          .replace(/:.*$/, '')
-          .trim();
+      if (flights.length === 0) {
+        results.textContent = respuesta;
+        return;
+      }
 
-        const priceMatch = block.match(/\*\*([0-9]+(?:[.,][0-9]+)?\s*€)\*\*/);
-        const price = priceMatch ? priceMatch[1] : '';
+      const after = lines.slice(flightEnd).join('\n').trim();
 
-        const detail = lines
-          .slice(1)
-          .join(' ')
-          .replace(/\*\*/g, '')
-          .trim();
-
-        const selection = cleanFirst || ('Opción de vuelo ' + (index + 1));
-
-        return '<article class="flight-card">' +
+      const cards = flights.map(flight =>
+        '<article class="flight-card">' +
           '<div class="flight-main">' +
-            '<div class="flight-airline">' + escapeHtml(selection) + '</div>' +
-            (detail ? '<div class="flight-detail">' + escapeHtml(detail) + '</div>' : '') +
+            '<div class="flight-airline">' + escapeHtml(flight.airline) + '</div>' +
+            '<div class="flight-detail">' + escapeHtml(flight.details) + '</div>' +
           '</div>' +
-          '<div>' +
-            '<div class="flight-price">' + escapeHtml(price || 'Ver opción') + '<small>Total mostrado por el agente</small></div>' +
-          '</div>' +
-          '<button class="flight-select" type="button" onclick="seleccionarVuelo(' + JSON.stringify(selection) + ')">Seleccionar</button>' +
-        '</article>';
-      }).join('');
-
-      const before = respuesta.slice(0, flightMatch.index).trim();
-      const after = respuesta.slice(flightMatch.index + flightMatch[0].length).trim();
+          '<div class="flight-price">' + escapeHtml(flight.price) + '<small>Total mostrado</small></div>' +
+          '<button class="flight-select" type="button" onclick="seleccionarVuelo(' + JSON.stringify(flight.selection) + ')">Seleccionar</button>' +
+        '</article>'
+      ).join('');
 
       results.innerHTML =
-        (before ? '<div style="white-space:pre-wrap">' + escapeHtml(before) + '</div>' : '') +
-        '<section><h3 style="margin:0;color:var(--navy);font-size:18px">' + escapeHtml(heading) + '</h3>' +
-        '<div class="flight-results">' + flightCards + '</div></section>' +
+        (before ? '<div style="white-space:pre-wrap;margin-bottom:18px">' + escapeHtml(before) + '</div>' : '') +
+        '<section>' +
+          '<h3 style="margin:0;color:var(--navy);font-size:18px">Vuelos</h3>' +
+          '<div class="flight-results">' + cards + '</div>' +
+        '</section>' +
         (after ? '<div style="margin-top:20px;white-space:pre-wrap">' + escapeHtml(after) + '</div>' : '');
     }
 
