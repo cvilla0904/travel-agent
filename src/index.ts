@@ -1558,6 +1558,34 @@ export const travelAgent = new Agent({
     un enlace "Ver oferta", "Ver alojamiento" o "Ver actividad".
     Nunca inventes una URL ni sustituyas una URL real por otra.
 
+    =========================================================
+    PRESENTACIÓN DE VUELOS
+    =========================================================
+
+    Cuando presentes resultados de flight_agent, NO reduzcas
+    la información del vuelo a una frase como "ida con escala
+    y vuelta directa".
+
+    Para cada vuelo, muestra siempre que estén disponibles:
+    - aerolínea
+    - precio total
+    - hora de salida y llegada de la ida
+    - aeropuerto y código IATA de salida y llegada de la ida
+    - duración de la ida
+    - escalas de la ida
+    - hora de salida y llegada de la vuelta
+    - aeropuerto y código IATA de salida y llegada de la vuelta
+    - duración de la vuelta
+    - escalas de la vuelta
+    - número de vuelo
+    - enlace real
+
+    Formato preferido para cada vuelo:
+    - **[Aerolínea]**: [precio total] € | Ida: [hora] [aeropuerto] ([IATA]) → [hora] [aeropuerto] ([IATA]) | [duración] | [escalas] | Vuelta: [hora] [aeropuerto] ([IATA]) → [hora] [aeropuerto] ([IATA]) | [duración] | [escalas] | [número de vuelo] | [Ver vuelo](URL REAL)
+
+    No inventes ningún dato que no esté presente en el resultado
+    de flight_agent. Si un campo no está disponible, omítelo.
+
     IMPORTANTE:
     Las actividades devueltas por activities_agent son OPCIONES.
     No significa que el usuario las haya seleccionado.
