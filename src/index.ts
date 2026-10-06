@@ -26,67 +26,81 @@ import { buscarHotelesSearchApi } from './services/searchapi.js';
 async function resolverIdsAeropuerto(
   texto: string,
 ): Promise<string[]> {
-  const sugerencias = await resolverAeropuerto(texto);
+  const consultaOriginal = texto.trim();
+
+  if (!consultaOriginal) {
+    throw new Error('El origen o destino del vuelo está vacío.');
+  }
+
+  // Si el usuario ya proporciona un código IATA, no necesitamos
+  // depender del autocompletado de SerpApi.
+  if (/^[A-Za-z]{3}$/.test(consultaOriginal)) {
+    return [consultaOriginal.toUpperCase()];
+  }
+
+  const sugerencias = await resolverAeropuerto(consultaOriginal);
 
   if (!Array.isArray(sugerencias) || sugerencias.length === 0) {
     throw new Error(
-      `No se ha encontrado ningún aeropuerto para "${texto}".`,
+      `No se ha encontrado ningún aeropuerto para "${consultaOriginal}".`,
     );
   }
 
-  const normalizar = (texto: string) =>
-    texto
+  const normalizar = (valor: string) =>
+    valor
       .normalize('NFD')
-      .replace(/[\\u0300-\\u036f]/g, '')
+      .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .trim();
 
-  const consultaNormalizada = normalizar(texto);
+  const consultaNormalizada = normalizar(consultaOriginal);
 
-  const sugerenciaCiudad =
-    sugerencias.find(
-      (sugerencia: any) =>
-        sugerencia?.type === 'city' &&
-        Array.isArray(sugerencia?.airports) &&
-        sugerencia.airports.length > 0 &&
-        (
-          normalizar(sugerencia.name ?? '') === consultaNormalizada ||
-          normalizar(sugerencia.name ?? '').startsWith(consultaNormalizada + ',') ||
-          sugerencia.airports.some(
-            (airport: any) =>
-              normalizar(airport?.city ?? '') === consultaNormalizada,
-          )
-        ),
-    ) ??
-    sugerencias.find(
-      (sugerencia: any) =>
-        sugerencia?.type === 'city' &&
-        Array.isArray(sugerencia?.airports) &&
-        sugerencia.airports.length > 0,
-    ) ??
-    sugerencias.find(
-      (sugerencia: any) =>
-        Array.isArray(sugerencia?.airports) &&
-        sugerencia.airports.length > 0,
-    );
+  // Nunca usamos "la primera sugerencia" como fallback.
+  // Eso fue lo que permitía que una respuesta incorrecta del
+  // autocompletado pudiera convertir Bilbao en otra ciudad.
+  const candidatos = sugerencias.filter(
+    (sugerencia: any) =>
+      Array.isArray(sugerencia?.airports) &&
+      sugerencia.airports.length > 0,
+  );
 
-  if (!sugerenciaCiudad) {
+  const sugerenciaExacta = candidatos.find(
+    (sugerencia: any) => {
+      const nombre = normalizar(sugerencia.name ?? '');
+      const descripcion = normalizar(sugerencia.description ?? '');
+
+      return (
+        nombre === consultaNormalizada ||
+        nombre.startsWith(consultaNormalizada + ',') ||
+        descripcion === consultaNormalizada ||
+        descripcion.startsWith(consultaNormalizada + ',') ||
+        sugerencia.airports.some(
+          (airport: any) =>
+            normalizar(airport?.city ?? '') === consultaNormalizada ||
+            normalizar(airport?.name ?? '') === consultaNormalizada,
+        )
+      );
+    },
+  );
+
+  if (!sugerenciaExacta) {
     throw new Error(
-      `No se han encontrado aeropuertos para "${texto}".`,
+      `No se ha podido verificar "${consultaOriginal}" como ciudad o aeropuerto. No se realizará una búsqueda para evitar resultados de otra ciudad.`,
     );
   }
 
-  const ids = sugerenciaCiudad.airports
+  const ids = sugerenciaExacta.airports
     .map((airport: any) => airport?.id)
     .filter(
       (id: any): id is string =>
         typeof id === 'string' &&
-        id.trim().length > 0,
-    );
+        /^[A-Za-z]{3}$/.test(id.trim()),
+    )
+    .map((id: string) => id.trim().toUpperCase());
 
   if (ids.length === 0) {
     throw new Error(
-      `No se han encontrado códigos IATA para "${texto}".`,
+      `No se han encontrado códigos IATA válidos para "${consultaOriginal}".`,
     );
   }
 
@@ -418,6 +432,7 @@ const buscarVuelos = tool({
         outboundDate: fechaIda,
         returnDate: fechaVuelta,
         adults: pasajeros,
+        deepSearch: true,
       });
 
     let resultadosIniciales = [
@@ -645,6 +660,11 @@ const buscarVuelos = tool({
             const precioTotal =
               Number(vuelo.price);
 
+            const enlace =
+              data?.search_metadata?.google_flights_url ??
+              vueltaData?.search_metadata?.google_flights_url ??
+              '';
+
             return {
               aerolinea:
                 aerolineas.join(' + '),
@@ -658,6 +678,8 @@ const buscarVuelos = tool({
               precioTotal,
 
               moneda: 'EUR',
+
+              enlace,
 
               esIdaVuelta: true,
 
@@ -789,6 +811,7 @@ const flightOutputSchema =
         escalasIda: z.number(),
         escalasVuelta: z.number(),
         esDirecto: z.boolean(),
+        enlace: z.string(),
         ida: z.object({
           fecha: z.string(),
           segmentos: z.array(flightSegmentSchema),
@@ -1517,6 +1540,12 @@ export const travelAgent = new Agent({
     obtenidos de Civitatis y Tiqets mediante Apify.
 
     Pueden incluir precio, valoracion, resenas, duracion y URL de reserva.
+
+    IMPORTANTE SOBRE ENLACES:
+    Cuando presentes vuelos, hoteles o actividades, conserva SIEMPRE
+    la URL real proporcionada por la herramienta y muéstrala como
+    un enlace "Ver oferta", "Ver alojamiento" o "Ver actividad".
+    Nunca inventes una URL ni sustituyas una URL real por otra.
 
     IMPORTANTE:
     Las actividades devueltas por activities_agent son OPCIONES.
