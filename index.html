@@ -23,19 +23,24 @@
     section.content{padding:82px 0}.section-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:26px;gap:20px}.section-head h2{margin:0;color:var(--navy);font-family:Georgia,"Times New Roman",serif;font-size:38px;font-weight:500;letter-spacing:-.7px}.section-head p{margin:0;color:var(--muted);font-size:14px}.destinations{display:grid;grid-template-columns:repeat(4,1fr);gap:17px}.destination{height:290px;position:relative;overflow:hidden;border-radius:19px;background:#d9e2e8;box-shadow:0 8px 22px rgba(23,43,65,.1)}.destination img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s}.destination:hover img{transform:scale(1.05)}.destination:after{content:"";position:absolute;inset:35% 0 0;background:linear-gradient(transparent,rgba(9,25,43,.72))}.destination-copy{position:absolute;z-index:1;bottom:20px;left:19px;color:white}.destination-copy small{display:block;margin-bottom:5px;opacity:.82;font-size:11px;letter-spacing:.08em;text-transform:uppercase}.destination-copy strong{font-family:Georgia,"Times New Roman",serif;font-size:25px;font-weight:500}
     .how{background:#eef3f6}.how-inner{display:grid;grid-template-columns:.8fr 1.2fr;gap:55px;align-items:start}.how-title h2{margin:0 0 14px;color:var(--navy);font-family:Georgia,"Times New Roman",serif;font-size:40px;font-weight:500}.how-title p{color:var(--muted);line-height:1.7;margin:0}.steps{display:grid;grid-template-columns:repeat(2,1fr);gap:24px 28px}.step{display:flex;gap:14px}.step-num{width:36px;height:36px;flex:0 0 36px;border-radius:12px;background:white;color:var(--navy);display:grid;place-items:center;font-size:13px;font-weight:750;box-shadow:0 3px 10px rgba(20,43,72,.06)}.step h3{margin:2px 0 6px;color:var(--navy);font-size:15px}.step p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
 
-    .how-panel{position:relative;overflow:hidden;min-height:690px;padding:30px 28px;border-radius:28px;background:linear-gradient(180deg,#eef7fb 0%,#f2f7f4 100%);border:1px solid #e0ebef;box-shadow:var(--shadow)}
+    .how-panel{position:relative;overflow:hidden;min-height:0;padding:30px 28px;border-radius:28px;background:linear-gradient(180deg,#eef7fb 0%,#f2f7f4 100%);border:1px solid #e0ebef;box-shadow:var(--shadow)}
     .how-panel:before{content:"";position:absolute;width:300px;height:300px;right:-125px;top:-95px;border-radius:50%;background:rgba(255,255,255,.72)}
     .how-badge{position:relative;z-index:4;display:inline-flex;padding:8px 13px;border-radius:99px;background:#f8dca9;color:#754616;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
     .how-panel h2{position:relative;z-index:4;max-width:500px;margin:16px 0 7px;color:var(--navy);font-family:Georgia,"Times New Roman",serif;font-size:33px;line-height:1.08;font-weight:500;letter-spacing:-.8px}.how-panel>p{position:relative;z-index:4;margin:0;color:#60758c;font-size:14px;line-height:1.55}
-    .illustration-wrap{position:relative;z-index:3;height:478px;margin-top:14px;border-radius:24px;background:linear-gradient(180deg,#f8fcfd 0%,#edf6f4 100%);border:1px solid rgba(255,255,255,.95);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(220,234,239,.35)}.illustration-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+    .illustration-wrap{position:relative;z-index:3;aspect-ratio:4/3;height:auto;margin-top:14px;border-radius:24px;background:linear-gradient(180deg,#f8fcfd 0%,#edf6f4 100%);border:1px solid rgba(255,255,255,.95);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(220,234,239,.35)}.illustration-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;display:block}
     .flow-card{position:absolute;z-index:5;width:143px;padding:10px 12px;border-radius:15px;background:rgba(255,255,255,.93);border:1px solid rgba(224,234,239,.95);box-shadow:0 9px 22px rgba(20,43,72,.09);backdrop-filter:blur(4px)}.flow-card strong{display:block;color:var(--navy);font-size:11px}.flow-card span{display:block;margin-top:3px;color:#738397;font-size:9px;line-height:1.35}.flow-card:after{content:"";position:absolute;top:22px;width:24px;height:1px;background:#bcd1dc}.flow-card.c1{left:10px;top:38px}.flow-card.c1:after,.flow-card.c3:after{right:-24px}.flow-card.c2{right:10px;top:174px}.flow-card.c2:after,.flow-card.c4:after{left:-24px}.flow-card.c3{left:10px;top:308px}.flow-card.c4{right:10px;top:410px}
     .flow-number{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:6px;border-radius:50%;color:#fff;font-size:8px;font-weight:800;vertical-align:middle}.c1 .flow-number{background:#4e9bc8}.c2 .flow-number{background:#54a982}.c3 .flow-number{background:#f1aa49}.c4 .flow-number{background:#8663b5}
-    .trip-brief{position:relative;z-index:3;margin-top:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.brief-item{padding:10px 9px;border:1px dashed #cfdbe2;border-radius:12px;background:rgba(255,255,255,.58)}.brief-item span{display:block;color:#8190a0;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.brief-item strong{display:block;margin-top:4px;color:#53677d;font-size:11px;font-weight:650}
+    
     .how-decoration{position:absolute;right:15px;bottom:8px;font-size:48px;opacity:.1;transform:rotate(-7deg)}
+    .trip-summary{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(2,minmax(150px,.7fr));gap:10px;margin-bottom:22px;padding:18px;background:linear-gradient(135deg,#f7fafc 0%,#eef5f8 100%);border:1px solid #dfe8ee;border-radius:18px;box-shadow:0 8px 22px rgba(22,42,67,.05)}
+    .trip-route{padding:4px 6px}.trip-kicker{display:block;margin-bottom:7px;color:#8090a0;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.trip-route strong{display:block;color:var(--navy);font-size:22px;letter-spacing:-.4px}.trip-meta{display:flex;align-items:center;gap:10px;padding:11px 13px;background:rgba(255,255,255,.78);border:1px solid rgba(214,225,232,.9);border-radius:13px}.trip-meta-icon{width:30px;height:30px;display:grid;place-items:center;flex:0 0 30px;border-radius:10px;background:#e7f0f4;color:#315873;font-size:13px}.trip-meta span{display:block;color:#8491a0;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.trip-meta strong{display:block;margin-top:3px;color:#52677c;font-size:12px;font-weight:700}
+    .result-section-title{display:flex;align-items:center;gap:10px;margin:0 0 12px;color:var(--navy);font-size:18px}.result-section-title:before{content:"";width:5px;height:21px;border-radius:99px;background:#7fa9bb}
+    .hotel-results{margin-top:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.hotel-card{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 17px;border:1px solid #e2e8ee;border-radius:16px;background:#fff;box-shadow:0 5px 16px rgba(22,42,67,.045);transition:.2s}.hotel-card:hover{border-color:#a9bfd1;box-shadow:0 8px 22px rgba(22,42,67,.08);transform:translateY(-1px)}.hotel-main{min-width:0}.hotel-name{color:var(--navy);font-weight:750;font-size:14px}.hotel-detail{margin-top:5px;color:#718093;font-size:12px;line-height:1.5}.hotel-link{white-space:nowrap}.hotel-no-link{font-size:11px;color:#8a96a4}
+    .search-note{margin-top:16px;color:#8995a3;font-size:11px;line-height:1.5}
     .chat-box{display:none;max-width:none;margin:22px 0 0;padding:25px;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}.chat-box h2{margin:0;color:var(--navy);font:500 24px Georgia,"Times New Roman",serif}.chat-box>p{margin:9px 0 17px;color:var(--muted);font-size:14px;line-height:1.55}.chat-input{display:flex;gap:12px;align-items:stretch}.chat-input textarea{flex:1;min-height:62px;resize:vertical;border:1px solid var(--line);border-radius:12px;padding:13px;font:inherit;font-size:14px}.send-button{margin:0;width:130px;flex-shrink:0}
     footer{padding:28px 0;color:#8290a0;font-size:12px;border-top:1px solid #e7ebef}.footer-inner{display:flex;justify-content:space-between;align-items:center}.footer-brand{font-weight:700;color:var(--navy)}
     @media(max-width:850px){.nav-links{gap:17px}.hero-layout{grid-template-columns:1fr}.how-panel{min-height:0}.hero-copy{padding-top:0}.destinations{grid-template-columns:repeat(2,1fr)}.destination{height:270px}.how-inner{grid-template-columns:1fr;gap:30px}}
-    @media(max-width:600px){.wrap{width:min(100% - 32px,1160px)}header{height:68px}.nav{gap:12px}.brand{font-size:16px}.brand-mark{width:33px;height:33px}.nav-links{display:none}.login{padding:9px 12px;font-size:12px}.hero{padding:54px 0 35px}.hero h1{font-size:43px;letter-spacing:-1px}.hero>p{font-size:15px}.planner{padding:17px;margin-top:26px;border-radius:18px}.planner-icon{display:none}.planner textarea{min-height:112px;font-size:15px}.planner-bottom{align-items:stretch;flex-direction:column}.planner-hint{text-align:center}.primary{width:100%}.example{font-size:11px;padding:9px 12px}.benefit-row{grid-template-columns:repeat(2,1fr);gap:19px 7px}.benefit{justify-content:flex-start;font-size:11px}.benefit-icon{width:31px;height:31px;flex:0 0 31px}.content{padding:58px 0!important}.how-panel{padding:24px 18px}.how-panel h2{font-size:30px}.illustration-wrap{height:440px}.flow-card{width:108px;padding:8px 9px}.flow-card span{font-size:8px}.trip-brief{grid-template-columns:repeat(2,1fr)}.how-step{grid-template-columns:42px 1fr;padding:14px}.hero-layout{gap:30px}.section-head{display:block}.section-head h2,.how-title h2{font-size:32px}.section-head p{margin-top:9px}.destinations{gap:11px}.destination{height:205px;border-radius:15px}.destination-copy{left:13px;bottom:14px}.destination-copy strong{font-size:20px}.steps{grid-template-columns:1fr;gap:20px}.detail-grid{grid-template-columns:1fr}.chat-box{padding:19px}.chat-input{flex-direction:column}.send-button{width:100%}.footer-inner{gap:12px;flex-direction:column;align-items:flex-start}}
+    @media(max-width:600px){.wrap{width:min(100% - 32px,1160px)}header{height:68px}.nav{gap:12px}.brand{font-size:16px}.brand-mark{width:33px;height:33px}.nav-links{display:none}.login{padding:9px 12px;font-size:12px}.hero{padding:54px 0 35px}.hero h1{font-size:43px;letter-spacing:-1px}.hero>p{font-size:15px}.planner{padding:17px;margin-top:26px;border-radius:18px}.planner-icon{display:none}.planner textarea{min-height:112px;font-size:15px}.planner-bottom{align-items:stretch;flex-direction:column}.planner-hint{text-align:center}.primary{width:100%}.example{font-size:11px;padding:9px 12px}.benefit-row{grid-template-columns:repeat(2,1fr);gap:19px 7px}.benefit{justify-content:flex-start;font-size:11px}.benefit-icon{width:31px;height:31px;flex:0 0 31px}.content{padding:58px 0!important}.how-panel{padding:24px 18px}.how-panel h2{font-size:30px}.illustration-wrap{height:auto;aspect-ratio:4/3}.flow-card{width:108px;padding:8px 9px}.flow-card span{font-size:8px}.trip-brief{grid-template-columns:repeat(2,1fr)}.how-step{grid-template-columns:42px 1fr;padding:14px}.hero-layout{gap:30px}.section-head{display:block}.section-head h2,.how-title h2{font-size:32px}.section-head p{margin-top:9px}.destinations{gap:11px}.destination{height:205px;border-radius:15px}.destination-copy{left:13px;bottom:14px}.destination-copy strong{font-size:20px}.steps{grid-template-columns:1fr;gap:20px}.detail-grid{grid-template-columns:1fr}.chat-box{padding:19px}.chat-input{flex-direction:column}.send-button{width:100%}.footer-inner{gap:12px;flex-direction:column;align-items:flex-start}}
   </style>
 </head>
 <body>
@@ -94,12 +99,6 @@
           <p>Cuéntame lo que tienes en mente. Yo busco, comparo y te ayudo a decidir.</p>
           <div class="illustration-wrap" aria-label="Ilustración del proceso de Travel Agent">
             <img src="travel-agent-illustration.jpg" alt="Ilustración del proceso de Travel Agent">
-          </div>
-          <div class="trip-brief" aria-label="Datos que iremos definiendo">
-            <div class="brief-item"><span>Salida</span><strong>Por definir</strong></div>
-            <div class="brief-item"><span>Destino</span><strong>Por descubrir</strong></div>
-            <div class="brief-item"><span>Fechas</span><strong>Por definir</strong></div>
-            <div class="brief-item"><span>Viajeros</span><strong>Por definir</strong></div>
           </div>
           <div class="how-decoration" aria-hidden="true">✈︎</div>
         </aside>
@@ -287,81 +286,150 @@
       const lines = respuesta.replace(/\r/g, '').split('\n');
       const headingIndex = lines.findIndex(line => /^###\s+Vuelos\s*$/i.test(line.trim()));
 
+      function markdownLink(text) {
+        const match = String(text).match(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/);
+        return match ? { label: match[1], url: match[2].replace(/[),.;]+$/, '') } : null;
+      }
+
+      function renderTripSummary(linesBefore) {
+        const raw = linesBefore.filter(Boolean);
+        const routeLine = raw.find(line => /^##\s+/.test(line.trim())) || '';
+        const datesLine = raw.find(line => /^\*\*Fechas:\*\*/i.test(line.trim())) || '';
+        const travelersLine = raw.find(line => /^\*\*Viajeros:\*\*/i.test(line.trim())) || '';
+
+        const route = routeLine.replace(/^##\s+/, '').replace(/\*\*/g, '').trim();
+        const dates = datesLine.replace(/^\*\*Fechas:\*\*\s*/i, '').replace(/\*\*/g, '').trim();
+        const travelers = travelersLine.replace(/^\*\*Viajeros:\*\*\s*/i, '').replace(/\*\*/g, '').trim();
+
+        if (!route && !dates && !travelers) return '';
+
+        return '<section class="trip-summary">' +
+          '<div class="trip-route"><span class="trip-kicker">Tu viaje</span><strong>' + escapeHtml(route || 'Viaje personalizado') + '</strong></div>' +
+          (dates ? '<div class="trip-meta"><span class="trip-meta-icon">◷</span><div><span>Fechas</span><strong>' + escapeHtml(dates) + '</strong></div></div>' : '') +
+          (travelers ? '<div class="trip-meta"><span class="trip-meta-icon">♙</span><div><span>Viajeros</span><strong>' + escapeHtml(travelers) + '</strong></div></div>' : '') +
+          '</section>';
+      }
+
+      function renderHotels(sectionLines) {
+        const titleIndex = sectionLines.findIndex(line => /^###\s+Alojamientos\s*$/i.test(line.trim()));
+        if (titleIndex === -1) return { html: '' };
+
+        const hotelLines = sectionLines.slice(titleIndex + 1);
+        const hotels = [];
+        let current = [];
+
+        hotelLines.forEach(line => {
+          const trimmed = line.trim();
+          if (/^-\s+\*\*.+?\*\*/.test(trimmed)) {
+            if (current.length) hotels.push(current);
+            current = [trimmed];
+          } else if (current.length && trimmed) {
+            current.push(trimmed);
+          }
+        });
+        if (current.length) hotels.push(current);
+
+        const cards = hotels.map(block => {
+          const first = block[0];
+          const match = first.match(/^-\s+\*\*(.+?)\*\*\s*[—-]\s*(.*)$/);
+          if (!match) return '';
+
+          const name = match[1].trim();
+          const blockText = [match[2].trim(), ...block.slice(1)].filter(Boolean).join(' ');
+          const link = markdownLink(blockText);
+          const detail = blockText
+            .replace(link ? /\[[^\]]+\]\(https?:\/\/[^)]+\)/ : /$^/, '')
+            .trim()
+            .replace(/\*\*/g, '');
+
+          return '<article class="hotel-card">' +
+            '<div class="hotel-main"><div class="hotel-name">' + escapeHtml(name) + '</div><div class="hotel-detail">' + escapeHtml(detail) + '</div></div>' +
+            (link
+              ? '<a class="hotel-link result-link" href="' + escapeHtml(link.url) + '" target="_blank" rel="noopener noreferrer">Ver alojamiento ↗</a>'
+              : '<span class="hotel-no-link">Enlace no disponible</span>') +
+            '</article>';
+        }).filter(Boolean).join('');
+
+        if (!cards) return { html: '' };
+
+        const noteLines = hotelLines.filter(line => {
+          const trimmed = line.trim();
+          return trimmed && !/^-\s+\*\*/.test(trimmed) && !/^\[?\*\*?Ver alojamiento/i.test(trimmed);
+        });
+
+        const note = noteLines.join('\n').trim();
+
+        return {
+          html: '<section style="margin-top:24px">' +
+            '<h3 class="result-section-title">Alojamientos</h3>' +
+            '<div class="hotel-results">' + cards + '</div>' +
+            (note ? '<div class="search-note">' + linkifyText(note) + '</div>' : '') +
+            '</section>'
+        };
+      }
+
       if (headingIndex === -1) {
-        results.innerHTML = '<div class="result-text">' + linkifyText(respuesta) + '</div>';
+        results.innerHTML = '<div class="result-text">' + linkifyText(respuesta).replace(/[#*]{1,3}/g, '') + '</div>';
         return;
       }
 
-      const before = lines.slice(0, headingIndex).join('\n').trim();
+      const beforeLines = lines.slice(0, headingIndex);
       const afterStart = lines.findIndex((line, index) => index > headingIndex && /^###\s+/.test(line.trim()));
       const flightEnd = afterStart === -1 ? lines.length : afterStart;
-
       const flightLines = lines.slice(headingIndex + 1, flightEnd);
 
-      // El agente puede devolver cada vuelo en varias líneas y usar
-      // un enlace Markdown ([Ver vuelo](https://...)). Normalizamos
-      // cada bloque antes de construir la tarjeta.
       const flightBlocks = [];
       let currentBlock = [];
 
       flightLines.forEach(line => {
         const trimmed = line.trim();
-
         if (/^-\s+\*\*.+?\*\*:/i.test(trimmed)) {
-          if (currentBlock.length) {
-            flightBlocks.push(currentBlock);
-          }
+          if (currentBlock.length) flightBlocks.push(currentBlock);
           currentBlock = [trimmed];
           return;
         }
-
-        if (currentBlock.length && trimmed) {
-          currentBlock.push(trimmed);
-        }
+        if (currentBlock.length && trimmed) currentBlock.push(trimmed);
       });
+      if (currentBlock.length) flightBlocks.push(currentBlock);
 
-      if (currentBlock.length) {
-        flightBlocks.push(currentBlock);
-      }
+      const flights = flightBlocks.map(block => {
+        const firstLine = block[0];
+        const match = firstLine.match(/^-\s+\*\*(.+?)\*\*:\s*(.*)$/);
+        if (!match) return null;
 
-      const flights = flightBlocks
-        .map(block => {
-          const firstLine = block[0];
-          const match = firstLine.match(/^-\s+\*\*(.+?)\*\*:\s*(.*)$/);
-          if (!match) return null;
+        const airline = match[1].trim();
+        const blockText = [match[2].trim(), ...block.slice(1)].filter(Boolean).join(' ');
+        const markdownUrlMatch = blockText.match(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/);
+        const rawUrlMatch = blockText.match(/https?:\/\/[^\s)]+/);
+        const url = markdownUrlMatch
+          ? markdownUrlMatch[2].replace(/[),.;]+$/, '')
+          : rawUrlMatch
+            ? rawUrlMatch[0].replace(/[),.;]+$/, '')
+            : '';
 
-          const airline = match[1].trim();
-          const blockText = [match[2].trim(), ...block.slice(1)].filter(Boolean).join(' ');
-          const markdownUrlMatch = blockText.match(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/);
-          const rawUrlMatch = blockText.match(/https?:\/\/[^\s)]+/);
-          const url = markdownUrlMatch
-            ? markdownUrlMatch[2].replace(/[),.;]+$/, '')
-            : rawUrlMatch
-              ? rawUrlMatch[0].replace(/[),.;]+$/, '')
-              : '';
+        const cleanDetails = blockText
+          .replace(markdownUrlMatch ? markdownUrlMatch[0] : '')
+          .replace(rawUrlMatch && !markdownUrlMatch ? rawUrlMatch[0] : '')
+          .trim()
+          .replace(/\*\*/g, '');
 
-          const cleanDetails = blockText
-            .replace(markdownUrlMatch ? markdownUrlMatch[0] : '', '')
-            .replace(rawUrlMatch && !markdownUrlMatch ? rawUrlMatch[0] : '', '')
-            .trim();
+        const priceMatch = cleanDetails.match(/([0-9]+(?:[.,][0-9]+)?)\s*€/);
 
-          const priceMatch = cleanDetails.match(/([0-9]+(?:[.,][0-9]+)?)\s*€/);
-
-          return {
-            airline,
-            details: cleanDetails,
-            price: priceMatch ? priceMatch[1] + ' €' : 'Precio no disponible',
-            url
-          };
-        })
-        .filter(Boolean);
+        return {
+          airline,
+          details: cleanDetails,
+          price: priceMatch ? priceMatch[1] + ' €' : 'Precio no disponible',
+          url
+        };
+      }).filter(Boolean);
 
       if (flights.length === 0) {
-        results.innerHTML = '<div class="result-text">' + linkifyText(respuesta) + '</div>';
+        results.innerHTML = '<div class="result-text">' + linkifyText(respuesta).replace(/[#*]{1,3}/g, '') + '</div>';
         return;
       }
 
-      const after = lines.slice(flightEnd).join('\n').trim();
+      const afterLines = lines.slice(flightEnd);
+      const hotelSection = renderHotels(afterLines);
 
       const cards = flights.map(flight =>
         '<article class="flight-card">' +
@@ -377,12 +445,12 @@
       ).join('');
 
       results.innerHTML =
-        (before ? '<div class="result-text" style="margin-bottom:18px">' + linkifyText(before) + '</div>' : '') +
+        renderTripSummary(beforeLines) +
         '<section>' +
-          '<h3 style="margin:0;color:var(--navy);font-size:18px">Vuelos</h3>' +
+          '<h3 class="result-section-title">Vuelos</h3>' +
           '<div class="flight-results">' + cards + '</div>' +
         '</section>' +
-        (after ? '<div class="result-text" style="margin-top:20px">' + linkifyText(after) + '</div>' : '');
+        hotelSection.html;
     }
 
     /* Conversación posterior. */
