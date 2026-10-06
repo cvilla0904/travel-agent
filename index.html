@@ -250,7 +250,7 @@
     function linkifyText(value) {
       const escaped = escapeHtml(value);
       return escaped.replace(
-        /https?:\\/\\/[^\\s<]+/g,
+        /https?:\/\/[^\s<]+/g,
         url => {
           const cleanUrl = url.replace(/[),.;]+$/, '');
           return '<a href="' + cleanUrl + '" target="_blank" rel="noopener noreferrer" class="result-link">Ver oferta ↗</a>';
@@ -260,31 +260,31 @@
 
     function renderResultados(respuesta) {
       const results = document.getElementById('results');
-      const lines = respuesta.replace(/\\r/g, '').split('\\n');
-      const headingIndex = lines.findIndex(line => /^###\\s+Vuelos\\s*$/i.test(line.trim()));
+      const lines = respuesta.replace(/\r/g, '').split('\n');
+      const headingIndex = lines.findIndex(line => /^###\s+Vuelos\s*$/i.test(line.trim()));
 
       if (headingIndex === -1) {
         results.innerHTML = '<div class="result-text">' + linkifyText(respuesta) + '</div>';
         return;
       }
 
-      const before = lines.slice(0, headingIndex).join('\\n').trim();
-      const afterStart = lines.findIndex((line, index) => index > headingIndex && /^###\\s+/.test(line.trim()));
+      const before = lines.slice(0, headingIndex).join('\n').trim();
+      const afterStart = lines.findIndex((line, index) => index > headingIndex && /^###\s+/.test(line.trim()));
       const flightEnd = afterStart === -1 ? lines.length : afterStart;
 
       const flightLines = lines.slice(headingIndex + 1, flightEnd);
 
       const flights = flightLines
         .map(line => line.trim())
-        .filter(line => /^-\\s+\\*\\*.+?\\*\\*:/i.test(line))
+        .filter(line => /^-\s+\*\*.+?\*\*:/i.test(line))
         .map(line => {
-          const match = line.match(/^-\\s+\\*\\*(.+?)\\*\\*:\\s*(.*)$/);
+          const match = line.match(/^-\s+\*\*(.+?)\*\*:\s*(.*)$/);
           if (!match) return null;
 
           const airline = match[1].trim();
           const details = match[2].trim();
-          const priceMatch = details.match(/([0-9]+(?:[.,][0-9]+)?)\\s*€/);
-          const urlMatch = details.match(/https?:\\/\\/[^\\s)]+/);
+          const priceMatch = details.match(/([0-9]+(?:[.,][0-9]+)?)\s*€/);
+          const urlMatch = details.match(/https?:\/\/[^\s)]+/);
           const url = urlMatch ? urlMatch[0].replace(/[),.;]+$/, '') : '';
 
           return {
@@ -301,7 +301,7 @@
         return;
       }
 
-      const after = lines.slice(flightEnd).join('\\n').trim();
+      const after = lines.slice(flightEnd).join('\n').trim();
 
       const cards = flights.map(flight =>
         '<article class="flight-card">' +
