@@ -257,17 +257,28 @@
 
       const heading = flightMatch[1].trim();
       const blocks = flightMatch[2]
-        .split(/\n(?=- \\*\\*)/)
+        .split(/\n(?=-\s)/)
         .map(block => block.trim())
         .filter(Boolean);
 
       const flightCards = blocks.map((block, index) => {
         const lines = block.split('\n').map(line => line.trim()).filter(Boolean);
-        const first = lines[0].replace(/^- \\*\\*/, '').replace(/\\*\\*.*$/, '').trim();
-        const priceMatch = block.match(/\\*\\*([0-9]+(?:[.,][0-9]+)?\\s*€)\\*\\*/);
+        const cleanFirst = lines[0]
+          .replace(/^-\s*/, '')
+          .replace(/\*\*/g, '')
+          .replace(/:.*$/, '')
+          .trim();
+
+        const priceMatch = block.match(/\*\*([0-9]+(?:[.,][0-9]+)?\s*€)\*\*/);
         const price = priceMatch ? priceMatch[1] : '';
-        const detail = lines.slice(1).map(line => line.replace(/^- /, '').replace(/\\*\\*/g, '')).join(' ');
-        const selection = first || ('Opción de vuelo ' + (index + 1));
+
+        const detail = lines
+          .slice(1)
+          .join(' ')
+          .replace(/\*\*/g, '')
+          .trim();
+
+        const selection = cleanFirst || ('Opción de vuelo ' + (index + 1));
 
         return '<article class="flight-card">' +
           '<div class="flight-main">' +
@@ -285,21 +296,10 @@
       const after = respuesta.slice(flightMatch.index + flightMatch[0].length).trim();
 
       results.innerHTML =
-        (before ? '<div>' + escapeHtml(before) + '</div>' : '') +
+        (before ? '<div style="white-space:pre-wrap">' + escapeHtml(before) + '</div>' : '') +
         '<section><h3 style="margin:0;color:var(--navy);font-size:18px">' + escapeHtml(heading) + '</h3>' +
         '<div class="flight-results">' + flightCards + '</div></section>' +
         (after ? '<div style="margin-top:20px;white-space:pre-wrap">' + escapeHtml(after) + '</div>' : '');
-    }
-
-    async function seleccionarVuelo(selection) {
-      const results = document.getElementById('results');
-      results.insertAdjacentHTML('beforeend', '<div class="loading" style="margin-top:14px">Guardando tu elección...</div>');
-      try {
-        const respuesta = await consultarAgente('Quiero seleccionar esta opción de vuelo: ' + selection);
-        renderResultados(respuesta);
-      } catch (error) {
-        results.insertAdjacentHTML('beforeend', '<div style="margin-top:14px;color:#b44">Ha ocurrido un error: ' + escapeHtml(error.message) + '</div>');
-      }
     }
 
     /* Conversación posterior. */
