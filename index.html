@@ -274,22 +274,58 @@
 
       const flightLines = lines.slice(headingIndex + 1, flightEnd);
 
-      const flights = flightLines
-        .map(line => line.trim())
-        .filter(line => /^-\s+\*\*.+?\*\*:/i.test(line))
-        .map(line => {
-          const match = line.match(/^-\s+\*\*(.+?)\*\*:\s*(.*)$/);
+      // El agente puede devolver cada vuelo en varias líneas y usar
+      // un enlace Markdown ([Ver vuelo](https://...)). Normalizamos
+      // cada bloque antes de construir la tarjeta.
+      const flightBlocks = [];
+      let currentBlock = [];
+
+      flightLines.forEach(line => {
+        const trimmed = line.trim();
+
+        if (/^-\s+\*\*.+?\*\*:/i.test(trimmed)) {
+          if (currentBlock.length) {
+            flightBlocks.push(currentBlock);
+          }
+          currentBlock = [trimmed];
+          return;
+        }
+
+        if (currentBlock.length && trimmed) {
+          currentBlock.push(trimmed);
+        }
+      });
+
+      if (currentBlock.length) {
+        flightBlocks.push(currentBlock);
+      }
+
+      const flights = flightBlocks
+        .map(block => {
+          const firstLine = block[0];
+          const match = firstLine.match(/^-\s+\*\*(.+?)\*\*:\s*(.*)$/);
           if (!match) return null;
 
           const airline = match[1].trim();
-          const details = match[2].trim();
-          const priceMatch = details.match(/([0-9]+(?:[.,][0-9]+)?)\s*€/);
-          const urlMatch = details.match(/https?:\/\/[^\s)]+/);
-          const url = urlMatch ? urlMatch[0].replace(/[),.;]+$/, '') : '';
+          const blockText = [match[2].trim(), ...block.slice(1)].filter(Boolean).join(' ');
+          const markdownUrlMatch = blockText.match(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/);
+          const rawUrlMatch = blockText.match(/https?:\/\/[^\s)]+/);
+          const url = markdownUrlMatch
+            ? markdownUrlMatch[2].replace(/[),.;]+$/, '')
+            : rawUrlMatch
+              ? rawUrlMatch[0].replace(/[),.;]+$/, '')
+              : '';
+
+          const cleanDetails = blockText
+            .replace(markdownUrlMatch ? markdownUrlMatch[0] : '', '')
+            .replace(rawUrlMatch && !markdownUrlMatch ? rawUrlMatch[0] : '', '')
+            .trim();
+
+          const priceMatch = cleanDetails.match(/([0-9]+(?:[.,][0-9]+)?)\s*€/);
 
           return {
             airline,
-            details: details.replace(urlMatch ? urlMatch[0] : '', '').trim(),
+            details: cleanDetails,
             price: priceMatch ? priceMatch[1] + ' €' : 'Precio no disponible',
             url
           };
