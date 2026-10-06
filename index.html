@@ -16,7 +16,8 @@
     .flight-results{margin-top:18px;display:grid;gap:12px}
     .flight-card{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:17px 18px;border:1px solid #e2e8ee;border-radius:16px;background:#fff;box-shadow:0 5px 16px rgba(22,42,67,.05);transition:.2s}
     .flight-card:hover{border-color:#a9bfd1;box-shadow:0 8px 22px rgba(22,42,67,.08);transform:translateY(-1px)}
-    .flight-main{min-width:0}.flight-airline{color:var(--navy);font-weight:750;font-size:14px}.flight-detail{margin-top:5px;color:#718093;font-size:12px;line-height:1.45}.flight-price{white-space:nowrap;text-align:right;color:var(--navy);font-weight:800;font-size:18px}.flight-price small{display:block;margin-top:3px;color:#8a96a5;font-size:10px;font-weight:500}.flight-select{border:0;background:var(--navy);color:white;border-radius:10px;padding:10px 13px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}.flight-select:hover{background:var(--navy2)}
+    .flight-main{min-width:0}.flight-airline{color:var(--navy);font-weight:750;font-size:14px}.flight-detail{margin-top:5px;color:#718093;font-size:12px;line-height:1.45}.flight-price{white-space:nowrap;text-align:right;color:var(--navy);font-weight:800;font-size:18px}.flight-price small{display:block;margin-top:3px;color:#8a96a5;font-size:10px;font-weight:500}.result-text{white-space:pre-wrap;line-height:1.65;color:#53677d}.result-link{display:inline-flex;align-items:center;justify-content:center;gap:5px;color:#0f5f78;text-decoration:none;font-weight:750}.result-link:hover{text-decoration:underline}.flight-no-link{font-size:11px;color:#8a96a4}
+    .flight-select{border:0;background:var(--navy);color:white;border-radius:10px;padding:10px 13px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}.flight-select:hover{background:var(--navy2)}
     @media(max-width:600px){.flight-card{align-items:flex-start;flex-direction:column}.flight-price{text-align:left}.flight-select{width:100%}}
     .benefits{padding:29px 0;border-top:1px solid #e9edf1;border-bottom:1px solid #e9edf1;background:white}.benefit-row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.benefit{display:flex;align-items:center;justify-content:center;gap:11px;color:#405267;font-size:13px;font-weight:650}.benefit-icon{width:35px;height:35px;display:grid;place-items:center;border-radius:11px;background:#f0f4f6;font-size:16px}
     section.content{padding:82px 0}.section-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:26px;gap:20px}.section-head h2{margin:0;color:var(--navy);font-family:Georgia,"Times New Roman",serif;font-size:38px;font-weight:500;letter-spacing:-.7px}.section-head p{margin:0;color:var(--muted);font-size:14px}.destinations{display:grid;grid-template-columns:repeat(4,1fr);gap:17px}.destination{height:290px;position:relative;overflow:hidden;border-radius:19px;background:#d9e2e8;box-shadow:0 8px 22px rgba(23,43,65,.1)}.destination img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s}.destination:hover img{transform:scale(1.05)}.destination:after{content:"";position:absolute;inset:35% 0 0;background:linear-gradient(transparent,rgba(9,25,43,.72))}.destination-copy{position:absolute;z-index:1;bottom:20px;left:19px;color:white}.destination-copy small{display:block;margin-bottom:5px;opacity:.82;font-size:11px;letter-spacing:.08em;text-transform:uppercase}.destination-copy strong{font-family:Georgia,"Times New Roman",serif;font-size:25px;font-weight:500}
@@ -246,48 +247,61 @@
       }[char]));
     }
 
+    function linkifyText(value) {
+      const escaped = escapeHtml(value);
+      return escaped.replace(
+        /https?:\\/\\/[^\\s<]+/g,
+        url => {
+          const cleanUrl = url.replace(/[),.;]+$/, '');
+          return '<a href="' + cleanUrl + '" target="_blank" rel="noopener noreferrer" class="result-link">Ver oferta ↗</a>';
+        }
+      );
+    }
+
     function renderResultados(respuesta) {
       const results = document.getElementById('results');
-      const lines = respuesta.replace(/\r/g, '').split('\n');
-      const headingIndex = lines.findIndex(line => /^###\s+Vuelos\s*$/i.test(line.trim()));
+      const lines = respuesta.replace(/\\r/g, '').split('\\n');
+      const headingIndex = lines.findIndex(line => /^###\\s+Vuelos\\s*$/i.test(line.trim()));
 
       if (headingIndex === -1) {
-        results.textContent = respuesta;
+        results.innerHTML = '<div class="result-text">' + linkifyText(respuesta) + '</div>';
         return;
       }
 
-      const before = lines.slice(0, headingIndex).join('\n').trim();
-      const afterStart = lines.findIndex((line, index) => index > headingIndex && /^###\s+/.test(line.trim()));
+      const before = lines.slice(0, headingIndex).join('\\n').trim();
+      const afterStart = lines.findIndex((line, index) => index > headingIndex && /^###\\s+/.test(line.trim()));
       const flightEnd = afterStart === -1 ? lines.length : afterStart;
 
       const flightLines = lines.slice(headingIndex + 1, flightEnd);
+
       const flights = flightLines
         .map(line => line.trim())
-        .filter(line => /^-\s+\*\*.+?\*\*:/i.test(line))
-        .map((line, index) => {
-          const match = line.match(/^-\s+\*\*(.+?)\*\*:\s*(.*)$/);
+        .filter(line => /^-\\s+\\*\\*.+?\\*\\*:/i.test(line))
+        .map(line => {
+          const match = line.match(/^-\\s+\\*\\*(.+?)\\*\\*:\\s*(.*)$/);
           if (!match) return null;
 
           const airline = match[1].trim();
           const details = match[2].trim();
-          const priceMatch = details.match(/([0-9]+(?:[.,][0-9]+)?)\s*€/);
-          const price = priceMatch ? priceMatch[1] + ' €' : 'Precio no disponible';
+          const priceMatch = details.match(/([0-9]+(?:[.,][0-9]+)?)\\s*€/);
+          const urlMatch = details.match(/https?:\\/\\/[^\\s)]+/);
+          const url = urlMatch ? urlMatch[0].replace(/[),.;]+$/, '') : '';
 
           return {
             airline,
-            details,
-            price,
-            selection: airline + ': ' + details
+            details: details.replace(urlMatch ? urlMatch[0] : '', '').trim(),
+            price: priceMatch ? priceMatch[1] + ' €' : 'Precio no disponible',
+            url
           };
         })
         .filter(Boolean);
 
       if (flights.length === 0) {
-        results.textContent = respuesta;
+        results.innerHTML = '<div class="result-text">' + linkifyText(respuesta) + '</div>';
         return;
       }
 
-      const after = lines.slice(flightEnd).join('\n').trim();
+      const after = lines.slice(flightEnd).join('\\n').trim();
 
       const cards = flights.map(flight =>
         '<article class="flight-card">' +
@@ -296,17 +310,19 @@
             '<div class="flight-detail">' + escapeHtml(flight.details) + '</div>' +
           '</div>' +
           '<div class="flight-price">' + escapeHtml(flight.price) + '<small>Total mostrado</small></div>' +
-          '<button class="flight-select" type="button" onclick="seleccionarVuelo(' + JSON.stringify(flight.selection) + ')">Seleccionar</button>' +
+          (flight.url
+            ? '<a class="flight-select result-link" href="' + escapeHtml(flight.url) + '" target="_blank" rel="noopener noreferrer">Ver vuelo ↗</a>'
+            : '<span class="flight-no-link">Enlace no disponible</span>') +
         '</article>'
       ).join('');
 
       results.innerHTML =
-        (before ? '<div style="white-space:pre-wrap;margin-bottom:18px">' + escapeHtml(before) + '</div>' : '') +
+        (before ? '<div class="result-text" style="margin-bottom:18px">' + linkifyText(before) + '</div>' : '') +
         '<section>' +
           '<h3 style="margin:0;color:var(--navy);font-size:18px">Vuelos</h3>' +
           '<div class="flight-results">' + cards + '</div>' +
         '</section>' +
-        (after ? '<div style="margin-top:20px;white-space:pre-wrap">' + escapeHtml(after) + '</div>' : '');
+        (after ? '<div class="result-text" style="margin-top:20px">' + linkifyText(after) + '</div>' : '');
     }
 
     /* Conversación posterior. */
