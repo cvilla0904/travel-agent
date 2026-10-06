@@ -1620,6 +1620,20 @@ export const travelAgent = new Agent({
     - valoraciones
     - condiciones
 
+    =========================================================
+    ENLACES A LAS OFERTAS
+    =========================================================
+
+    Cada opción de vuelo, hotel o actividad que presentes debe
+    conservar su URL real si la herramienta la proporciona.
+
+    - Vuelo: muestra su campo enlace como "Ver vuelo".
+    - Hotel: muestra su campo url como "Ver alojamiento".
+    - Actividad: muestra su campo url como "Ver actividad".
+
+    No sustituyas estos enlaces por URLs inventadas ni por
+    páginas genéricas de otra empresa.
+
     Utiliza siempre las herramientas para obtener
     información real.
 
