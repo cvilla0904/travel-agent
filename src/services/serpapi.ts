@@ -214,6 +214,11 @@ export async function resolverAeropuerto(
   );
 
   url.searchParams.set(
+    'no_cache',
+    'true',
+  );
+
+  url.searchParams.set(
     'api_key',
     apiKey,
   );
