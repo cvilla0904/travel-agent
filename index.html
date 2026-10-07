@@ -319,24 +319,44 @@
 
         const hotelLines = sectionLines.slice(markerIndex + 1);
         const hotels = [];
+        let current = null;
 
         hotelLines.forEach(line => {
           const trimmed = line.trim();
-          if (!trimmed.startsWith('-')) return;
+          const itemMatch = trimmed.match(/^(?:-\s*|\d+\.\s*)(.+)$/);
 
-          const clean = trimmed.replace(/^-\s*/, '').trim();
-          const link = markdownLink(clean);
-          const withoutLink = clean.replace(/\[[^\]]+\]\(https?:\/\/[^)]+\)/g, '').replace(/Ver alojamiento\s*↗?/gi, '').trim();
-          const plain = withoutLink.replace(/\*\*/g, '').replace(/\s+·\s*$/, '').trim();
+          if (itemMatch) {
+            if (current) hotels.push(current);
+            current = { text: itemMatch[1].trim(), link: null };
+            const link = markdownLink(current.text);
+            if (link) current.link = link;
+            return;
+          }
 
-          const separator = plain.match(/^(.+?)\s*[—–]\s*(.+)$/);
-          const name = separator ? separator[1].trim() : plain;
-          const detail = separator ? separator[2].trim() : '';
-
-          hotels.push({ name, detail, link });
+          if (current && /^Ver alojamiento/i.test(trimmed)) {
+            const link = markdownLink(trimmed);
+            if (link) current.link = link;
+          }
         });
 
-        const cards = hotels.map(hotel =>
+        if (current) hotels.push(current);
+
+        const parsedHotels = hotels.map(hotel => {
+          const withoutLink = hotel.text
+            .replace(/\[[^\]]+\]\(https?:\/\/[^)]+\)/g, '')
+            .replace(/Ver alojamiento\s*↗?/gi, '')
+            .replace(/\*\*/g, '')
+            .trim();
+
+          const separator = withoutLink.match(/^(.+?)\s*[—–]\s*(.+)$/);
+          return {
+            name: separator ? separator[1].trim() : withoutLink,
+            detail: separator ? separator[2].trim() : '',
+            link: hotel.link
+          };
+        });
+
+        const cards = parsedHotels.map(hotel =>
           '<article class="hotel-card">' +
             '<div class="hotel-main"><div class="hotel-name">' + escapeHtml(hotel.name) + '</div><div class="hotel-detail">' + escapeHtml(hotel.detail) + '</div></div>' +
             (hotel.link
