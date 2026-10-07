@@ -546,7 +546,23 @@
       }).filter(Boolean);
 
       if (flights.length === 0) {
-        results.innerHTML = '<div class="result-text">' + linkifyText(respuesta).replace(/[#*]{1,3}/g, '') + '</div>';
+        const sectionsLines = lines.slice(headingIndex + 1);
+        const hotelSection = parseHotelBlocks(sectionsLines);
+        const activityMarker = sectionsLines.findIndex(line => /^(?:###\s*)?Actividades/i.test(line.trim()));
+        const activitySection = activityMarker !== -1
+          ? parseActivityBlocks(sectionsLines.slice(activityMarker))
+          : { html: '' };
+
+        const emptyFlightNote = '<div class="search-note">No se han encontrado vuelos válidos para estas fechas.</div>';
+
+        results.innerHTML =
+          renderTripSummary(beforeLines) +
+          '<section>' +
+            '<h3 class="result-section-title">Vuelos</h3>' +
+            emptyFlightNote +
+          '</section>' +
+          hotelSection.html +
+          activitySection.html;
         return;
       }
 
