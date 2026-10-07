@@ -327,7 +327,13 @@
         });
         if (markerIndex === -1) return { html: '' };
 
-        const hotelLines = sectionLines.slice(markerIndex + 1);
+        const hotelEndIndex = sectionLines.findIndex((line, index) =>
+          index > markerIndex && /^(?:#{1,6}\s*)?Actividades(?:\s|$)/i.test(line.trim())
+        );
+        const hotelLines = sectionLines.slice(
+          markerIndex + 1,
+          hotelEndIndex === -1 ? sectionLines.length : hotelEndIndex
+        );
         const hotels = [];
         let current = null;
 
