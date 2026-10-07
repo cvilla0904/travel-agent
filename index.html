@@ -314,7 +314,17 @@
       }
 
       function parseHotelBlocks(sectionLines) {
-        const markerIndex = sectionLines.findIndex(line => /^(?:###\s*)?Alojamientos(?: encontrados| reales)?\s*$/i.test(line.trim()));
+        const normalizeLine = line => String(line)
+          .trim()
+          .replace(/^#{1,6}\s*/, '')
+          .replace(/^\*{1,2}\s*/, '')
+          .replace(/\*{1,2}\s*$/, '')
+          .trim();
+
+        const markerIndex = sectionLines.findIndex(line => {
+          const normalized = normalizeLine(line).replace(/\*{2}/g, '');
+          return /^(?:Alojamientos|Alojamientos encontrados|Alojamientos reales)\s*:??$/i.test(normalized);
+        });
         if (markerIndex === -1) return { html: '' };
 
         const hotelLines = sectionLines.slice(markerIndex + 1);
@@ -323,19 +333,25 @@
 
         hotelLines.forEach(line => {
           const trimmed = line.trim();
-          const itemMatch = trimmed.match(/^(?:-\s*|\d+\.\s*)(.+)$/);
+          if (!trimmed) return;
 
+          const itemMatch = trimmed.match(/^(?:[-•]\s*|\d+[.)]\s*)(.+)$/);
           if (itemMatch) {
             if (current) hotels.push(current);
             current = { text: itemMatch[1].trim(), link: null };
-            const link = markdownLink(current.text);
-            if (link) current.link = link;
+            const inlineLink = markdownLink(current.text);
+            if (inlineLink) current.link = inlineLink;
             return;
           }
 
-          if (current && /^Ver alojamiento/i.test(trimmed)) {
+          if (current) {
             const link = markdownLink(trimmed);
-            if (link) current.link = link;
+            if (/^(?:\[)?Ver alojamiento/i.test(trimmed) && link) {
+              current.link = link;
+            } else if (!/^Indica qué alojamiento/i.test(trimmed) && !/^Selecciona/i.test(trimmed)) {
+              const linkInLine = markdownLink(trimmed);
+              if (linkInLine && !current.link) current.link = linkInLine;
+            }
           }
         });
 
@@ -348,13 +364,13 @@
             .replace(/\*\*/g, '')
             .trim();
 
-          const separator = withoutLink.match(/^(.+?)\s*[—–]\s*(.+)$/);
+          const separator = withoutLink.match(/^(.+?)\s*[—–-]\s*(.+)$/);
           return {
             name: separator ? separator[1].trim() : withoutLink,
             detail: separator ? separator[2].trim() : '',
             link: hotel.link
           };
-        });
+        }).filter(hotel => hotel.name && !/^indica qué alojamiento/i.test(hotel.name));
 
         const cards = parsedHotels.map(hotel =>
           '<article class="hotel-card">' +
@@ -367,7 +383,7 @@
 
         return {
           html: cards
-            ? '<section style="margin-top:24px"><h3 class="result-section-title">Alojamientos</h3><div class="hotel-results">' + cards + '</div></section>'
+            ? '<section style="margin-top:24px"><h3 class="result-section-title hotels">Alojamientos</h3><div class="hotel-results">' + cards + '</div></section>'
             : ''
         };
       }
@@ -587,7 +603,13 @@
       }
 
       const afterLines = lines.slice(flightEnd);
-      const hotelSection = renderHotels(afterLines);
+      const hotelSection = renderHotels(afterLines).html
+        ? renderHotels(afterLines)
+        : parseHotelBlocks(lines.slice(headingIndex + 1));
+      const activityMarker = lines.findIndex((line, index) => index > headingIndex && /^(?:###\s*)?Actividades/i.test(line.trim()));
+      const activitySection = activityMarker !== -1
+        ? parseActivityBlocks(lines.slice(activityMarker))
+        : { html: '' };
 
       const cards = flights.map(flight =>
         '<article class="flight-card">' +
@@ -608,7 +630,8 @@
           '<h3 class="result-section-title">Vuelos</h3>' +
           '<div class="flight-results">' + cards + '</div>' +
         '</section>' +
-        hotelSection.html;
+        hotelSection.html +
+        activitySection.html;
     }
 
     /* Conversación posterior. */
