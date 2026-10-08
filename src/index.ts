@@ -322,6 +322,141 @@ const buscarDestinos = tool({
 });
 
 /* =========================================================
+   3. TOOL: PLANIFICACIÓN DE RUTA MULTIDESTINO
+   ========================================================= */
+
+const planificarRuta = tool({
+  name: 'planificar_ruta',
+  description:
+    'Organiza una ruta multidestino a partir de las ciudades que el Travel Manager considera adecuadas. Distribuye los días del viaje entre las ciudades sin superar la duración disponible.',
+  parameters: {
+    type: 'object',
+    properties: {
+      pais: {
+        type: 'string',
+        description: 'País principal del viaje.',
+      },
+      duracionDias: {
+        type: 'number',
+        description: 'Duración total del viaje en días.',
+      },
+      ciudades: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            ciudad: {
+              type: 'string',
+              description: 'Nombre de la ciudad.',
+            },
+            dias: {
+              type: 'number',
+              description: 'Número de días que se dedicarán a esta ciudad.',
+            },
+          },
+          required: ['ciudad', 'dias'],
+          additionalProperties: false,
+        },
+        description: 'Ciudades propuestas para la ruta y número de días para cada una.',
+      },
+    },
+    required: ['pais', 'duracionDias', 'ciudades'],
+    additionalProperties: false,
+  },
+
+  execute: async (input) => {
+    const {
+      pais,
+      duracionDias,
+      ciudades,
+    } = input as {
+      pais: string;
+      duracionDias: number;
+      ciudades: Array<{ ciudad: string; dias: number }>;
+    };
+
+    const diasTotales = Math.max(1, Math.round(duracionDias));
+
+    const ciudadesUnicas = Array.from(
+      new Map(
+        ciudades
+          .filter(
+            (item) =>
+              item &&
+              typeof item.ciudad === 'string' &&
+              item.ciudad.trim() &&
+              Number.isFinite(item.dias) &&
+              item.dias > 0,
+          )
+          .map((item) => [
+            item.ciudad.trim(),
+            {
+              ciudad: item.ciudad.trim(),
+              dias: Math.max(1, Math.round(item.dias)),
+            },
+          ]),
+      ).values(),
+    ).slice(0, 4);
+
+    if (ciudadesUnicas.length === 0) {
+      throw new Error(
+        'No se han proporcionado ciudades válidas para construir la ruta.',
+      );
+    }
+
+    let diasAsignados = ciudadesUnicas.reduce(
+      (total, item) => total + item.dias,
+      0,
+    );
+
+    while (
+      diasAsignados > diasTotales &&
+      ciudadesUnicas.some((item) => item.dias > 1)
+    ) {
+      const ciudad = [...ciudadesUnicas]
+        .reverse()
+        .find((item) => item.dias > 1);
+
+      if (!ciudad) break;
+
+      ciudad.dias -= 1;
+      diasAsignados -= 1;
+    }
+
+    while (diasAsignados < diasTotales) {
+      ciudadesUnicas[ciudadesUnicas.length - 1].dias += 1;
+      diasAsignados += 1;
+    }
+
+    let diaInicio = 1;
+
+    const ruta = ciudadesUnicas.map((item, index) => {
+      const diaFin = diaInicio + item.dias - 1;
+
+      const tramo = {
+        orden: index + 1,
+        ciudad: item.ciudad,
+        dias: item.dias,
+        diaInicio,
+        diaFin,
+      };
+
+      diaInicio = diaFin + 1;
+      return tramo;
+    });
+
+    return {
+      pais,
+      duracionDias: diasTotales,
+      ciudades: ruta.length,
+      ruta,
+      nota:
+        'Esta herramienta organiza la distribución temporal de la ruta. Las ciudades son recomendaciones de planificación y deberán verificarse después con búsquedas reales de vuelos, alojamiento y actividades.',
+    };
+  },
+});
+
+/* =========================================================
    3. TOOL + AGENT: VUELOS
    ========================================================= */
 
@@ -1448,10 +1583,40 @@ export const travelAgent = new Agent({
     - preferencias
 
     =========================================================
-    CASO 1: DESTINO YA DEFINIDO
+    CASO 1: DESTINO ES UN PAÍS O VIAJE MULTIDESTINO
     =========================================================
 
-    Si el usuario ya ha indicado destino:
+    Si el usuario indica un país como destino y quiere hacer un
+    viaje de varios días, NO trates el país como si fuera una
+    única ciudad.
+
+    Cuando tengas:
+    - país
+    - duración del viaje
+    - origen
+    - pasajeros
+
+    y conozcas las preferencias disponibles:
+
+    1. Propón entre 2 y 4 ciudades razonables para construir
+       una ruta por ese país, teniendo en cuenta la duración y
+       las preferencias del usuario.
+    2. Utiliza planificar_ruta para distribuir los días entre
+       esas ciudades.
+    3. Presenta primero la ruta propuesta al usuario.
+    4. NO busques todavía un único hotel para todo el país.
+    5. NO busques todavía actividades para todo el país.
+    6. La ruta deberá verificarse posteriormente con búsquedas
+       reales por cada ciudad.
+
+    Si el usuario proporciona fechas exactas, utiliza la duración
+    real entre esas fechas.
+
+    =========================================================
+    CASO 2: DESTINO YA DEFINIDO COMO CIUDAD
+    =========================================================
+
+    Si el usuario ya ha indicado una ciudad como destino:
 
     Comprueba si tienes:
     - origen
@@ -1515,8 +1680,18 @@ export const travelAgent = new Agent({
     que el usuario no haya elegido.
 
     =========================================================
-    ELECCIÓN DEL DESTINO
+    ELECCIÓN DE DESTINO O RUTA
     =========================================================
+
+    Si el usuario elige una ciudad de una búsqueda de destinos,
+    utiliza esa ciudad como destino único.
+
+    Si el usuario acepta una ruta multidestino propuesta:
+    - conserva el orden de las ciudades;
+    - conserva los días asignados a cada ciudad;
+    - NO conviertas la ruta en una única ciudad;
+    - en los siguientes pasos busca vuelos, hoteles y actividades
+      por cada ciudad de la ruta.
 
     Cuando el usuario elija uno de los destinos descubiertos:
 
@@ -1646,7 +1821,7 @@ export const travelAgent = new Agent({
     REGLAS ABSOLUTAS
     =========================================================
 
-    Nunca inventes:
+    Nunca inventes datos de ofertas reales:
 
     - vuelos
     - precios
@@ -1657,6 +1832,10 @@ export const travelAgent = new Agent({
     - horarios
     - valoraciones
     - condiciones
+
+    Las ciudades de una ruta multidestino son recomendaciones
+    de planificación, no ofertas comerciales. Deben verificarse
+    posteriormente mediante las herramientas reales.
 
     =========================================================
     ENLACES A LAS OFERTAS
@@ -1749,6 +1928,8 @@ export const travelAgent = new Agent({
 
   tools: [
     buscarDestinos,
+
+    planificarRuta,
 
     flightAgentTool,
 
