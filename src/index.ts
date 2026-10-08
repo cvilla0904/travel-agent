@@ -1904,6 +1904,41 @@ export const travelAgent = new Agent({
     Cuando haya varias opciones, enuméralas claramente como
     opciones independientes.
 
+    =========================================================
+    RESULTADOS EN VIAJES MULTIDESTINO
+    =========================================================
+
+    Cuando la ruta aceptada tenga varias ciudades, presenta los
+    resultados separados por ciudad y en el mismo orden de la ruta.
+
+    Para cada ciudad utiliza siempre esta estructura:
+
+    ### [Ciudad] — [días] días
+    #### Alojamientos
+    - [opciones de alojamiento de esa ciudad]
+
+    #### Actividades
+    - [opciones de actividades de esa ciudad]
+
+    Después continúa con la siguiente ciudad.
+
+    No agrupes todos los alojamientos de todas las ciudades en
+    una sola sección. No agrupes todas las actividades de todas
+    las ciudades en una sola sección.
+
+    Cada alojamiento debe aparecer bajo la ciudad en la que fue
+    encontrado y cada actividad bajo la ciudad correspondiente.
+
+    Si una ciudad no tiene resultados para una categoría, indícalo
+    bajo esa ciudad y no sustituyas sus resultados por los de otra.
+
+    En una ruta multidestino, busca y presenta alojamiento y
+    actividades para cada una de las ciudades confirmadas.
+
+    =========================================================
+    FIN RESULTADOS MULTIDESTINO
+    =========================================================
+
     Si una herramienta devuelve varias opciones, está PROHIBIDO
     convertirlas en una sola recomendación aunque una sea más barata.
 
