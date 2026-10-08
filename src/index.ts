@@ -2274,10 +2274,25 @@ export const travelAgent = new Agent({
     En una ruta multidestino, busca y presenta alojamiento y
     actividades para cada una de las ciudades confirmadas.
 
+    Si la herramienta devuelve un error en "errores.alojamientos",
+    no digas "No se encontraron alojamientos". Indica que el proveedor
+    de alojamientos no pudo completar la consulta y conserva el motivo
+    técnico de forma comprensible.
+
+    Si la herramienta devuelve un error en "errores.actividades",
+    no digas "No se encontraron actividades". Indica que el proveedor
+    de actividades no pudo completar la consulta y conserva el motivo
+    técnico de forma comprensible.
+
+    Si la herramienta devuelve actividades válidas, presenta esas
+    actividades como opciones independientes, conservando nombre,
+    precio, valoración, duración, plataforma y URL real.
+
     La herramienta de recursos multidestino ignora cualquier ciudad que no
-    pertenezca a la ruta guardada mediante rutaId. Si el proveedor devuelve
-    actividades cuya URL no permite verificar la ciudad solicitada, no las
-    presentes como ofertas válidas.
+    pertenezca a la ruta guardada mediante rutaId. Para actividades, utiliza
+    como fuente principal de verificación el campo estructurado "city"
+    devuelto por el proveedor. Si la ciudad no puede verificarse con
+    suficiente seguridad, no presentes esa actividad como válida.
 
     =========================================================
     FIN RESULTADOS MULTIDESTINO
