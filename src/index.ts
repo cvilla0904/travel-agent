@@ -1405,13 +1405,25 @@ const buscarRecursosMultidestino = tool({
       tipos: string[];
     };
 
+    const sumarDias = (fecha: string, dias: number) => {
+      const date = new Date(fecha + 'T00:00:00Z');
+      date.setUTCDate(date.getUTCDate() + dias);
+      return date.toISOString().slice(0, 10);
+    };
+
+    let diasTranscurridos = 0;
+
     const resultados = await Promise.all(
       ciudades.map(async ({ ciudad, dias }) => {
+        const fechaEntrada = sumarDias(fechaIda, diasTranscurridos);
+        const fechaSalida = sumarDias(fechaEntrada, dias);
+        diasTranscurridos += dias;
+
         const [hoteles, actividades] = await Promise.all([
           buscarHotelesSearchApi({
             destino: ciudad,
-            fechaEntrada: fechaIda,
-            fechaSalida: fechaVuelta,
+            fechaEntrada,
+            fechaSalida,
             adultos,
           }),
           buscarActividadesApify({ destino: ciudad }),
@@ -1420,6 +1432,8 @@ const buscarRecursosMultidestino = tool({
         return {
           ciudad,
           dias,
+          fechaEntrada,
+          fechaSalida,
           hoteles: hoteles.slice(0, 10),
           actividades: actividades
             .filter(
@@ -1803,13 +1817,17 @@ export const travelAgent = new Agent({
     - conserva los días asignados a cada ciudad;
     - NO conviertas la ruta en una única ciudad;
     - cuando tengas las fechas exactas y el número de pasajeros,
-      utiliza OBLIGATORIAMENTE buscar_recursos_multidestino para
-      obtener alojamiento y actividades de TODAS las ciudades
-      de la ruta en una sola búsqueda coordinada;
-    - no llames solo a hotel_agent o activities_agent para una
-      única ciudad cuando la ruta tenga varias ciudades;
-    - presenta los resultados agrupados por ciudad, respetando
-      exactamente el orden de la ruta.
+      llama OBLIGATORIAMENTE UNA VEZ a buscar_recursos_multidestino
+      pasando TODAS las ciudades de la ruta, sus días, las fechas
+      del viaje, los adultos y las preferencias disponibles;
+    - esta herramienta realiza las búsquedas reales de alojamiento
+      y actividades para TODAS las ciudades y devuelve los resultados
+      agrupados por ciudad;
+    - NO llames hotel_agent ni activities_agent de forma aislada
+      para una sola ciudad en una ruta multidestino;
+    - después de obtener el resultado, presenta TODAS las ciudades
+      en el mismo orden de la ruta y conserva sus resultados
+      separados.
 
     Cuando el usuario elija uno de los destinos descubiertos:
 
