@@ -1373,6 +1373,32 @@ const activitiesAgentTool =
       'Busca lugares y actividades reales utilizando el Activities Agent.',
   });
 
+function obtenerCodigoPais(pais: string): string | undefined {
+  const clave = pais
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+  const codigos: Record<string, string> = {
+    colombia: 'co',
+    espana: 'es',
+    españa: 'es',
+    italia: 'it',
+    francia: 'fr',
+    portugal: 'pt',
+    alemania: 'de',
+    austria: 'at',
+    reino unido: 'gb',
+    japon: 'jp',
+    mexico: 'mx',
+    méxico: 'mx',
+    estados unidos: 'us',
+  };
+
+  return codigos[clave];
+}
+
 function normalizarCiudadBusquedaMultidestino(ciudad: string, pais?: string): string {
   const valor = ciudad.trim();
 
@@ -1521,14 +1547,14 @@ const buscarRecursosMultidestino = tool({
       try {
         const [hoteles, actividades] = await Promise.all([
           buscarHotelesSearchApi({
-            destino: normalizarCiudadBusquedaMultidestino(ciudad, 'Colombia'),
+            destino: normalizarCiudadBusquedaMultidestino(ciudad, rutaGuardada.pais),
             fechaEntrada,
             fechaSalida,
             adultos,
-            paisCodigo: 'co',
+            paisCodigo: obtenerCodigoPais(rutaGuardada.pais),
           }),
           buscarActividadesApify({
-            destino: normalizarCiudadBusquedaMultidestino(ciudad, 'Colombia'),
+            destino: normalizarCiudadBusquedaMultidestino(ciudad, rutaGuardada.pais),
           }),
         ]);
 
