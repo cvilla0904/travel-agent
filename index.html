@@ -518,6 +518,33 @@
         };
       }
 
+      function parseMultidestinationSections(sectionLines) {
+        const cityStarts = [];
+        sectionLines.forEach((line, index) => {
+          if (/^###\s+.+\s+[—–-]\s+\d+\s+días\s*$/i.test(line.trim())) {
+            cityStarts.push(index);
+          }
+        });
+
+        if (cityStarts.length < 2) return { html: '' };
+
+        const sections = cityStarts.map((start, index) => {
+          const end = cityStarts[index + 1] ?? sectionLines.length;
+          const block = sectionLines.slice(start, end);
+          const title = block[0].trim().replace(/^###\s+/, '');
+          const hotelSection = parseHotelBlocks(block);
+          const activitySection = parseActivityBlocks(block);
+
+          return '<section class="multicity-section" style="margin-top:28px">' +
+            '<h3 class="multicity-title">' + escapeHtml(title) + '</h3>' +
+            (hotelSection.html || '<div class="search-note">No se encontraron alojamientos para esta ciudad.</div>') +
+            (activitySection.html || '<div class="search-note">No se encontraron actividades para esta ciudad.</div>') +
+            '</section>';
+        }).join('');
+
+        return { html: sections };
+      }
+
       if (headingIndex === -1) {
         const hotelMarker = lines.findIndex(line => /^(?:###\s*)?Alojamientos encontrados\s*$/i.test(line.trim()));
 
@@ -589,11 +616,16 @@
 
       if (flights.length === 0) {
         const sectionsLines = lines.slice(headingIndex + 1);
-        const hotelSection = parseHotelBlocks(sectionsLines);
+        const multicitySection = parseMultidestinationSections(sectionsLines);
+        const hotelSection = multicitySection.html
+          ? { html: '' }
+          : parseHotelBlocks(sectionsLines);
         const activityMarker = sectionsLines.findIndex(line => /^(?:###\s*)?Actividades/i.test(line.trim()));
-        const activitySection = activityMarker !== -1
-          ? parseActivityBlocks(sectionsLines.slice(activityMarker))
-          : { html: '' };
+        const activitySection = multicitySection.html
+          ? { html: '' }
+          : activityMarker !== -1
+            ? parseActivityBlocks(sectionsLines.slice(activityMarker))
+            : { html: '' };
 
         const emptyFlightNote = '<div class="empty-flight"><span class="empty-flight-icon">✈️</span><div><strong>Sin vuelos disponibles</strong><span>No se han encontrado vuelos válidos para estas fechas.</span></div></div>';
 
@@ -603,19 +635,23 @@
             '<h3 class="result-section-title flights">Vuelos</h3>' +
             emptyFlightNote +
           '</section>' +
-          hotelSection.html +
-          activitySection.html;
+          (multicitySection.html || hotelSection.html + activitySection.html);
         return;
       }
 
       const afterLines = lines.slice(flightEnd);
-      const hotelSection = renderHotels(afterLines).html
-        ? renderHotels(afterLines)
-        : parseHotelBlocks(lines.slice(headingIndex + 1));
+      const multicitySection = parseMultidestinationSections(afterLines);
+      const hotelSection = multicitySection.html
+        ? { html: '' }
+        : renderHotels(afterLines).html
+          ? renderHotels(afterLines)
+          : parseHotelBlocks(lines.slice(headingIndex + 1));
       const activityMarker = lines.findIndex((line, index) => index > headingIndex && /^(?:###\s*)?Actividades/i.test(line.trim()));
-      const activitySection = activityMarker !== -1
-        ? parseActivityBlocks(lines.slice(activityMarker))
-        : { html: '' };
+      const activitySection = multicitySection.html
+        ? { html: '' }
+        : activityMarker !== -1
+          ? parseActivityBlocks(lines.slice(activityMarker))
+          : { html: '' };
 
       const cards = flights.map(flight =>
         '<article class="flight-card">' +
@@ -636,8 +672,7 @@
           '<h3 class="result-section-title">Vuelos</h3>' +
           '<div class="flight-results">' + cards + '</div>' +
         '</section>' +
-        hotelSection.html +
-        activitySection.html;
+        (multicitySection.html || hotelSection.html + activitySection.html);
     }
 
     /* Conversación posterior. */
