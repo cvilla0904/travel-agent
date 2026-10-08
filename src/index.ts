@@ -1435,7 +1435,7 @@ const buscarRecursosMultidestino = tool({
           dias,
           fechaEntrada,
           fechaSalida,
-          hoteles: hoteles.slice(0, 10),
+          hoteles: hoteles.hoteles.slice(0, 10),
           actividades: actividades
             .filter(
               (actividad: any) =>
