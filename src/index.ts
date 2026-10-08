@@ -1,4 +1,6 @@
 import { fileURLToPath } from "node:url";
+import { randomUUID } from 'node:crypto';
+import { Redis } from '@upstash/redis';
 import { Agent, MemorySession, run, tool } from '@openai/agents';
 import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
@@ -321,6 +323,11 @@ const buscarDestinos = tool({
   },
 });
 
+const routeStore = new Redis({
+  url: process.env.KV_REST_API_URL!,
+  token: process.env.KV_REST_API_TOKEN!,
+});
+
 /* =========================================================
    3. TOOL: PLANIFICACIÓN DE RUTA MULTIDESTINO
    ========================================================= */
@@ -339,6 +346,10 @@ const planificarRuta = tool({
       duracionDias: {
         type: 'number',
         description: 'Duración total del viaje en días.',
+      },
+      rutaId: {
+        type: 'string',
+        description: 'Identificador de la ruta propuesta y aceptada. Debe proceder directamente de planificar_ruta.',
       },
       ciudades: {
         type: 'array',
@@ -445,13 +456,22 @@ const planificarRuta = tool({
       return tramo;
     });
 
+    const rutaId = randomUUID();
+
+    await routeStore.set(
+      `travel:route:${rutaId}`,
+      { pais, duracionDias: diasTotales, ruta },
+      { ex: 24 * 60 * 60 },
+    );
+
     return {
       pais,
       duracionDias: diasTotales,
       ciudades: ruta.length,
       ruta,
+      rutaId,
       nota:
-        'Esta herramienta organiza la distribución temporal de la ruta. Las ciudades son recomendaciones de planificación y deberán verificarse después con búsquedas reales de vuelos, alojamiento y actividades.',
+        'Esta ruta queda fijada con un identificador. Cuando el usuario la acepte, las búsquedas reales deben utilizar exactamente esta ruta, sin añadir, eliminar ni sustituir ciudades.',
     };
   },
 });
@@ -1374,6 +1394,42 @@ function normalizarCiudadBusquedaMultidestino(ciudad: string, pais?: string): st
   return pais ? `${valor}, ${pais}` : valor;
 }
 
+function slugCiudadActividades(ciudad: string): string {
+  const normalizada = ciudad
+    .normalize('NFD')
+    .replace(/[\\u0300-\\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+  if (normalizada === 'cartagena' || normalizada === 'cartagena de indias') {
+    return 'cartagena-de-indias';
+  }
+
+  return normalizada
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function actividadEsDeCiudad(actividad: any, ciudad: string): boolean {
+  const slug = slugCiudadActividades(ciudad);
+  const url = typeof actividad?.url === 'string'
+    ? actividad.url.toLowerCase()
+    : '';
+
+  const titulo = typeof actividad?.title === 'string'
+    ? actividad.title.toLowerCase()
+    : '';
+
+  // Sin URL no podemos verificar el destino con suficiente seguridad.
+  if (!url) return false;
+
+  if (slug === 'cartagena-de-indias') {
+    return url.includes('/cartagena-de-indias/');
+  }
+
+  return url.includes('/' + slug + '/') || titulo.includes(ciudad.toLowerCase());
+}
+
 /* =========================================================
    7. TOOL: RECURSOS PARA RUTA MULTIDESTINO
    ========================================================= */
@@ -1408,11 +1464,12 @@ const buscarRecursosMultidestino = tool({
         },
       },
     },
-    required: ['ciudades', 'fechaIda', 'fechaVuelta', 'adultos', 'tipos'],
+    required: ['rutaId', 'ciudades', 'fechaIda', 'fechaVuelta', 'adultos', 'tipos'],
     additionalProperties: false,
   },
   execute: async (input) => {
     const {
+      rutaId,
       ciudades,
       fechaIda,
       fechaVuelta,
@@ -1426,6 +1483,23 @@ const buscarRecursosMultidestino = tool({
       tipos: string[];
     };
 
+    const rutaGuardada = await routeStore.get<{
+      pais: string;
+      duracionDias: number;
+      ruta: Array<{ orden: number; ciudad: string; dias: number; diaInicio: number; diaFin: number }>;
+    }>(`travel:route:${rutaId}`);
+
+    if (!rutaGuardada?.ruta?.length) {
+      throw new Error('La ruta aceptada ya no está disponible. Debe proponerse de nuevo antes de realizar la búsqueda.');
+    }
+
+    // La ruta guardada es la fuente de verdad. Ignoramos cualquier modificación
+    // accidental del modelo en ciudades/días después de que el usuario la aceptó.
+    const ciudadesRuta = rutaGuardada.ruta.map((tramo) => ({
+      ciudad: tramo.ciudad,
+      dias: tramo.dias,
+    }));
+
     const sumarDias = (fecha: string, dias: number) => {
       const date = new Date(fecha + 'T00:00:00Z');
       date.setUTCDate(date.getUTCDate() + dias);
@@ -1435,7 +1509,7 @@ const buscarRecursosMultidestino = tool({
     let diasTranscurridos = 0;
     const resultados = [];
 
-    for (const { ciudad, dias } of ciudades) {
+    for (const { ciudad, dias } of ciudadesRuta) {
       const fechaEntrada = sumarDias(fechaIda, diasTranscurridos);
       const fechaSalida = sumarDias(fechaEntrada, dias);
       diasTranscurridos += dias;
@@ -1447,6 +1521,7 @@ const buscarRecursosMultidestino = tool({
             fechaEntrada,
             fechaSalida,
             adultos,
+            paisCodigo: 'co',
           }),
           buscarActividadesApify({
             destino: normalizarCiudadBusquedaMultidestino(ciudad, 'Colombia'),
@@ -1463,7 +1538,8 @@ const buscarRecursosMultidestino = tool({
             .filter(
               (actividad: any) =>
                 actividad.title &&
-                typeof actividad.priceFrom === 'number',
+                typeof actividad.priceFrom === 'number' &&
+                actividadEsDeCiudad(actividad, ciudad),
             )
             .slice(0, 10)
             .map((actividad: any) => ({
@@ -1851,7 +1927,10 @@ export const travelAgent = new Agent({
     "continúa", "busca ahora"):
     - conserva el orden de las ciudades;
     - conserva los días asignados a cada ciudad;
+    - DEBES reutilizar el rutaId devuelto por planificar_ruta;
+    - NO reconstruyas ni modifiques la lista de ciudades a partir de tu propia memoria;
     - NO conviertas la ruta en una única ciudad;
+    - NO añadas ciudades nuevas (por ejemplo Santa Marta) ni elimines ciudades de la ruta aceptada;
     - NO respondas todavía solo con la confirmación de la ruta;
     - cuando tengas las fechas exactas y el número de pasajeros,
       DEBES llamar inmediatamente a buscar_recursos_multidestino;
@@ -2099,6 +2178,11 @@ export const travelAgent = new Agent({
 
     En una ruta multidestino, busca y presenta alojamiento y
     actividades para cada una de las ciudades confirmadas.
+
+    La herramienta de recursos multidestino ignora cualquier ciudad que no
+    pertenezca a la ruta guardada mediante rutaId. Si el proveedor devuelve
+    actividades cuya URL no permite verificar la ciudad solicitada, no las
+    presentes como ofertas válidas.
 
     =========================================================
     FIN RESULTADOS MULTIDESTINO
