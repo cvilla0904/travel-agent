@@ -569,6 +569,13 @@
 
         // Las respuestas posteriores, como el presupuesto, no deben borrar
         // las tarjetas de hoteles y actividades ya mostradas.
+        if (multicitySection.html) {
+          results.innerHTML =
+            renderTripSummary(lines) +
+            multicitySection.html;
+          return;
+        }
+
         if (!hasStructuredResults && results.innerHTML && !/Preparando una respuesta/i.test(results.textContent || '')) {
           results.innerHTML +=
             '<section style="margin-top:24px">' +
