@@ -1385,7 +1385,7 @@ function normalizarCiudadBusquedaMultidestino(ciudad: string, pais?: string): st
     'medellín': 'Medellín, Colombia',
   };
 
-  const clave = valor.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().trim();
+  const clave = valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
   if (equivalencias[clave]) {
     return equivalencias[clave];
@@ -1397,7 +1397,7 @@ function normalizarCiudadBusquedaMultidestino(ciudad: string, pais?: string): st
 function slugCiudadActividades(ciudad: string): string {
   const normalizada = ciudad
     .normalize('NFD')
-    .replace(/[\\u0300-\\u036f]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim();
 
@@ -1441,6 +1441,10 @@ const buscarRecursosMultidestino = tool({
   parameters: {
     type: 'object',
     properties: {
+      rutaId: {
+        type: 'string',
+        description: 'Identificador de la ruta propuesta y aceptada. Debe proceder directamente de planificar_ruta.',
+      },
       ciudades: {
         type: 'array',
         items: {
