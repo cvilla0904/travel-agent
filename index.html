@@ -549,6 +549,8 @@
 
       if (headingIndex === -1) {
         const hotelMarker = lines.findIndex(line => /^(?:###\s*)?Alojamientos encontrados\s*$/i.test(line.trim()));
+        const multicitySection = parseMultidestinationSections(lines);
+        const hasStructuredResults = hotelMarker !== -1 || multicitySection.html;
 
         if (hotelMarker !== -1) {
           const parsedHotels = parseHotelBlocks(lines.slice(hotelMarker));
@@ -562,10 +564,20 @@
           return;
         }
 
+        // Las respuestas posteriores, como el presupuesto, no deben borrar
+        // las tarjetas de hoteles y actividades ya mostradas.
+        if (!hasStructuredResults && results.innerHTML && !/Preparando una respuesta/i.test(results.textContent || '')) {
+          results.innerHTML +=
+            '<section style="margin-top:24px">' +
+              '<h3 class="result-section-title">Presupuesto</h3>' +
+              '<div class="result-text">' + linkifyText(respuesta).replace(/[#*]{1,3}/g, '') + '</div>' +
+            '</section>';
+          return;
+        }
+
         results.innerHTML = '<div class="result-text">' + linkifyText(respuesta).replace(/[#*]{1,3}/g, '') + '</div>';
         return;
       }
-
       const beforeLines = lines.slice(0, headingIndex);
       const afterStart = lines.findIndex((line, index) => index > headingIndex && /^###\s+/.test(line.trim()));
       const flightEnd = afterStart === -1 ? lines.length : afterStart;
