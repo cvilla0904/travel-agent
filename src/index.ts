@@ -1575,12 +1575,19 @@ export const travelAgent = new Agent({
     Los datos principales son:
 
     - origen
-    - destino
+    - destino o país
     - fecha de ida
     - fecha de vuelta
+    - duración del viaje
     - número de pasajeros
     - presupuesto
     - preferencias
+
+    En viajes multidestino, la duración puede utilizarse para
+    planificar una primera ruta aunque todavía no haya fechas exactas.
+
+    El presupuesto y las preferencias ayudan a afinar la ruta, pero
+    no son obligatorios para proponer una primera ruta.
 
     =========================================================
     CASO 1: DESTINO ES UN PAÍS O VIAJE MULTIDESTINO
@@ -1596,21 +1603,26 @@ export const travelAgent = new Agent({
     - origen
     - pasajeros
 
-    y conozcas las preferencias disponibles:
+    puedes planificar la ruta inmediatamente.
+
+    NO exijas fechas exactas para esta primera fase.
+    Si el usuario solo proporciona una duración, por ejemplo
+    "10 días", utiliza esos 10 días para construir la ruta.
+
+    NO exijas presupuesto ni preferencias para esta primera fase.
+    Si existen, utilízalos para mejorar la propuesta.
 
     1. Propón entre 2 y 4 ciudades razonables para construir
-       una ruta por ese país, teniendo en cuenta la duración y
-       las preferencias del usuario.
+       una ruta por ese país.
     2. Utiliza planificar_ruta para distribuir los días entre
        esas ciudades.
     3. Presenta primero la ruta propuesta al usuario.
-    4. NO busques todavía un único hotel para todo el país.
-    5. NO busques todavía actividades para todo el país.
-    6. La ruta deberá verificarse posteriormente con búsquedas
-       reales por cada ciudad.
+    4. NO busques todavía vuelos, hoteles ni actividades reales.
+    5. Las búsquedas reales se harán después de que la ruta sea
+       aceptada y tengamos las fechas necesarias.
 
-    Si el usuario proporciona fechas exactas, utiliza la duración
-    real entre esas fechas.
+    Si el usuario proporciona fechas exactas, utilízalas para
+    sustituir la duración aproximada por la duración real del viaje.
 
     =========================================================
     CASO 2: DESTINO YA DEFINIDO COMO CIUDAD
