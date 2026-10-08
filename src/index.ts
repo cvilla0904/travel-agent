@@ -1360,7 +1360,7 @@ const activitiesAgentTool =
 const buscarRecursosMultidestino = tool({
   name: 'buscar_recursos_multidestino',
   description:
-    'Busca alojamiento y actividades reales para cada ciudad de una ruta multidestino, manteniendo los resultados separados por ciudad.',
+    'OBLIGATORIO para una ruta multidestino confirmada. Busca alojamiento y actividades reales para TODAS las ciudades de la ruta y devuelve los resultados separados por ciudad. No devuelve solo una ciudad.',
   parameters: {
     type: 'object',
     properties: {
@@ -1412,13 +1412,14 @@ const buscarRecursosMultidestino = tool({
     };
 
     let diasTranscurridos = 0;
+    const resultados = [];
 
-    const resultados = await Promise.all(
-      ciudades.map(async ({ ciudad, dias }) => {
-        const fechaEntrada = sumarDias(fechaIda, diasTranscurridos);
-        const fechaSalida = sumarDias(fechaEntrada, dias);
-        diasTranscurridos += dias;
+    for (const { ciudad, dias } of ciudades) {
+      const fechaEntrada = sumarDias(fechaIda, diasTranscurridos);
+      const fechaSalida = sumarDias(fechaEntrada, dias);
+      diasTranscurridos += dias;
 
+      try {
         const [hoteles, actividades] = await Promise.all([
           buscarHotelesSearchApi({
             destino: ciudad,
@@ -1429,7 +1430,7 @@ const buscarRecursosMultidestino = tool({
           buscarActividadesApify({ destino: ciudad }),
         ]);
 
-        return {
+        resultados.push({
           ciudad,
           dias,
           fechaEntrada,
@@ -1455,9 +1456,19 @@ const buscarRecursosMultidestino = tool({
               url: actividad.url ?? '',
               plataforma: actividad.platform ?? '',
             })),
-        };
-      }),
-    );
+        });
+      } catch (error: any) {
+        resultados.push({
+          ciudad,
+          dias,
+          fechaEntrada,
+          fechaSalida,
+          hoteles: [],
+          actividades: [],
+          error: error?.message ?? 'No se pudieron obtener resultados para esta ciudad.',
+        });
+      }
+    }
 
     return {
       ciudades: resultados,
@@ -1812,22 +1823,29 @@ export const travelAgent = new Agent({
     Si el usuario elige una ciudad de una búsqueda de destinos,
     utiliza esa ciudad como destino único.
 
-    Si el usuario acepta una ruta multidestino propuesta:
+    Si el usuario acepta una ruta multidestino propuesta
+    (por ejemplo: "sí", "mantengo la ruta", "me parece bien",
+    "continúa", "busca ahora"):
     - conserva el orden de las ciudades;
     - conserva los días asignados a cada ciudad;
     - NO conviertas la ruta en una única ciudad;
+    - NO respondas todavía solo con la confirmación de la ruta;
     - cuando tengas las fechas exactas y el número de pasajeros,
-      llama OBLIGATORIAMENTE UNA VEZ a buscar_recursos_multidestino
-      pasando TODAS las ciudades de la ruta, sus días, las fechas
-      del viaje, los adultos y las preferencias disponibles;
-    - esta herramienta realiza las búsquedas reales de alojamiento
-      y actividades para TODAS las ciudades y devuelve los resultados
-      agrupados por ciudad;
+      DEBES llamar inmediatamente a buscar_recursos_multidestino;
+    - pásale TODAS las ciudades de la ruta en una sola llamada,
+      sus días, las fechas del viaje, los adultos y las preferencias
+      disponibles (si no hay preferencias, pasa un array vacío);
+    - esta herramienta debe obtener alojamiento Y actividades para
+      TODAS las ciudades;
     - NO llames hotel_agent ni activities_agent de forma aislada
       para una sola ciudad en una ruta multidestino;
+    - NO consideres completada la búsqueda hasta recibir el
+      resultado de buscar_recursos_multidestino;
     - después de obtener el resultado, presenta TODAS las ciudades
       en el mismo orden de la ruta y conserva sus resultados
-      separados.
+      separados;
+    - si una ciudad devuelve cero hoteles o cero actividades,
+      indícalo específicamente en esa ciudad, sin ocultar el resto.
 
     Cuando el usuario elija uno de los destinos descubiertos:
 
