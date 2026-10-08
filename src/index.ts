@@ -1354,7 +1354,107 @@ const activitiesAgentTool =
   });
 
 /* =========================================================
-   7. PRESUPUESTO CONTROLADO POR CÓDIGO
+   7. TOOL: RECURSOS PARA RUTA MULTIDESTINO
+   ========================================================= */
+
+const buscarRecursosMultidestino = tool({
+  name: 'buscar_recursos_multidestino',
+  description:
+    'Busca alojamiento y actividades reales para cada ciudad de una ruta multidestino, manteniendo los resultados separados por ciudad.',
+  parameters: {
+    type: 'object',
+    properties: {
+      ciudades: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            ciudad: { type: 'string' },
+            dias: { type: 'number' },
+          },
+          required: ['ciudad', 'dias'],
+          additionalProperties: false,
+        },
+      },
+      fechaIda: { type: 'string' },
+      fechaVuelta: { type: 'string' },
+      adultos: { type: 'number' },
+      tipos: {
+        type: 'array',
+        items: {
+          type: 'string',
+          enum: ['naturaleza', 'cultura', 'gastronomía', 'aventura'],
+        },
+      },
+    },
+    required: ['ciudades', 'fechaIda', 'fechaVuelta', 'adultos', 'tipos'],
+    additionalProperties: false,
+  },
+  execute: async (input) => {
+    const {
+      ciudades,
+      fechaIda,
+      fechaVuelta,
+      adultos,
+      tipos,
+    } = input as {
+      ciudades: Array<{ ciudad: string; dias: number }>;
+      fechaIda: string;
+      fechaVuelta: string;
+      adultos: number;
+      tipos: string[];
+    };
+
+    const resultados = await Promise.all(
+      ciudades.map(async ({ ciudad, dias }) => {
+        const [hoteles, actividades] = await Promise.all([
+          buscarHotelesSearchApi({
+            destino: ciudad,
+            fechaEntrada: fechaIda,
+            fechaSalida: fechaVuelta,
+            adultos,
+          }),
+          buscarActividadesApify({ destino: ciudad }),
+        ]);
+
+        return {
+          ciudad,
+          dias,
+          hoteles: hoteles.slice(0, 10),
+          actividades: actividades
+            .filter(
+              (actividad: any) =>
+                actividad.title &&
+                typeof actividad.priceFrom === 'number',
+            )
+            .slice(0, 10)
+            .map((actividad: any) => ({
+              nombre: actividad.title,
+              tipo:
+                actividad.categories?.join(', ') ||
+                tipos.join(', '),
+              precio: Number(actividad.priceFrom ?? 0),
+              moneda: actividad.priceCurrency ?? 'EUR',
+              valoracion: Number(actividad.rating ?? 0),
+              numeroResenas: Number(actividad.reviewCount ?? 0),
+              duracion: actividad.durationText ?? '',
+              url: actividad.url ?? '',
+              plataforma: actividad.platform ?? '',
+            })),
+        };
+      }),
+    );
+
+    return {
+      ciudades: resultados,
+      nota:
+        'Los resultados están agrupados por ciudad y proceden de búsquedas reales.',
+    };
+  },
+});
+
+/* =========================================================
+   8. PRESUPUESTO CONTROLADO POR CÓDIGO
    ========================================================= */
 
 const calcularPresupuesto = tool({
@@ -1441,7 +1541,7 @@ const calcularPresupuesto = tool({
 });
 
 /* =========================================================
-   8. ITINERARIO CONTROLADO POR CÓDIGO
+   9. ITINERARIO CONTROLADO POR CÓDIGO
    ========================================================= */
 
 const crearItinerario = tool({
@@ -1544,7 +1644,7 @@ const crearItinerario = tool({
 });
 
 /* =========================================================
-   9. TRAVEL MANAGER
+   10. TRAVEL MANAGER
    ========================================================= */
 
 export const travelAgent = new Agent({
@@ -1702,8 +1802,14 @@ export const travelAgent = new Agent({
     - conserva el orden de las ciudades;
     - conserva los días asignados a cada ciudad;
     - NO conviertas la ruta en una única ciudad;
-    - en los siguientes pasos busca vuelos, hoteles y actividades
-      por cada ciudad de la ruta.
+    - cuando tengas las fechas exactas y el número de pasajeros,
+      utiliza OBLIGATORIAMENTE buscar_recursos_multidestino para
+      obtener alojamiento y actividades de TODAS las ciudades
+      de la ruta en una sola búsqueda coordinada;
+    - no llames solo a hotel_agent o activities_agent para una
+      única ciudad cuando la ruta tenga varias ciudades;
+    - presenta los resultados agrupados por ciudad, respetando
+      exactamente el orden de la ruta.
 
     Cuando el usuario elija uno de los destinos descubiertos:
 
@@ -1983,6 +2089,8 @@ export const travelAgent = new Agent({
     hotelAgentTool,
 
     activitiesAgentTool,
+
+    buscarRecursosMultidestino,
 
     calcularPresupuesto,
 
