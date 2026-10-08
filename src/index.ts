@@ -6,7 +6,7 @@ import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { z } from 'zod';
 import { buscarLugaresGeoapify } from './services/geoapify.js';
-import { buscarActividadesApify } from './services/apify.js';
+import { buscarActividadesApify, buscarActividadesApifyMultidestino } from './services/apify.js';
 import {
   buscarGoogleFlights,
   buscarGoogleTravelExplore,
@@ -1437,23 +1437,48 @@ function slugCiudadActividades(ciudad: string): string {
 }
 
 function actividadEsDeCiudad(actividad: any, ciudad: string): boolean {
-  const slug = slugCiudadActividades(ciudad);
+  const normalizar = (valor: string) =>
+    String(valor ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+
+  const ciudadNormalizada = normalizar(ciudad);
+  const ciudadActividad = normalizar(actividad?.city);
+  const paisActividad = normalizar(actividad?.country);
   const url = typeof actividad?.url === 'string'
     ? actividad.url.toLowerCase()
     : '';
+  const titulo = normalizar(actividad?.title);
+  const slug = slugCiudadActividades(ciudad);
 
-  const titulo = typeof actividad?.title === 'string'
-    ? actividad.title.toLowerCase()
-    : '';
+  const aliasCiudad: Record<string, string[]> = {
+    bogota: ['bogota', 'bogota d.c.'],
+    medellin: ['medellin'],
+    'cartagena de indias': ['cartagena', 'cartagena de indias'],
+    cartagena: ['cartagena', 'cartagena de indias'],
+  };
 
-  // Sin URL no podemos verificar el destino con suficiente seguridad.
+  const nombresValidos = aliasCiudad[ciudadNormalizada] ?? [ciudadNormalizada];
+
+  // La fuente estructurada "city" del Actor es la señal principal.
+  // Si también aporta país, exigimos que coincida con el país de la ruta.
+  if (ciudadActividad) {
+    return nombresValidos.includes(ciudadActividad);
+  }
+
+  // Fallback para resultados que no traigan city.
   if (!url) return false;
 
   if (slug === 'cartagena-de-indias') {
-    return url.includes('/cartagena-de-indias/');
+    return url.includes('/cartagena-de-indias/') || url.includes('/cartagena/');
   }
 
-  return url.includes('/' + slug + '/') || titulo.includes(ciudad.toLowerCase());
+  return (
+    url.includes('/' + slug + '/') ||
+    titulo.includes(ciudadNormalizada)
+  );
 }
 
 /* =========================================================
@@ -1536,59 +1561,94 @@ const buscarRecursosMultidestino = tool({
       return date.toISOString().slice(0, 10);
     };
 
+    const tramos = [];
     let diasTranscurridos = 0;
-    const resultados = [];
 
     for (const { ciudad, dias } of ciudadesRuta) {
       const fechaEntrada = sumarDias(fechaIda, diasTranscurridos);
-      const esUltimaCiudad = diasTranscurridos + dias >= rutaGuardada.duracionDias;
+      const esUltimaCiudad =
+        diasTranscurridos + dias >= rutaGuardada.duracionDias;
       const fechaSalida = esUltimaCiudad
         ? fechaVuelta
         : sumarDias(fechaEntrada, dias);
-      diasTranscurridos += dias;
 
-      const [hotelResult, activityResult] = await Promise.allSettled([
-        buscarHotelesSearchApi({
-          destino: normalizarCiudadBusquedaMultidestino(ciudad, rutaGuardada.pais),
+      tramos.push({
+        ciudad,
+        dias,
+        fechaEntrada,
+        fechaSalida,
+      });
+
+      diasTranscurridos += dias;
+    }
+
+    // Apify admite varias ciudades en una sola ejecución. Esto reduce
+    // llamadas, coste y posibilidades de mezclar resultados entre ciudades.
+    let actividadesProveedor: any[] = [];
+    let errorActividadesProveedor: string | null = null;
+
+    try {
+      actividadesProveedor = await buscarActividadesApifyMultidestino(
+        tramos.map((tramo) => tramo.ciudad),
+      );
+    } catch (error: any) {
+      errorActividadesProveedor =
+        String(
+          error?.message ??
+            'No se pudieron consultar las actividades.',
+        );
+    }
+
+    const resultados = [];
+
+    for (const tramo of tramos) {
+      const { ciudad, dias, fechaEntrada, fechaSalida } = tramo;
+
+      let hoteles: any[] = [];
+      let errorAlojamientos: string | null = null;
+
+      try {
+        const hotelResult = await buscarHotelesSearchApi({
+          destino: normalizarCiudadBusquedaMultidestino(
+            ciudad,
+            rutaGuardada.pais,
+          ),
           fechaEntrada,
           fechaSalida,
           adultos,
           paisCodigo: obtenerCodigoPais(rutaGuardada.pais),
-        }),
-        buscarActividadesApify({
-          destino: normalizarCiudadBusquedaMultidestino(ciudad, rutaGuardada.pais),
-        }),
-      ]);
+        });
 
-      const hoteles =
-        hotelResult.status === 'fulfilled'
-          ? hotelResult.value.hoteles.slice(0, 10)
-          : [];
+        hoteles = hotelResult.hoteles.slice(0, 10);
+      } catch (error: any) {
+        errorAlojamientos =
+          String(
+            error?.message ??
+              'No se pudieron consultar los alojamientos.',
+          );
+      }
 
-      const actividades =
-        activityResult.status === 'fulfilled'
-          ? activityResult.value
-              .filter(
-                (actividad: any) =>
-                  actividad.title &&
-                  typeof actividad.priceFrom === 'number' &&
-                  actividadEsDeCiudad(actividad, ciudad),
-              )
-              .slice(0, 10)
-              .map((actividad: any) => ({
-                nombre: actividad.title,
-                tipo:
-                  actividad.categories?.join(', ') ||
-                  tipos.join(', '),
-                precio: Number(actividad.priceFrom ?? 0),
-                moneda: actividad.priceCurrency ?? 'EUR',
-                valoracion: Number(actividad.rating ?? 0),
-                numeroResenas: Number(actividad.reviewCount ?? 0),
-                duracion: actividad.durationText ?? '',
-                url: actividad.url ?? '',
-                plataforma: actividad.platform ?? '',
-              }))
-          : [];
+      const actividades = actividadesProveedor
+        .filter(
+          (actividad: any) =>
+            actividad?.title &&
+            typeof actividad.priceFrom === 'number' &&
+            actividadEsDeCiudad(actividad, ciudad),
+        )
+        .slice(0, 10)
+        .map((actividad: any) => ({
+          nombre: actividad.title,
+          tipo:
+            actividad.categories?.join(', ') ||
+            tipos.join(', '),
+          precio: Number(actividad.priceFrom ?? 0),
+          moneda: actividad.priceCurrency ?? 'EUR',
+          valoracion: Number(actividad.rating ?? 0),
+          numeroResenas: Number(actividad.reviewCount ?? 0),
+          duracion: actividad.durationText ?? '',
+          url: actividad.url ?? '',
+          plataforma: actividad.platform ?? '',
+        }));
 
       resultados.push({
         ciudad,
@@ -1598,14 +1658,8 @@ const buscarRecursosMultidestino = tool({
         hoteles,
         actividades,
         errores: {
-          alojamientos:
-            hotelResult.status === 'rejected'
-              ? String((hotelResult.reason as any)?.message ?? 'No se pudieron consultar los alojamientos.')
-              : null,
-          actividades:
-            activityResult.status === 'rejected'
-              ? String((activityResult.reason as any)?.message ?? 'No se pudieron consultar las actividades.')
-              : null,
+          alojamientos: errorAlojamientos,
+          actividades: errorActividadesProveedor,
         },
       });
     }
