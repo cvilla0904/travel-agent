@@ -120,15 +120,14 @@
   </main>
   <footer><div class="footer-inner wrap"><span class="footer-brand">✦ Travel Agent</span><span>Viajes pensados para ti.</span></div></footer>
   <script>
-    /* Cada navegador mantiene su propia sesión. */
-    const sessionId =
-      localStorage.getItem('travelAgentSessionId') ||
-      crypto.randomUUID();
+    /* Cada carga de la página empieza una sesión nueva.
+       Las conversaciones posteriores dentro de esta página
+       mantienen esta misma sesión. */
+    let sessionId = crypto.randomUUID();
 
-    localStorage.setItem(
-      'travelAgentSessionId',
-      sessionId
-    );
+    function iniciarNuevaBusqueda() {
+      sessionId = crypto.randomUUID();
+    }
 
     /* Función común para comunicarnos con el agente. */
     async function consultarAgente(message) {
@@ -172,6 +171,10 @@
 
     /* Primera búsqueda. */
     async function buscarViaje() {
+      // Una nueva búsqueda siempre empieza desde cero, incluso
+      // si usa exactamente los mismos datos que una búsqueda anterior.
+      iniciarNuevaBusqueda();
+
       const idea =
         document.getElementById('ideaViaje').value.trim();
 
