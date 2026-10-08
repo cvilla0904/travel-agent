@@ -286,6 +286,8 @@
 
     function renderResultados(respuesta) {
       const results = document.getElementById('results');
+      const chatBox = document.getElementById('chatBox');
+      if (chatBox) chatBox.style.display = 'block';
       const lines = respuesta.replace(/\r/g, '').split('\n');
       const headingIndex = lines.findIndex(line => /^###\s+Vuelos\s*$/i.test(line.trim()));
 
