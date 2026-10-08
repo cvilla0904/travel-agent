@@ -1547,59 +1547,67 @@ const buscarRecursosMultidestino = tool({
         : sumarDias(fechaEntrada, dias);
       diasTranscurridos += dias;
 
-      try {
-        const [hoteles, actividades] = await Promise.all([
-          buscarHotelesSearchApi({
-            destino: normalizarCiudadBusquedaMultidestino(ciudad, rutaGuardada.pais),
-            fechaEntrada,
-            fechaSalida,
-            adultos,
-            paisCodigo: obtenerCodigoPais(rutaGuardada.pais),
-          }),
-          buscarActividadesApify({
-            destino: normalizarCiudadBusquedaMultidestino(ciudad, rutaGuardada.pais),
-          }),
-        ]);
+      const [hotelResult, activityResult] = await Promise.allSettled([
+        buscarHotelesSearchApi({
+          destino: normalizarCiudadBusquedaMultidestino(ciudad, rutaGuardada.pais),
+          fechaEntrada,
+          fechaSalida,
+          adultos,
+          paisCodigo: obtenerCodigoPais(rutaGuardada.pais),
+        }),
+        buscarActividadesApify({
+          destino: normalizarCiudadBusquedaMultidestino(ciudad, rutaGuardada.pais),
+        }),
+      ]);
 
-        resultados.push({
-          ciudad,
-          dias,
-          fechaEntrada,
-          fechaSalida,
-          hoteles: hoteles.hoteles.slice(0, 10),
-          actividades: actividades
-            .filter(
-              (actividad: any) =>
-                actividad.title &&
-                typeof actividad.priceFrom === 'number' &&
-                actividadEsDeCiudad(actividad, ciudad),
-            )
-            .slice(0, 10)
-            .map((actividad: any) => ({
-              nombre: actividad.title,
-              tipo:
-                actividad.categories?.join(', ') ||
-                tipos.join(', '),
-              precio: Number(actividad.priceFrom ?? 0),
-              moneda: actividad.priceCurrency ?? 'EUR',
-              valoracion: Number(actividad.rating ?? 0),
-              numeroResenas: Number(actividad.reviewCount ?? 0),
-              duracion: actividad.durationText ?? '',
-              url: actividad.url ?? '',
-              plataforma: actividad.platform ?? '',
-            })),
-        });
-      } catch (error: any) {
-        resultados.push({
-          ciudad,
-          dias,
-          fechaEntrada,
-          fechaSalida,
-          hoteles: [],
-          actividades: [],
-          error: error?.message ?? 'No se pudieron obtener resultados para esta ciudad.',
-        });
-      }
+      const hoteles =
+        hotelResult.status === 'fulfilled'
+          ? hotelResult.value.hoteles.slice(0, 10)
+          : [];
+
+      const actividades =
+        activityResult.status === 'fulfilled'
+          ? activityResult.value
+              .filter(
+                (actividad: any) =>
+                  actividad.title &&
+                  typeof actividad.priceFrom === 'number' &&
+                  actividadEsDeCiudad(actividad, ciudad),
+              )
+              .slice(0, 10)
+              .map((actividad: any) => ({
+                nombre: actividad.title,
+                tipo:
+                  actividad.categories?.join(', ') ||
+                  tipos.join(', '),
+                precio: Number(actividad.priceFrom ?? 0),
+                moneda: actividad.priceCurrency ?? 'EUR',
+                valoracion: Number(actividad.rating ?? 0),
+                numeroResenas: Number(actividad.reviewCount ?? 0),
+                duracion: actividad.durationText ?? '',
+                url: actividad.url ?? '',
+                plataforma: actividad.platform ?? '',
+              }))
+          : [];
+
+      resultados.push({
+        ciudad,
+        dias,
+        fechaEntrada,
+        fechaSalida,
+        hoteles,
+        actividades,
+        errores: {
+          alojamientos:
+            hotelResult.status === 'rejected'
+              ? String((hotelResult.reason as any)?.message ?? 'No se pudieron consultar los alojamientos.')
+              : null,
+          actividades:
+            activityResult.status === 'rejected'
+              ? String((activityResult.reason as any)?.message ?? 'No se pudieron consultar las actividades.')
+              : null,
+        },
+      });
     }
 
     return {
