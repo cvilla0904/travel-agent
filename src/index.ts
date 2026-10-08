@@ -1353,6 +1353,27 @@ const activitiesAgentTool =
       'Busca lugares y actividades reales utilizando el Activities Agent.',
   });
 
+function normalizarCiudadBusquedaMultidestino(ciudad: string, pais?: string): string {
+  const valor = ciudad.trim();
+
+  const equivalencias: Record<string, string> = {
+    'cartagena': 'Cartagena de Indias, Colombia',
+    'cartagena de indias': 'Cartagena de Indias, Colombia',
+    'bogota': 'Bogotá, Colombia',
+    'bogotá': 'Bogotá, Colombia',
+    'medellin': 'Medellín, Colombia',
+    'medellín': 'Medellín, Colombia',
+  };
+
+  const clave = valor.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().trim();
+
+  if (equivalencias[clave]) {
+    return equivalencias[clave];
+  }
+
+  return pais ? `${valor}, ${pais}` : valor;
+}
+
 /* =========================================================
    7. TOOL: RECURSOS PARA RUTA MULTIDESTINO
    ========================================================= */
@@ -1422,12 +1443,14 @@ const buscarRecursosMultidestino = tool({
       try {
         const [hoteles, actividades] = await Promise.all([
           buscarHotelesSearchApi({
-            destino: ciudad,
+            destino: normalizarCiudadBusquedaMultidestino(ciudad, 'Colombia'),
             fechaEntrada,
             fechaSalida,
             adultos,
           }),
-          buscarActividadesApify({ destino: ciudad }),
+          buscarActividadesApify({
+            destino: normalizarCiudadBusquedaMultidestino(ciudad, 'Colombia'),
+          }),
         ]);
 
         resultados.push({
