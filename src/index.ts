@@ -1541,7 +1541,10 @@ const buscarRecursosMultidestino = tool({
 
     for (const { ciudad, dias } of ciudadesRuta) {
       const fechaEntrada = sumarDias(fechaIda, diasTranscurridos);
-      const fechaSalida = sumarDias(fechaEntrada, dias);
+      const esUltimaCiudad = diasTranscurridos + dias >= rutaGuardada.duracionDias;
+      const fechaSalida = esUltimaCiudad
+        ? fechaVuelta
+        : sumarDias(fechaEntrada, dias);
       diasTranscurridos += dias;
 
       try {
