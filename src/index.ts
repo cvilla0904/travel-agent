@@ -525,6 +525,11 @@ const buscarVuelos = tool({
         description:
           'Código IATA del aeropuerto de destino cuando ya haya sido identificado. Puede contener varios códigos separados por comas.',
       },
+      destinoRegreso: {
+        type: 'string',
+        description:
+          'Opcional. Para un itinerario abierto/multidestino, ciudad desde la que se toma el vuelo de regreso al origen (por ejemplo Cartagena). Si se proporciona, busca dos trayectos de solo ida: origen→destino y destinoRegreso→origen.',
+      },
     },
 
     required: [
@@ -546,6 +551,7 @@ const buscarVuelos = tool({
       fechaVuelta,
       pasajeros,
       aeropuertoDestino,
+      destinoRegreso,
     } = input as {
       origen: string;
       destino: string;
@@ -553,6 +559,7 @@ const buscarVuelos = tool({
       fechaVuelta: string;
       pasajeros: number;
       aeropuertoDestino?: string;
+      destinoRegreso?: string;
     };
 
     const departureIds =
@@ -588,6 +595,7 @@ const buscarVuelos = tool({
         returnDate: fechaVuelta,
         adults: pasajeros,
         deepSearch: true,
+        oneWay: Boolean(destinoRegreso),
       });
 
     let resultadosIniciales = [
@@ -608,6 +616,7 @@ const buscarVuelos = tool({
         returnDate: fechaVuelta,
         adults: pasajeros,
         deepSearch: true,
+        oneWay: Boolean(destinoRegreso),
       });
 
       resultadosIniciales = [
@@ -672,6 +681,73 @@ const buscarVuelos = tool({
             segmento.flight_number ?? '',
         }),
       );
+    }
+
+    if (destinoRegreso) {
+      const idsCiudadRegreso = await resolverIdsAeropuerto(destinoRegreso);
+      const dataRegreso = await buscarGoogleFlights({
+        departureId: idsCiudadRegreso.join(','),
+        arrivalId: departureId,
+        outboundDate: fechaVuelta,
+        adults: pasajeros,
+        deepSearch: true,
+        oneWay: true,
+      });
+      const opcionesRegreso = [
+        ...(dataRegreso.best_flights ?? []),
+        ...(dataRegreso.other_flights ?? []),
+      ].filter((vuelo: any) => typeof vuelo.price === 'number' && vuelo.price > 0)
+       .sort((a: any, b: any) => Number(a.price) - Number(b.price))
+       .slice(0, 5);
+
+      const opcionesIda = resultadosIniciales.slice(0, 5);
+      const vuelosAbiertos = [];
+      for (const ida of opcionesIda) {
+        const segmentosIda = extraerSegmentos(ida.flights ?? []);
+        const salidaIda = segmentosIda[0]?.codigoSalida?.toUpperCase();
+        const llegadaIda = segmentosIda[segmentosIda.length - 1]?.codigoLlegada?.toUpperCase();
+        if (!segmentosIda.length ||
+            !departureId.split(',').map((v) => v.trim().toUpperCase()).includes(salidaIda) ||
+            !arrivalId.split(',').map((v) => v.trim().toUpperCase()).includes(llegadaIda)) continue;
+
+        for (const vuelta of opcionesRegreso) {
+          const segmentosVuelta = extraerSegmentos(vuelta.flights ?? []);
+          const salidaVuelta = segmentosVuelta[0]?.codigoSalida?.toUpperCase();
+          const llegadaVuelta = segmentosVuelta[segmentosVuelta.length - 1]?.codigoLlegada?.toUpperCase();
+          if (!segmentosVuelta.length ||
+              !idsCiudadRegreso.some((id) => id.toUpperCase() === salidaVuelta) ||
+              !departureId.split(',').map((v) => v.trim().toUpperCase()).includes(llegadaVuelta)) continue;
+
+          const precioTotal = Number(ida.price) + Number(vuelta.price);
+          const aerolineas = [...new Set([...segmentosIda, ...segmentosVuelta].map((s) => s.aerolinea).filter(Boolean))];
+          vuelosAbiertos.push({
+            aerolinea: aerolineas.join(' + '),
+            precioPorPersona: Math.round(precioTotal / pasajeros),
+            precioTotal,
+            moneda: 'EUR',
+            enlace: data.search_metadata?.google_flights_url ?? dataRegreso.search_metadata?.google_flights_url ?? '',
+            esIdaVuelta: true,
+            tipo: 'Itinerario abierto / multidestino',
+            escalasIda: Math.max(0, segmentosIda.length - 1),
+            escalasVuelta: Math.max(0, segmentosVuelta.length - 1),
+            esDirecto: segmentosIda.length === 1 && segmentosVuelta.length === 1,
+            ida: { fecha: fechaIda, segmentos: segmentosIda, duracionMinutos: Number(ida.total_duration ?? segmentosIda.reduce((t, s) => t + s.duracionMinutos, 0)) },
+            vuelta: { fecha: fechaVuelta, segmentos: segmentosVuelta, duracionMinutos: Number(vuelta.total_duration ?? segmentosVuelta.reduce((t, s) => t + s.duracionMinutos, 0)) },
+          });
+        }
+      }
+
+      return {
+        origen,
+        destino,
+        destinoRegreso,
+        aeropuertoDestino: arrivalId,
+        aeropuertoOrigen: departureId,
+        fechaIda,
+        fechaVuelta,
+        pasajeros,
+        vuelos: vuelosAbiertos.sort((a, b) => a.precioTotal - b.precioTotal).slice(0, 10),
+      };
     }
 
     /*
@@ -1001,6 +1077,11 @@ const flightAgent = new Agent({
 
     Si el Travel Manager te proporciona un código IATA de destino,
     debes pasarlo a buscar_vuelos mediante aeropuertoDestino.
+
+    Para una ruta multidestino/itinerario abierto, pasa destino como
+    la primera ciudad de llegada y destinoRegreso como la última ciudad
+    desde la que se vuelve al origen. Así se buscarán dos trayectos de
+    solo ida y no un ida-vuelta a la primera ciudad.
 
     La herramienta resuelve automáticamente los aeropuertos.
     No necesitas ningún mapa interno de ciudades o aeropuertos.
@@ -2018,6 +2099,12 @@ export const travelAgent = new Agent({
 
     No ejecutes todavía vuelos y hoteles de un destino
     que el usuario no haya elegido.
+
+    En cualquier búsqueda de vuelos para una ruta multidestino aceptada,
+    llama a flight_agent con origen original, destino igual a la primera
+    ciudad de la ruta, destinoRegreso igual a la última ciudad de la ruta,
+    fechaIda, fechaVuelta y pasajeros. No aceptes vuelos de vuelta desde
+    la primera ciudad como sustituto de la última ciudad.
 
     =========================================================
     ELECCIÓN DE DESTINO O RUTA
