@@ -1465,7 +1465,16 @@ function actividadEsDeCiudad(actividad: any, ciudad: string): boolean {
   // La fuente estructurada "city" del Actor es la señal principal.
   // Si también aporta país, exigimos que coincida con el país de la ruta.
   if (ciudadActividad) {
-    return nombresValidos.includes(ciudadActividad);
+    // Los actores pueden devolver "Medellín, Antioquia" o
+    // "Cartagena de Indias, Bolívar". Admitimos ciudad + región,
+    // pero nunca usamos solo el país como coincidencia.
+    return nombresValidos.some(
+      (nombre) =>
+        ciudadActividad === nombre ||
+        ciudadActividad.startsWith(nombre + ',') ||
+        ciudadActividad.startsWith(nombre + ' -') ||
+        ciudadActividad.startsWith(nombre + ' ('),
+    );
   }
 
   // Fallback para resultados que no traigan city.
