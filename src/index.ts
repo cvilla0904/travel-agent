@@ -1389,11 +1389,11 @@ function obtenerCodigoPais(pais: string): string | undefined {
     portugal: 'pt',
     alemania: 'de',
     austria: 'at',
-    reino unido: 'gb',
+    'reino unido': 'gb',
     japon: 'jp',
     mexico: 'mx',
     méxico: 'mx',
-    estados unidos: 'us',
+    'estados unidos': 'us',
   };
 
   return codigos[clave];
