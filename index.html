@@ -408,7 +408,7 @@
           const trimmed = line.trim();
           if (!trimmed) return;
 
-          if (/^(?:###\s*)?Actividades/i.test(trimmed)) {
+          if (/^#{0,6}\\s*Actividades/i.test(trimmed)) {
             if (currentActivity) currentGroup.activities.push(currentActivity);
             if (currentGroup && currentGroup.activities.length) groups.push(currentGroup);
 
@@ -557,7 +557,7 @@
 
         if (hotelMarker !== -1) {
           const parsedHotels = parseHotelBlocks(lines.slice(hotelMarker));
-          const activityMarker = lines.findIndex((line, index) => index > hotelMarker && /^(?:###\s*)?Actividades/i.test(line.trim()));
+          const activityMarker = lines.findIndex((line, index) => index > hotelMarker && /^#{0,6}\\s*Actividades/i.test(line.trim()));
           const activityHtml = activityMarker !== -1 ? parseActivityBlocks(lines.slice(activityMarker)).html : '';
 
           results.innerHTML =
@@ -644,7 +644,7 @@
         const hotelSection = multicitySection.html
           ? { html: '' }
           : parseHotelBlocks(sectionsLines);
-        const activityMarker = sectionsLines.findIndex(line => /^(?:###\s*)?Actividades/i.test(line.trim()));
+        const activityMarker = sectionsLines.findIndex(line => /^#{0,6}\\s*Actividades/i.test(line.trim()));
         const activitySection = multicitySection.html
           ? { html: '' }
           : activityMarker !== -1
@@ -670,7 +670,7 @@
         : renderHotels(afterLines).html
           ? renderHotels(afterLines)
           : parseHotelBlocks(lines.slice(headingIndex + 1));
-      const activityMarker = lines.findIndex((line, index) => index > headingIndex && /^(?:###\s*)?Actividades/i.test(line.trim()));
+      const activityMarker = lines.findIndex((line, index) => index > headingIndex && /^#{0,6}\\s*Actividades/i.test(line.trim()));
       const activitySection = multicitySection.html
         ? { html: '' }
         : activityMarker !== -1
