@@ -2,10 +2,11 @@ export async function buscarGoogleFlights(params: {
   departureId: string;
   arrivalId: string;
   outboundDate: string;
-  returnDate: string;
+  returnDate?: string;
   adults: number;
   departureToken?: string;
   deepSearch?: boolean;
+  oneWay?: boolean;
 }) {
   const apiKey = process.env.SERPAPI_API_KEY;
 
@@ -39,10 +40,11 @@ export async function buscarGoogleFlights(params: {
     params.outboundDate,
   );
 
-  url.searchParams.set(
-    'return_date',
-    params.returnDate,
-  );
+  if (params.oneWay) {
+    url.searchParams.set('type', '2');
+  } else if (params.returnDate) {
+    url.searchParams.set('return_date', params.returnDate);
+  }
 
   url.searchParams.set(
     'adults',
