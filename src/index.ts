@@ -14,6 +14,7 @@ import {
 } from './services/serpapi.js';
 import { buscarHotelesSearchApi } from './services/searchapi.js';
 import { comprobarConexionHotelbeds } from './services/hotelbeds.js';
+import { buscarHotelesHotelbeds } from './services/hotelbeds-search.js';
 
 /* =========================================================
    1. FUNCIONES AUXILIARES
@@ -1141,6 +1142,31 @@ const comprobarHotelbedsTool = tool({
     additionalProperties: false,
   },
   execute: async () => await comprobarConexionHotelbeds(),
+});
+
+const buscarHotelesHotelbedsPruebaTool = tool({
+  name: 'buscar_hoteles_hotelbeds_prueba',
+  description: 'Realiza una búsqueda de disponibilidad en Hotelbeds TEST usando mTLS. Úsala únicamente cuando el usuario pida probar o verificar la búsqueda de hoteles de Hotelbeds; no sustituye todavía al proveedor habitual.',
+  parameters: {
+    type: 'object',
+    properties: {
+      destino: { type: 'string', description: 'Ciudad o destino del alojamiento.' },
+      fechaEntrada: { type: 'string', description: 'Fecha de entrada en formato YYYY-MM-DD.' },
+      fechaSalida: { type: 'string', description: 'Fecha de salida en formato YYYY-MM-DD.' },
+      adultos: { type: 'number', description: 'Número de adultos.' },
+    },
+    required: ['destino', 'fechaEntrada', 'fechaSalida', 'adultos'],
+    additionalProperties: false,
+  },
+  execute: async (input) => {
+    const { destino, fechaEntrada, fechaSalida, adultos } = input as {
+      destino: string;
+      fechaEntrada: string;
+      fechaSalida: string;
+      adultos: number;
+    };
+    return await buscarHotelesHotelbeds({ destino, fechaEntrada, fechaSalida, adultos });
+  },
 });
 
 const buscarHoteles = tool({
@@ -2443,6 +2469,8 @@ export const travelAgent = new Agent({
 
   tools: [
     comprobarHotelbedsTool,
+
+    buscarHotelesHotelbedsPruebaTool,
 
     buscarDestinos,
 
