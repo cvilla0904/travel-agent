@@ -13,6 +13,7 @@ import {
   resolverAeropuerto,
 } from './services/serpapi.js';
 import { buscarHotelesSearchApi } from './services/searchapi.js';
+import { comprobarConexionHotelbeds } from './services/hotelbeds.js';
 
 /* =========================================================
    1. FUNCIONES AUXILIARES
@@ -1129,6 +1130,18 @@ const flightAgent = new Agent({
 /* =========================================================
    4. TOOL + AGENT: HOTELES
    ========================================================= */
+
+const comprobarHotelbedsTool = tool({
+  name: 'comprobar_conexion_hotelbeds',
+  description: 'Comprueba la conexión mTLS con el endpoint de estado de Hotelbeds en entorno de pruebas. Úsala solo cuando el usuario pida comprobar la conexión de Hotelbeds.',
+  parameters: {
+    type: 'object',
+    properties: {},
+    required: [],
+    additionalProperties: false,
+  },
+  execute: async () => await comprobarConexionHotelbeds(),
+});
 
 const buscarHoteles = tool({
   name: 'buscar_hoteles',
@@ -2429,6 +2442,8 @@ export const travelAgent = new Agent({
   `,
 
   tools: [
+    comprobarHotelbedsTool,
+
     buscarDestinos,
 
     planificarRuta,
