@@ -12,7 +12,7 @@ import {
   buscarGoogleTravelExplore,
   resolverAeropuerto,
 } from './services/serpapi.js';
-import { buscarHotelesSearchApi } from './services/searchapi.js';
+import { buscarHotelesSerpApi } from './services/serpapi-hotels.js';
 import { comprobarConexionHotelbeds } from './services/hotelbeds.js';
 import { buscarHotelesHotelbeds } from './services/hotelbeds-search.js';
 
@@ -1185,7 +1185,7 @@ const buscarHoteles = tool({
   },
   execute: async (input) => {
     const { destino, fechaEntrada, fechaSalida, adultos } = input as { destino:string; fechaEntrada:string; fechaSalida:string; adultos:number };
-    return await buscarHotelesSearchApi({ destino, fechaEntrada, fechaSalida, adultos });
+    return await buscarHotelesSerpApi({ destino, fechaEntrada, fechaSalida, adultos });
   },
 });
 
