@@ -1264,19 +1264,41 @@ const buscarActividades = tool({
       tipos: string[];
     };
 
-    const resultados = await buscarActividadesApify({
-      destino,
-    });
+    const consultasCategorias = tipos.length
+      ? tipos.map((tipo) => `${destino} ${tipo}`)
+      : [destino];
+
+    const resultadosPorConsulta = await Promise.all(
+      consultasCategorias.map((consulta) =>
+        buscarActividadesApify({ destino: consulta }),
+      ),
+    );
+    const resultados = resultadosPorConsulta.flat();
+    const conTitulo = resultados.filter(
+      (actividad: any) => typeof actividad?.title === 'string' && actividad.title.trim(),
+    );
+    const conPrecioNumerico = conTitulo.filter(
+      (actividad: any) => typeof actividad.priceFrom === 'number' && Number.isFinite(actividad.priceFrom),
+    );
+    const unicos = Array.from(
+      new Map(
+        conPrecioNumerico.map((actividad: any) => [
+          actividad.url || actividad.title,
+          actividad,
+        ]),
+      ).values(),
+    );
 
     return {
       destino,
+      diagnosticoBusqueda: {
+        consultas: consultasCategorias,
+        resultadosProveedor: resultados.length,
+        resultadosConTitulo: conTitulo.length,
+        resultadosConPrecioNumerico: conPrecioNumerico.length,
+      },
 
-      actividades: resultados
-        .filter(
-          (actividad: any) =>
-            actividad.title &&
-            typeof actividad.priceFrom === 'number',
-        )
+      actividades: unicos
         .slice(0, 15)
         .map((actividad: any) => ({
           nombre:
