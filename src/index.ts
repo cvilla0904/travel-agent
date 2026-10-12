@@ -13,8 +13,6 @@ import {
   resolverAeropuerto,
 } from './services/serpapi.js';
 import { buscarHotelesSerpApi } from './services/serpapi-hotels.js';
-import { comprobarConexionHotelbeds } from './services/hotelbeds.js';
-import { buscarHotelesHotelbeds } from './services/hotelbeds-search.js';
 
 /* =========================================================
    1. FUNCIONES AUXILIARES
@@ -1132,43 +1130,6 @@ const flightAgent = new Agent({
    4. TOOL + AGENT: HOTELES
    ========================================================= */
 
-const comprobarHotelbedsTool = tool({
-  name: 'comprobar_conexion_hotelbeds',
-  description: 'Comprueba la conexión mTLS con el endpoint de estado de Hotelbeds en entorno de pruebas. Úsala solo cuando el usuario pida comprobar la conexión de Hotelbeds.',
-  parameters: {
-    type: 'object',
-    properties: {},
-    required: [],
-    additionalProperties: false,
-  },
-  execute: async () => await comprobarConexionHotelbeds(),
-});
-
-const buscarHotelesHotelbedsPruebaTool = tool({
-  name: 'buscar_hoteles_hotelbeds_prueba',
-  description: 'Realiza una búsqueda de disponibilidad en Hotelbeds TEST usando mTLS. Úsala únicamente cuando el usuario pida probar o verificar la búsqueda de hoteles de Hotelbeds; no sustituye todavía al proveedor habitual.',
-  parameters: {
-    type: 'object',
-    properties: {
-      destino: { type: 'string', description: 'Ciudad o destino del alojamiento.' },
-      fechaEntrada: { type: 'string', description: 'Fecha de entrada en formato YYYY-MM-DD.' },
-      fechaSalida: { type: 'string', description: 'Fecha de salida en formato YYYY-MM-DD.' },
-      adultos: { type: 'number', description: 'Número de adultos.' },
-    },
-    required: ['destino', 'fechaEntrada', 'fechaSalida', 'adultos'],
-    additionalProperties: false,
-  },
-  execute: async (input) => {
-    const { destino, fechaEntrada, fechaSalida, adultos } = input as {
-      destino: string;
-      fechaEntrada: string;
-      fechaSalida: string;
-      adultos: number;
-    };
-    return await buscarHotelesHotelbeds({ destino, fechaEntrada, fechaSalida, adultos });
-  },
-});
-
 const buscarHoteles = tool({
   name: 'buscar_hoteles',
   description: 'Busca alojamientos reales con fechas y precios de Google Hotels a través de SerpApi. Presenta los resultados disponibles y conserva los enlaces reales proporcionados por la búsqueda.',
@@ -1196,6 +1157,8 @@ const hotelOutputSchema = z.object({
     precioTotal:z.number(), precioPorNoche:z.number(), moneda:z.string(), habitacion:z.string(),
     disponibilidad:z.string(), habitacionesDisponibles:z.number(), cancelacionGratuita:z.boolean(),
     cancelacionHasta:z.string(), url:z.string(), imagen:z.string(), zona:z.string(), distanciaCentro:z.string(),
+    precioDisponible:z.boolean().optional(), fuentePrecio:z.string().optional(),
+    descripcion:z.string().optional(), tipo:z.string().optional(),
   })),
 });
 
@@ -1738,7 +1701,7 @@ const buscarRecursosMultidestino = tool({
       let errorAlojamientos: string | null = null;
 
       try {
-        const hotelResult = await buscarHotelesSearchApi({
+        const hotelResult = await buscarHotelesSerpApi({
           destino: normalizarCiudadBusquedaMultidestino(
             ciudad,
             rutaGuardada.pais,
@@ -1746,7 +1709,6 @@ const buscarRecursosMultidestino = tool({
           fechaEntrada,
           fechaSalida,
           adultos,
-          paisCodigo: obtenerCodigoPais(rutaGuardada.pais),
         });
 
         hoteles = hotelResult.hoteles.slice(0, 10);
