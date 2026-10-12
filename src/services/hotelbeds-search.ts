@@ -164,6 +164,26 @@ export async function buscarHotelesHotelbeds(params: {
   });
 
   const hotelesRaw = response.hotels?.hotels ?? [];
+  // Diagnostics let us distinguish hotels returned by Hotelbeds from hotels
+  // that contain a usable consumer-facing selling price.
+  const tarifasRaw = hotelesRaw.flatMap((hotel) =>
+    (hotel.rooms ?? []).flatMap((room) => room.rates ?? []),
+  );
+  const tarifasConPrecioVenta = tarifasRaw.filter((rate) => {
+    const price = Number(rate.sellingRate ?? rate.hotelSellingRate);
+    return Number.isFinite(price) && price > 0;
+  });
+  const tarifasBookable = tarifasRaw.filter((rate) => rate.rateType === 'BOOKABLE');
+  const tarifasRecheck = tarifasRaw.filter((rate) => rate.rateType === 'RECHECK');
+  const hotelesConOfertaConPrecio = hotelesRaw.filter((hotel) =>
+    (hotel.rooms ?? []).some((room) =>
+      (room.rates ?? []).some((rate) => {
+        const price = Number(rate.sellingRate ?? rate.hotelSellingRate);
+        return Number.isFinite(price) && price > 0 &&
+          (!rate.rateType || rate.rateType === 'BOOKABLE');
+      }),
+    ),
+  ).length;
   const noches = Math.max(
     1,
     (Date.parse(`${params.fechaSalida}T00:00:00Z`) -
@@ -232,7 +252,23 @@ export async function buscarHotelesHotelbeds(params: {
     fechaEntrada: params.fechaEntrada,
     fechaSalida: params.fechaSalida,
     adultos: params.adultos,
+    // This is a diagnostic count, not a claim that every returned hotel is bookable.
     totalHotelesDevueltos: hotelesRaw.length,
+    diagnostico: {
+      hotelesConHabitaciones: hotelesRaw.filter((hotel) => (hotel.rooms ?? []).length > 0).length,
+      tarifasEncontradas: tarifasRaw.length,
+      tarifasConPrecioVenta: tarifasConPrecioVenta.length,
+      tarifasBookable: tarifasBookable.length,
+      tarifasRecheck: tarifasRecheck.length,
+      hotelesConOfertaConPrecio,
+      motivoSiNoHayDetalle: hoteles.length > 0
+        ? ''
+        : tarifasRaw.length === 0
+          ? 'Hotelbeds devolvió hoteles, pero no se encontraron habitaciones o tarifas en la respuesta interpretada.'
+          : tarifasConPrecioVenta.length === 0
+            ? 'Se encontraron tarifas, pero ninguna contiene sellingRate/hotelSellingRate utilizable; no se mostrará net como precio final.'
+            : 'Hay tarifas, pero ninguna cumple los filtros actuales de tipo de tarifa y precio.',
+    },
     hoteles,
   };
 }
