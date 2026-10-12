@@ -5,6 +5,8 @@ type HotelbedsRate = {
   net?: string | number;
   sellingRate?: string | number;
   hotelSellingRate?: string | number;
+  hotelMandatory?: boolean | null;
+  rateType?: string;
   allotment?: number;
   boardName?: string;
   cancellationPolicies?: Array<{ amount?: string | number; from?: string }>;
@@ -17,6 +19,7 @@ type HotelbedsHotel = {
   categoryName?: string;
   zoneName?: string;
   currency?: string;
+  currencyCode?: string;
   rooms?: Array<{
     name?: string;
     rates?: HotelbedsRate[];
@@ -173,7 +176,10 @@ export async function buscarHotelesHotelbeds(params: {
         (room.rates ?? []).map((rate) => ({
           roomName: room.name ?? '',
           rate,
-          price: Number(rate.sellingRate ?? rate.hotelSellingRate ?? rate.net),
+          // Never expose "net" as the consumer price: Hotelbeds documents it
+          // as a net amount in some pricing models. Only use an explicit
+          // selling price returned by the availability API.
+          price: Number(rate.sellingRate ?? rate.hotelSellingRate),
         })),
       ).filter((offer) => Number.isFinite(offer.price) && offer.price > 0)
        .sort((a, b) => a.price - b.price);
@@ -182,9 +188,13 @@ export async function buscarHotelesHotelbeds(params: {
       if (!hotel.name || !mejorOferta) return null;
 
       const cancellation = mejorOferta.rate.cancellationPolicies ?? [];
+      // A zero cancellation amount is only treated as free cancellation
+      // when Hotelbeds supplies a future deadline; missing dates are ambiguous.
       const freeCancellation = cancellation.some((policy) =>
         Number(policy.amount) === 0 &&
-        (!policy.from || Date.parse(policy.from) > Date.now()),
+        typeof policy.from === 'string' &&
+        Number.isFinite(Date.parse(policy.from)) &&
+        Date.parse(policy.from) > Date.now(),
       );
       const starsMatch = (hotel.categoryCode ?? '').match(/^(\d+)/);
       const totalPrice = mejorOferta.price;
@@ -196,7 +206,7 @@ export async function buscarHotelesHotelbeds(params: {
         numeroResenas: 0,
         precioTotal: totalPrice,
         precioPorNoche: Number((totalPrice / noches).toFixed(2)),
-        moneda: hotel.currency ?? response.hotels?.currency ?? 'EUR',
+        moneda: mejorOferta.rate.hotelCurrency ?? hotel.currency ?? response.hotels?.currency ?? 'EUR',
         habitacion: mejorOferta.roomName,
         disponibilidad: 'Disponible según respuesta de Hotelbeds',
         habitacionesDisponibles: Number(mejorOferta.rate.allotment ?? 0),
