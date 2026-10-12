@@ -15,8 +15,8 @@ export async function buscarHotelesSerpApi(params: {
     throw new Error('SERPAPI_API_KEY no está configurada para la búsqueda de hoteles.');
   }
 
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(params.fechaEntrada) ||
-      !/^\\d{4}-\\d{2}-\\d{2}$/.test(params.fechaSalida) ||
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(params.fechaEntrada) ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(params.fechaSalida) ||
       params.fechaSalida <= params.fechaEntrada) {
     throw new Error('Las fechas de alojamiento no son válidas.');
   }
@@ -87,7 +87,7 @@ export async function buscarHotelesSerpApi(params: {
           ? Number((nightly * nights).toFixed(2))
           : 0;
       const stars = hotel.extracted_hotel_class ??
-        Number((hotel.hotel_class ?? '').match(/\\d+/)?.[0] ?? 0);
+        Number((hotel.hotel_class ?? '').match(/\d+/)?.[0] ?? 0);
       const propertyLink = hotel.link ??
         hotel.prices?.find((price) => price.link)?.link ??
         hotel.serpapi_property_details_link ?? '';
