@@ -12,8 +12,9 @@ import {
   buscarGoogleTravelExplore,
   resolverAeropuerto,
 } from './services/serpapi.js';
-import { buscarHotelesSearchApi } from './services/searchapi.js';
+import { buscarHotelesSerpApi } from './services/serpapi-hotels.js';
 import { comprobarConexionHotelbeds } from './services/hotelbeds.js';
+import { buscarHotelesHotelbeds } from './services/hotelbeds-search.js';
 
 /* =========================================================
    1. FUNCIONES AUXILIARES
@@ -1143,9 +1144,34 @@ const comprobarHotelbedsTool = tool({
   execute: async () => await comprobarConexionHotelbeds(),
 });
 
+const buscarHotelesHotelbedsPruebaTool = tool({
+  name: 'buscar_hoteles_hotelbeds_prueba',
+  description: 'Realiza una búsqueda de disponibilidad en Hotelbeds TEST usando mTLS. Úsala únicamente cuando el usuario pida probar o verificar la búsqueda de hoteles de Hotelbeds; no sustituye todavía al proveedor habitual.',
+  parameters: {
+    type: 'object',
+    properties: {
+      destino: { type: 'string', description: 'Ciudad o destino del alojamiento.' },
+      fechaEntrada: { type: 'string', description: 'Fecha de entrada en formato YYYY-MM-DD.' },
+      fechaSalida: { type: 'string', description: 'Fecha de salida en formato YYYY-MM-DD.' },
+      adultos: { type: 'number', description: 'Número de adultos.' },
+    },
+    required: ['destino', 'fechaEntrada', 'fechaSalida', 'adultos'],
+    additionalProperties: false,
+  },
+  execute: async (input) => {
+    const { destino, fechaEntrada, fechaSalida, adultos } = input as {
+      destino: string;
+      fechaEntrada: string;
+      fechaSalida: string;
+      adultos: number;
+    };
+    return await buscarHotelesHotelbeds({ destino, fechaEntrada, fechaSalida, adultos });
+  },
+});
+
 const buscarHoteles = tool({
   name: 'buscar_hoteles',
-  description: 'Busca alojamientos reales utilizando SearchAPI sobre Booking.com.',
+  description: 'Busca alojamientos reales con fechas y precios de Google Hotels a través de SerpApi. Presenta los resultados disponibles y conserva los enlaces reales proporcionados por la búsqueda.',
   parameters: {
     type: 'object',
     properties: {
@@ -1159,7 +1185,7 @@ const buscarHoteles = tool({
   },
   execute: async (input) => {
     const { destino, fechaEntrada, fechaSalida, adultos } = input as { destino:string; fechaEntrada:string; fechaSalida:string; adultos:number };
-    return await buscarHotelesSearchApi({ destino, fechaEntrada, fechaSalida, adultos });
+    return await buscarHotelesSerpApi({ destino, fechaEntrada, fechaSalida, adultos });
   },
 });
 
@@ -1181,7 +1207,7 @@ const hotelAgent = new Agent({
 
     Utiliza SIEMPRE la herramienta buscar_hoteles.
 
-    La herramienta obtiene alojamientos reales mediante SearchAPI sobre Booking.com.
+    La herramienta buscar_hoteles obtiene alojamientos reales mediante Google Hotels a través de SerpApi.
 
     Necesitas:
     - destino
@@ -1211,8 +1237,9 @@ const hotelAgent = new Agent({
     - distancia al centro
 
     No inventes alojamientos, precios, estrellas, valoraciones, reseñas, disponibilidad ni condiciones.
+    Si precioTotal o precioPorNoche es 0, significa que Google Hotels no proporcionó un precio utilizable: NO lo presentes como 0 €, gratis ni como precio real. Indica "Precio no disponible; consultar proveedor".
     No reduzcas las opciones a una única opción.
-    Los enlaces proceden de Booking.com.
+    Conserva el enlace real que devuelve Google Hotels. No inventes enlaces ni proveedores.
   `,
   tools: [buscarHoteles],
 });
@@ -2442,8 +2469,6 @@ export const travelAgent = new Agent({
   `,
 
   tools: [
-    comprobarHotelbedsTool,
-
     buscarDestinos,
 
     planificarRuta,
