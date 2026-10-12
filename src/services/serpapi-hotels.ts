@@ -72,11 +72,11 @@ export async function buscarHotelesSerpApi(params: {
   const nights = Math.max(1, (Date.parse(`${params.fechaSalida}T00:00:00Z`) -
     Date.parse(`${params.fechaEntrada}T00:00:00Z`)) / 86400000);
 
+  // Google Hotels can return real properties without a price for the
+  // selected dates. Keep those properties visible instead of turning a
+  // partial-price response into a misleading "no hotels found" result.
   const hoteles = (data.properties ?? [])
-    .filter((hotel) => hotel.name && (
-      Number.isFinite(hotel.total_rate?.extracted_lowest) ||
-      Number.isFinite(hotel.rate_per_night?.extracted_lowest)
-    ))
+    .filter((hotel) => Boolean(hotel.name))
     .slice(0, 10)
     .map((hotel) => {
       const total = hotel.total_rate?.extracted_lowest;
@@ -86,6 +86,8 @@ export async function buscarHotelesSerpApi(params: {
         : typeof nightly === 'number' && nightly > 0
           ? Number((nightly * nights).toFixed(2))
           : 0;
+      const hasUsablePrice = (typeof total === 'number' && Number.isFinite(total) && total > 0) ||
+        (typeof nightly === 'number' && Number.isFinite(nightly) && nightly > 0);
       const stars = hotel.extracted_hotel_class ??
         Number((hotel.hotel_class ?? '').match(/\d+/)?.[0] ?? 0);
       const propertyLink = hotel.link ??
@@ -97,10 +99,14 @@ export async function buscarHotelesSerpApi(params: {
         estrellas: Number.isFinite(stars) ? stars : 0,
         valoracion: Number(hotel.overall_rating ?? 0),
         numeroResenas: Number(hotel.reviews ?? 0),
-        precioTotal: priceTotal,
-        precioPorNoche: typeof nightly === 'number' && nightly > 0
-          ? nightly
-          : Number((priceTotal / nights).toFixed(2)),
+        // 0 is a sentinel for "price not provided", never a free stay.
+        precioTotal: hasUsablePrice ? priceTotal : 0,
+        precioPorNoche: hasUsablePrice
+          ? (typeof nightly === 'number' && nightly > 0
+              ? nightly
+              : Number((priceTotal / nights).toFixed(2)))
+          : 0,
+        precioDisponible: hasUsablePrice,
         moneda: 'EUR',
         habitacion: '',
         disponibilidad: 'Precio mostrado por Google Hotels; confirmar en el proveedor',
