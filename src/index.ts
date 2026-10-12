@@ -1171,7 +1171,7 @@ const buscarHotelesHotelbedsPruebaTool = tool({
 
 const buscarHoteles = tool({
   name: 'buscar_hoteles',
-  description: 'Busca alojamientos reales utilizando SearchAPI sobre Booking.com.',
+  description: 'Busca alojamientos reales con fechas y precios de Google Hotels a través de SerpApi. Presenta los resultados disponibles y conserva los enlaces reales proporcionados por la búsqueda.',
   parameters: {
     type: 'object',
     properties: {
