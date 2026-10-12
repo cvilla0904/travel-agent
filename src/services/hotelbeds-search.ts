@@ -7,6 +7,7 @@ type HotelbedsRate = {
   hotelSellingRate?: string | number;
   hotelMandatory?: boolean | null;
   rateType?: string;
+  hotelCurrency?: string;
   allotment?: number;
   boardName?: string;
   cancellationPolicies?: Array<{ amount?: string | number; from?: string }>;
@@ -19,7 +20,6 @@ type HotelbedsHotel = {
   categoryName?: string;
   zoneName?: string;
   currency?: string;
-  currencyCode?: string;
   rooms?: Array<{
     name?: string;
     rates?: HotelbedsRate[];
@@ -181,8 +181,11 @@ export async function buscarHotelesHotelbeds(params: {
           // selling price returned by the availability API.
           price: Number(rate.sellingRate ?? rate.hotelSellingRate),
         })),
-      ).filter((offer) => Number.isFinite(offer.price) && offer.price > 0)
-       .sort((a, b) => a.price - b.price);
+      ).filter((offer) =>
+        Number.isFinite(offer.price) &&
+        offer.price > 0 &&
+        (!offer.rate.rateType || offer.rate.rateType === 'BOOKABLE'),
+      ).sort((a, b) => a.price - b.price);
 
       const mejorOferta = ofertas[0];
       if (!hotel.name || !mejorOferta) return null;
