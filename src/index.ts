@@ -1237,6 +1237,7 @@ const hotelAgent = new Agent({
     - distancia al centro
 
     No inventes alojamientos, precios, estrellas, valoraciones, reseñas, disponibilidad ni condiciones.
+    Si precioTotal o precioPorNoche es 0, significa que Google Hotels no proporcionó un precio utilizable: NO lo presentes como 0 €, gratis ni como precio real. Indica "Precio no disponible; consultar proveedor".
     No reduzcas las opciones a una única opción.
     Conserva el enlace real que devuelve Google Hotels. No inventes enlaces ni proveedores.
   `,
