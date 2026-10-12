@@ -1264,16 +1264,19 @@ const buscarActividades = tool({
       tipos: string[];
     };
 
-    const consultasCategorias = tipos.length
-      ? tipos.map((tipo) => `${destino} ${tipo}`)
-      : [destino];
-
-    const resultadosPorConsulta = await Promise.all(
-      consultasCategorias.map((consulta) =>
-        buscarActividadesApify({ destino: consulta }),
-      ),
-    );
-    const resultados = resultadosPorConsulta.flat();
+    const traduccionesTipo: Record<string, string> = {
+      naturaleza: 'nature',
+      cultura: 'culture museums guided tours',
+      'gastronomía': 'food gastronomy',
+      aventura: 'adventure outdoor activities',
+    };
+    const terminos = tipos
+      .map((tipo) => traduccionesTipo[tipo])
+      .filter(Boolean)
+      .join(' ');
+    const consulta = terminos ? `${destino} ${terminos}` : destino;
+    const resultados = await buscarActividadesApify({ destino: consulta });
+    const consultasCategorias = [consulta];
     const conTitulo = resultados.filter(
       (actividad: any) => typeof actividad?.title === 'string' && actividad.title.trim(),
     );
@@ -1348,6 +1351,12 @@ const buscarActividades = tool({
 const activitiesOutputSchema =
   z.object({
     destino: z.string(),
+    diagnosticoBusqueda: z.object({
+      consultas: z.array(z.string()),
+      resultadosProveedor: z.number(),
+      resultadosConTitulo: z.number(),
+      resultadosConPrecioNumerico: z.number(),
+    }),
 
     actividades:
       z.array(
