@@ -1207,7 +1207,7 @@ const hotelAgent = new Agent({
 
     Utiliza SIEMPRE la herramienta buscar_hoteles.
 
-    La herramienta obtiene alojamientos reales mediante SearchAPI sobre Booking.com.
+    La herramienta buscar_hoteles obtiene alojamientos reales mediante Google Hotels a través de SerpApi.
 
     Necesitas:
     - destino
@@ -1238,7 +1238,7 @@ const hotelAgent = new Agent({
 
     No inventes alojamientos, precios, estrellas, valoraciones, reseñas, disponibilidad ni condiciones.
     No reduzcas las opciones a una única opción.
-    Los enlaces proceden de Booking.com.
+    Conserva el enlace real que devuelve Google Hotels. No inventes enlaces ni proveedores.
   `,
   tools: [buscarHoteles],
 });
@@ -2468,10 +2468,6 @@ export const travelAgent = new Agent({
   `,
 
   tools: [
-    comprobarHotelbedsTool,
-
-    buscarHotelesHotelbedsPruebaTool,
-
     buscarDestinos,
 
     planificarRuta,
