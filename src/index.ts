@@ -1158,6 +1158,11 @@ const hotelOutputSchema = z.object({
     disponibilidad:z.string(), habitacionesDisponibles:z.number(), cancelacionGratuita:z.boolean(),
     cancelacionHasta:z.string(), url:z.string(), imagen:z.string(), zona:z.string(), distanciaCentro:z.string(),
     precioDisponible:z.boolean().optional(), fuentePrecio:z.string().optional(),
+    ofertas:z.array(z.object({
+      proveedor:z.string(), precioTotal:z.number(), precioPorNoche:z.number(),
+      url:z.string(), esWebOficial:z.boolean(), cancelacionGratuita:z.boolean(),
+      cancelacionHasta:z.string(),
+    })).optional(),
     descripcion:z.string().optional(), tipo:z.string().optional(),
   })),
 });
@@ -1203,6 +1208,14 @@ const hotelAgent = new Agent({
     Si precioTotal o precioPorNoche es 0, significa que Google Hotels no proporcionó un precio utilizable: NO lo presentes como 0 €, gratis ni como precio real. Indica "Precio no disponible; consultar proveedor".
     No reduzcas las opciones a una única opción.
     Conserva el enlace real que devuelve Google Hotels. No inventes enlaces ni proveedores.
+
+    Si el alojamiento incluye el array "ofertas", utiliza sus ofertas como
+    comparación de precios para las mismas fechas y adultos. Muestra el precio
+    total y el proveedor de cada oferta, con su enlace real correspondiente.
+    No combines el precio de un proveedor con el enlace de otro. Si no hay
+    ofertas comparables, conserva el precio agregado de Google Hotels y su
+    enlace de comparación. No afirmes que una opción es la más barata de todo
+    el mercado: solo es la más barata entre las ofertas devueltas.
   `,
   tools: [buscarHoteles],
 });
