@@ -1280,7 +1280,7 @@ const buscarActividades = tool({
         actividadEsDeCiudad(actividad, destino),
     );
     const normalizarTexto = (valor: unknown) => String(valor ?? '')
-      .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().trim();
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
     const parsearPrecio = (valor: unknown): number | null => {
       if (typeof valor === 'number' && Number.isFinite(valor) && valor >= 0) return valor;
       if (typeof valor === 'string' && valor.trim()) {
@@ -1534,7 +1534,7 @@ function slugCiudadActividades(ciudad: string): string {
 
 function actividadEsDeCiudad(actividad: any, ciudad: string): boolean {
   const normalizar = (valor: unknown) => String(valor ?? '')
-    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().trim();
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   const ciudadNormalizada = normalizar(ciudad);
   const ciudadActividad = normalizar(actividad?.city);
   const url = typeof actividad?.url === 'string' ? actividad.url.toLowerCase() : '';
@@ -1550,7 +1550,7 @@ function actividadEsDeCiudad(actividad: any, ciudad: string): boolean {
 
   if (ciudadActividad) {
     // El actor puede devolver "Atracciones Amsterdam"; eliminamos solo prefijos genéricos conocidos.
-    const ciudadLimpia = ciudadActividad.replace(/^(atracciones|attractions|things to do)\\s+/, '');
+    const ciudadLimpia = ciudadActividad.replace(/^(atracciones|attractions|things to do)\s+/, '');
     return nombresValidos.some((nombre) =>
       ciudadLimpia === nombre ||
       ciudadLimpia.startsWith(nombre + ',') ||
