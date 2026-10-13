@@ -2400,7 +2400,12 @@ export const travelAgent = new Agent({
 
     ### [Ciudad] — [días] días
     #### Alojamientos
+    #### Alojamientos recomendados
     - [opciones de alojamiento de esa ciudad]
+    #### Alojamientos económicos
+    - [opciones de precio bajo con buena valoración, si los datos lo permiten]
+    #### Otros alojamientos
+    - [opciones restantes que no encajen con seguridad en las dos categorías]
 
     #### Actividades
     - [opciones de actividades de esa ciudad]
