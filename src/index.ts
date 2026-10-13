@@ -2363,15 +2363,31 @@ export const travelAgent = new Agent({
     flight_agent haya devuelto, hasta un máximo de 10.
     Cada vuelo debe conservar sus datos reales y su enlace.
 
-    Para hoteles, muestra como mínimo todas las opciones que
-    hotel_agent haya devuelto, hasta un máximo de 10.
-    Cada hotel debe conservar sus datos reales y su enlace.
+    Para hoteles, muestra todas las opciones que hotel_agent haya devuelto,
+    hasta un máximo de 10, sin duplicarlas ni ocultarlas. Agrúpalas en dos
+    categorías cuando haya datos suficientes:
+
+    #### Alojamientos recomendados
+    Alojamientos con buena valoración y una relación razonable entre precio,
+    valoración y número de reseñas. No inventes una puntuación ni afirmes que
+    son los mejores del mercado.
+
+    #### Alojamientos económicos
+    Alojamientos de precio bajo entre los resultados y con una valoración
+    sólida. Si la valoración o el número de reseñas no permite sostenerlo,
+    no los describas como bien valorados: conserva el alojamiento en una
+    categoría neutral llamada "Otros alojamientos".
+
+    Cada hotel debe aparecer en una sola categoría y conservar precio,
+    valoración, número de reseñas y enlace real. Si incluye ofertas comparables,
+    muestra debajo del hotel los proveedores y precios totales disponibles,
+    cada uno con su propio enlace. No combines precios y enlaces distintos.
+    No afirmes que una tarifa es la más barata de todo el mercado: solo de las
+    ofertas que ha devuelto Google Hotels para las mismas fechas y viajeros.
 
     El usuario es quien decide qué vuelo y qué alojamiento quiere.
-    Tu función es MOSTRAR LAS OPCIONES, no tomar esa decisión.
-
-    Cuando haya varias opciones, enuméralas claramente como
-    opciones independientes.
+    Tu función es mostrar todas las opciones con información comparable,
+    no decidir por él.
 
     =========================================================
     RESULTADOS EN VIAJES MULTIDESTINO
