@@ -105,7 +105,13 @@ export async function buscarHotelesSerpApi(params: {
   // Google Hotels can return real properties without a price for the
   // selected dates. Keep those properties visible instead of turning a
   // partial-price response into a misleading "no hotels found" result.
-  const hoteles = (data.properties ?? [])
+  console.info('[Mogavel][Hoteles] Iniciando transformación de propiedades', {
+    propiedadesRecibidas: data.properties?.length ?? 0,
+  });
+
+  const hoteles = (() => {
+    try {
+      return (data.properties ?? [])
     .filter((hotel) => Boolean(hotel.name))
     .slice(0, 10)
     .map((hotel) => {
@@ -193,6 +199,14 @@ export async function buscarHotelesSerpApi(params: {
         tipo: hotel.type ?? 'hotel',
       };
     });
+    } catch (error) {
+      console.error('[Mogavel][Hoteles] Error durante la transformación de propiedades', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      throw error;
+    }
+  })();
 
   console.info('[Mogavel][Hoteles] Resultado procesado por Mogavel', {
     propiedadesRecibidas: data.properties?.length ?? 0,
