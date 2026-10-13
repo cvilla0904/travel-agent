@@ -696,9 +696,7 @@
       const multicitySection = parseMultidestinationSections(afterLines);
       const hotelSection = multicitySection.html
         ? { html: '' }
-        : renderHotels(afterLines).html
-          ? renderHotels(afterLines)
-          : parseHotelBlocks(lines.slice(headingIndex + 1));
+        : parseHotelBlocks(lines.slice(headingIndex + 1));
       const activityMarker = lines.findIndex((line, index) => index > headingIndex && /^#{0,6}\s*Actividades/i.test(line.trim()));
       const activitySection = multicitySection.html
         ? { html: '' }
