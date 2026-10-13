@@ -41,7 +41,7 @@ async function ejecutarActor(searchQueries: string[]) {
 
   const client = new ApifyClient({ token });
   const actor = client.actor(ACTOR_ID);
-  const run = await actor.call({
+  const actorInput = {
     searchQueries: consultas,
     platforms: PLATFORMS,
     currency: 'EUR',
@@ -49,7 +49,10 @@ async function ejecutarActor(searchQueries: string[]) {
     includeActivityDetails: true,
     maxResults: Math.max(10, consultas.length * MAX_RESULTS_PER_QUERY),
     maxResultsPerQuery: MAX_RESULTS_PER_QUERY,
-  }, { waitSecs: WAIT_SECS });
+  };
+  console.info('[APIFY_DIAG] Starting actor', JSON.stringify({ actor: ACTOR_ID, input: actorInput }));
+  const run = await actor.call(actorInput, { waitSecs: WAIT_SECS });
+  console.info('[APIFY_DIAG] Actor finished', JSON.stringify({ status: run.status, runId: run.id, datasetId: run.defaultDatasetId ?? null }));
 
   if (run.status !== 'SUCCEEDED') {
     const status = String(run.status ?? 'UNKNOWN');
@@ -61,6 +64,7 @@ async function ejecutarActor(searchQueries: string[]) {
   }
 
   const { items } = await client.dataset(run.defaultDatasetId).listItems();
+  console.info('[APIFY_DIAG] Dataset read', JSON.stringify({ runId: run.id, datasetId: run.defaultDatasetId, itemCount: items.length, sampleFields: items[0] ? Object.keys(items[0] as Record<string, unknown>) : [] }));
   return items;
 }
 
