@@ -1272,7 +1272,9 @@ const buscarActividades = tool({
     };
     const preferencias = tipos.flatMap((tipo) => traduccionesTipo[tipo] ?? []);
     // El actor espera ciudades en searchQueries; las preferencias no deben contaminar la consulta.
+    console.info('[ACTIVITIES_DIAG] Tool started', JSON.stringify({ destino, tipos, preferencias }));
     const resultados = await buscarActividadesApify({ destino });
+    console.info('[ACTIVITIES_DIAG] Provider returned', JSON.stringify({ destino, count: resultados.length, sampleFields: resultados[0] ? Object.keys(resultados[0] as Record<string, unknown>) : [] }));
     // Restauramos el criterio sencillo de la versión anterior: el propio proveedor
     // busca por ciudad. El filtro geográfico estricto estaba descartando resultados
     // válidos cuando la etiqueta city del actor no coincidía con el idioma del destino.
@@ -1304,8 +1306,9 @@ const buscarActividades = tool({
     const unicos = Array.from(
       new Map(conPreferencia.map((actividad: any) => [actividad.url || actividad.title, actividad])).values(),
     ).sort((a: any, b: any) => b._preferencia - a._preferencia);
+    console.info('[ACTIVITIES_DIAG] Filtering summary', JSON.stringify({ destino, conTitulo: conTitulo.length, conPrecio: conTitulo.filter((actividad: any) => parsearPrecio(actividad.priceFrom) !== null).length, unicos: unicos.length }));
 
-    return {
+    const salida = {
       destino,
       diagnosticoBusqueda: {
         consultas: [destino],
@@ -1331,6 +1334,8 @@ const buscarActividades = tool({
         plataforma: typeof actividad.platform === 'string' ? actividad.platform : '',
       })),
     };
+    console.info('[ACTIVITIES_DIAG] Tool output', JSON.stringify({ destino, returnedActivities: salida.actividades.length }));
+    return salida;
   },
 });
 
