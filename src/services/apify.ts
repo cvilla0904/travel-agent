@@ -3,7 +3,7 @@ import { ApifyClient } from 'apify-client';
 const ACTOR_ID = 'scrapesage/tours-activities-scraper';
 const PLATFORMS = ['civitatis', 'tiqets'];
 const MAX_RESULTS_PER_QUERY = 10;
-const WAIT_SECS = 90;
+const WAIT_SECS = 20;
 
 async function ejecutarActor(searchQueries: string[]) {
   const token = process.env.APIFY_API_TOKEN;
