@@ -1264,86 +1264,64 @@ const buscarActividades = tool({
       tipos: string[];
     };
 
-    const traduccionesTipo: Record<string, string> = {
-      naturaleza: 'nature',
-      cultura: 'culture museums guided tours',
-      'gastronomía': 'food gastronomy',
-      aventura: 'adventure outdoor activities',
+    const traduccionesTipo: Record<string, string[]> = {
+      naturaleza: ['nature', 'outdoor', 'nature tours'],
+      cultura: ['culture', 'museums', 'guided tours'],
+      'gastronomía': ['food', 'gastronomy', 'food tours'],
+      aventura: ['adventure', 'outdoor activities'],
     };
-    const terminos = tipos
-      .map((tipo) => traduccionesTipo[tipo])
-      .filter(Boolean)
-      .join(' ');
-    const consulta = terminos ? `${destino} ${terminos}` : destino;
-    const resultados = await buscarActividadesApify({ destino: consulta });
-    const consultasCategorias = [consulta];
+    const preferencias = tipos.flatMap((tipo) => traduccionesTipo[tipo] ?? []);
+    // El actor espera ciudades en searchQueries; las preferencias no deben contaminar la consulta.
+    const resultados = await buscarActividadesApify({ destino });
     const conTitulo = resultados.filter(
       (actividad: any) => typeof actividad?.title === 'string' && actividad.title.trim(),
     );
-    const conPrecioNumerico = conTitulo.filter(
-      (actividad: any) => typeof actividad.priceFrom === 'number' && Number.isFinite(actividad.priceFrom),
-    );
+    const normalizarTexto = (valor: unknown) => String(valor ?? '')
+      .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().trim();
+    const parsearPrecio = (valor: unknown): number | null => {
+      if (typeof valor === 'number' && Number.isFinite(valor) && valor >= 0) return valor;
+      if (typeof valor === 'string' && valor.trim()) {
+        const limpio = valor.trim().replace(/[^0-9,.-]/g, '').replace(',', '.');
+        const numero = Number(limpio);
+        if (Number.isFinite(numero) && numero >= 0) return numero;
+      }
+      return null;
+    };
+    const conPreferencia = conTitulo.map((actividad: any) => ({
+      ...actividad,
+      _precioNormalizado: parsearPrecio(actividad.priceFrom),
+      _preferencia: preferencias.reduce((puntos, termino) =>
+        puntos + (normalizarTexto(actividad.title).includes(normalizarTexto(termino)) ? 1 : 0), 0),
+    }));
     const unicos = Array.from(
-      new Map(
-        conPrecioNumerico.map((actividad: any) => [
-          actividad.url || actividad.title,
-          actividad,
-        ]),
-      ).values(),
-    );
+      new Map(conPreferencia.map((actividad: any) => [actividad.url || actividad.title, actividad])).values(),
+    ).sort((a: any, b: any) => b._preferencia - a._preferencia);
 
     return {
       destino,
       diagnosticoBusqueda: {
-        consultas: consultasCategorias,
+        consultas: [destino],
         resultadosProveedor: resultados.length,
         resultadosConTitulo: conTitulo.length,
-        resultadosConPrecioNumerico: conPrecioNumerico.length,
+        resultadosConPrecioNumerico: conTitulo.filter((actividad: any) => parsearPrecio(actividad.priceFrom) !== null).length,
       },
-
-      actividades: unicos
-        .slice(0, 15)
-        .map((actividad: any) => ({
-          nombre:
-            actividad.title,
-
-          tipo:
-            actividad.categories?.join(', ') ||
-            tipos.join(', '),
-
-          precio:
-            Number(actividad.priceFrom ?? 0),
-
-          moneda:
-            actividad.priceCurrency ?? 'EUR',
-
-          valoracion:
-            Number(actividad.rating ?? 0),
-
-          numeroResenas:
-            Number(actividad.reviewCount ?? 0),
-
-          duracion:
-            actividad.durationText ?? '',
-
-          cancelacionGratuita:
-            actividad.freeCancellation ?? false,
-
-          direccion:
-            '',
-
-          latitud:
-            0,
-
-          longitud:
-            0,
-
-          url:
-            actividad.url ?? '',
-
-          plataforma:
-            actividad.platform ?? '',
-        })),
+      actividades: unicos.slice(0, 15).map((actividad: any) => ({
+        nombre: actividad.title,
+        tipo: Array.isArray(actividad.categories) ? actividad.categories.join(', ') : tipos.join(', '),
+        precio: actividad._precioNormalizado,
+        moneda: typeof actividad.priceCurrency === 'string' && actividad.priceCurrency.trim()
+          ? actividad.priceCurrency.trim().toUpperCase()
+          : null,
+        valoracion: Number.isFinite(Number(actividad.rating)) ? Number(actividad.rating) : 0,
+        numeroResenas: Number.isFinite(Number(actividad.reviewCount)) ? Number(actividad.reviewCount) : 0,
+        duracion: typeof actividad.durationText === 'string' ? actividad.durationText : '',
+        cancelacionGratuita: typeof actividad.freeCancellation === 'boolean' ? actividad.freeCancellation : false,
+        direccion: '',
+        latitud: 0,
+        longitud: 0,
+        url: typeof actividad.url === 'string' ? actividad.url : '',
+        plataforma: typeof actividad.platform === 'string' ? actividad.platform : '',
+      })),
     };
   },
 });
@@ -1552,57 +1530,36 @@ function slugCiudadActividades(ciudad: string): string {
 }
 
 function actividadEsDeCiudad(actividad: any, ciudad: string): boolean {
-  const normalizar = (valor: string) =>
-    String(valor ?? '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .trim();
-
+  const normalizar = (valor: unknown) => String(valor ?? '')
+    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().trim();
   const ciudadNormalizada = normalizar(ciudad);
   const ciudadActividad = normalizar(actividad?.city);
-  const paisActividad = normalizar(actividad?.country);
-  const url = typeof actividad?.url === 'string'
-    ? actividad.url.toLowerCase()
-    : '';
+  const url = typeof actividad?.url === 'string' ? actividad.url.toLowerCase() : '';
   const titulo = normalizar(actividad?.title);
   const slug = slugCiudadActividades(ciudad);
-
   const aliasCiudad: Record<string, string[]> = {
     bogota: ['bogota', 'bogota d.c.'],
     medellin: ['medellin'],
     'cartagena de indias': ['cartagena', 'cartagena de indias'],
     cartagena: ['cartagena', 'cartagena de indias'],
   };
-
   const nombresValidos = aliasCiudad[ciudadNormalizada] ?? [ciudadNormalizada];
 
-  // La fuente estructurada "city" del Actor es la señal principal.
-  // Si también aporta país, exigimos que coincida con el país de la ruta.
   if (ciudadActividad) {
-    // Los actores pueden devolver "Medellín, Antioquia" o
-    // "Cartagena de Indias, Bolívar". Admitimos ciudad + región,
-    // pero nunca usamos solo el país como coincidencia.
-    return nombresValidos.some(
-      (nombre) =>
-        ciudadActividad === nombre ||
-        ciudadActividad.startsWith(nombre + ',') ||
-        ciudadActividad.startsWith(nombre + ' -') ||
-        ciudadActividad.startsWith(nombre + ' ('),
+    // El actor puede devolver "Atracciones Amsterdam"; eliminamos solo prefijos genéricos conocidos.
+    const ciudadLimpia = ciudadActividad.replace(/^(atracciones|attractions|things to do)\\s+/, '');
+    return nombresValidos.some((nombre) =>
+      ciudadLimpia === nombre ||
+      ciudadLimpia.startsWith(nombre + ',') ||
+      ciudadLimpia.startsWith(nombre + ' -') ||
+      ciudadLimpia.startsWith(nombre + ' (')
     );
   }
-
-  // Fallback para resultados que no traigan city.
   if (!url) return false;
-
   if (slug === 'cartagena-de-indias') {
     return url.includes('/cartagena-de-indias/') || url.includes('/cartagena/');
   }
-
-  return (
-    url.includes('/' + slug + '/') ||
-    titulo.includes(ciudadNormalizada)
-  );
+  return url.includes('/' + slug + '/') || titulo.includes(ciudadNormalizada);
 }
 
 /* =========================================================
