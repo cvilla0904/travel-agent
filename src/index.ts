@@ -1273,11 +1273,15 @@ const buscarActividades = tool({
     const preferencias = tipos.flatMap((tipo) => traduccionesTipo[tipo] ?? []);
     // El actor espera ciudades en searchQueries; las preferencias no deben contaminar la consulta.
     const resultados = await buscarActividadesApify({ destino });
+    // Restauramos el criterio sencillo de la versión anterior: el propio proveedor
+    // busca por ciudad. El filtro geográfico estricto estaba descartando resultados
+    // válidos cuando la etiqueta city del actor no coincidía con el idioma del destino.
     const conTitulo = resultados.filter(
       (actividad: any) =>
         typeof actividad?.title === 'string' &&
         actividad.title.trim() &&
-        actividadEsDeCiudad(actividad, destino),
+        typeof actividad?.priceFrom === 'number' &&
+        Number.isFinite(actividad.priceFrom),
     );
     const normalizarTexto = (valor: unknown) => String(valor ?? '')
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
