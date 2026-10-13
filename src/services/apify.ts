@@ -18,9 +18,10 @@ async function ejecutarActor(searchQueries: string[]) {
     searchQueries: consultas,
     platforms: PLATFORMS,
     currency: 'EUR',
-    language: 'es',
-    includeActivityDetails: false,
-    maxResults: consultas.length * PLATFORMS.length * MAX_RESULTS_PER_QUERY,
+    // Restauramos la configuración del proveedor que se utilizaba antes de los cambios.
+    language: 'en',
+    includeActivityDetails: true,
+    maxResults: Math.max(10, consultas.length * MAX_RESULTS_PER_QUERY),
     maxResultsPerQuery: MAX_RESULTS_PER_QUERY,
   }, { waitSecs: WAIT_SECS });
 
@@ -41,8 +42,7 @@ export async function buscarActividadesApify(params: {
   destino: string;
   categoria?: string;
 }) {
-  // Este actor espera ciudades en searchQueries; las categorías se usan
-  // para ordenar los resultados, no se concatenan a la ciudad.
+  // La consulta principal debe ser el destino, como en la versión anterior.
   return ejecutarActor([params.destino]);
 }
 
