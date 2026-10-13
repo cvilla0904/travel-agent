@@ -36,8 +36,19 @@ export async function buscarHotelesSerpApi(params: {
   url.searchParams.set('hl', 'es');
   url.searchParams.set('api_key', apiKey);
 
+  console.info('[Mogavel][Hoteles] Iniciando búsqueda SerpApi', {
+    destino: params.destino,
+    fechaEntrada: params.fechaEntrada,
+    fechaSalida: params.fechaSalida,
+    adultos: params.adultos,
+  });
+
   const response = await fetch(url);
   if (!response.ok) {
+    console.error('[Mogavel][Hoteles] SerpApi respondió con error HTTP', {
+      status: response.status,
+      statusText: response.statusText,
+    });
     throw new Error(`Error de SerpApi Google Hotels (HTTP ${response.status}).`);
   }
 
@@ -74,7 +85,17 @@ export async function buscarHotelesSerpApi(params: {
     }>;
   };
 
+  console.info('[Mogavel][Hoteles] Respuesta recibida de SerpApi', {
+    estado: data.search_metadata?.status ?? 'desconocido',
+    totalResultadosInformados: data.search_information?.total_results ?? null,
+    propiedadesRecibidas: data.properties?.length ?? 0,
+    propiedadesConNombre: (data.properties ?? []).filter((hotel) => Boolean(hotel.name)).length,
+  });
+
   if (data.error) {
+    console.error('[Mogavel][Hoteles] SerpApi devolvió un error en el cuerpo de la respuesta', {
+      error: data.error,
+    });
     throw new Error(`SerpApi Google Hotels: ${data.error}`);
   }
 
@@ -172,6 +193,13 @@ export async function buscarHotelesSerpApi(params: {
         tipo: hotel.type ?? 'hotel',
       };
     });
+
+  console.info('[Mogavel][Hoteles] Resultado procesado por Mogavel', {
+    propiedadesRecibidas: data.properties?.length ?? 0,
+    hotelesDevueltos: hoteles.length,
+    hotelesConPrecio: hoteles.filter((hotel) => hotel.precioDisponible).length,
+    hotelesSinPrecio: hoteles.filter((hotel) => !hotel.precioDisponible).length,
+  });
 
   return {
     proveedor: 'SerpApi Google Hotels',
