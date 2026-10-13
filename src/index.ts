@@ -1346,10 +1346,10 @@ const activitiesOutputSchema =
             z.string(),
 
           precio:
-            z.number(),
+            z.number().nullable(),
 
           moneda:
-            z.string(),
+            z.string().nullable(),
 
           valoracion:
             z.number(),
