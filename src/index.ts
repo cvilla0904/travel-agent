@@ -1534,23 +1534,38 @@ function slugCiudadActividades(ciudad: string): string {
 
 function actividadEsDeCiudad(actividad: any, ciudad: string): boolean {
   const normalizar = (valor: unknown) => String(valor ?? '')
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().trim();
   const ciudadNormalizada = normalizar(ciudad);
   const ciudadActividad = normalizar(actividad?.city);
   const url = typeof actividad?.url === 'string' ? actividad.url.toLowerCase() : '';
   const titulo = normalizar(actividad?.title);
   const slug = slugCiudadActividades(ciudad);
-  const aliasCiudad: Record<string, string[]> = {
+
+  // El agente puede traducir el destino al inglés antes de llamar al proveedor.
+  // Comparamos equivalencias habituales para no descartar Florencia/Florence.
+  const equivalencias: Record<string, string[]> = {
+    florencia: ['florencia', 'florence'],
+    florence: ['florence', 'florencia'],
+    venecia: ['venecia', 'venice'],
+    venice: ['venice', 'venecia'],
+    roma: ['roma', 'rome'],
+    rome: ['rome', 'roma'],
+    munich: ['munich', 'munich'],
+    munich: ['munich', 'munich'],
     bogota: ['bogota', 'bogota d.c.'],
     medellin: ['medellin'],
     'cartagena de indias': ['cartagena', 'cartagena de indias'],
     cartagena: ['cartagena', 'cartagena de indias'],
   };
-  const nombresValidos = aliasCiudad[ciudadNormalizada] ?? [ciudadNormalizada];
+  const nombresValidos = equivalencias[ciudadNormalizada] ?? [ciudadNormalizada];
 
   if (ciudadActividad) {
-    // El actor puede devolver "Atracciones Amsterdam"; eliminamos solo prefijos genéricos conocidos.
-    const ciudadLimpia = ciudadActividad.replace(/^(atracciones|attractions|things to do)\s+/, '');
+    // Algunos resultados etiquetan la ciudad como "Atracciones Florence"
+    // y otros usan "Florence Attractions". Quitamos solo etiquetas genéricas.
+    const ciudadLimpia = ciudadActividad
+      .replace(/^(atracciones|attractions|things to do)\\s+/, '')
+      .replace(/\\s+(attractions|things to do)$/, '')
+      .trim();
     return nombresValidos.some((nombre) =>
       ciudadLimpia === nombre ||
       ciudadLimpia.startsWith(nombre + ',') ||
@@ -1558,11 +1573,15 @@ function actividadEsDeCiudad(actividad: any, ciudad: string): boolean {
       ciudadLimpia.startsWith(nombre + ' (')
     );
   }
+
   if (!url) return false;
   if (slug === 'cartagena-de-indias') {
     return url.includes('/cartagena-de-indias/') || url.includes('/cartagena/');
   }
-  return url.includes('/' + slug + '/') || titulo.includes(ciudadNormalizada);
+  return nombresValidos.some((nombre) =>
+    url.includes('/' + nombre.replace(/\\s+/g, '-') + '/') ||
+    titulo.includes(nombre)
+  );
 }
 
 /* =========================================================
