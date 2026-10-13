@@ -95,8 +95,6 @@ export async function buscarHotelesSerpApi(params: {
         : typeof nightly === 'number' && nightly > 0
           ? Number((nightly * nights).toFixed(2))
           : 0;
-      const hasUsablePrice = (typeof total === 'number' && Number.isFinite(total) && total > 0) ||
-        (typeof nightly === 'number' && Number.isFinite(nightly) && nightly > 0);
       const stars = hotel.extracted_hotel_class ??
         Number((hotel.hotel_class ?? '').match(/\\d+/)?.[0] ?? 0);
 
@@ -128,6 +126,10 @@ export async function buscarHotelesSerpApi(params: {
         .sort((a, b) => a.precioTotal - b.precioTotal)
         .slice(0, 5);
 
+      const hasUsablePrice = ofertas.length > 0 ||
+        (typeof total === 'number' && Number.isFinite(total) && total > 0) ||
+        (typeof nightly === 'number' && Number.isFinite(nightly) && nightly > 0);
+
       // The selected price and booking URL always come from the same offer.
       // If no provider total is available, use Google's aggregate price and
       // its comparison page rather than pairing it with an unrelated URL.
@@ -153,7 +155,9 @@ export async function buscarHotelesSerpApi(params: {
         precioDisponible: hasUsablePrice,
         moneda: 'EUR',
         habitacion: '',
-        disponibilidad: 'Precio mostrado por Google Hotels; confirmar en el proveedor',
+        disponibilidad: mejorOferta
+          ? 'Oferta mostrada por Google Hotels; confirmar precio y condiciones en el proveedor'
+          : 'Precio agregado por Google Hotels; confirmar en el proveedor',
         habitacionesDisponibles: 0,
         cancelacionGratuita: false,
         cancelacionHasta: '',
