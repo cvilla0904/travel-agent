@@ -376,6 +376,46 @@
         });
         finishGroup();
 
+        // The model may return a flat list instead of the requested headings.
+        // In that case, classify locally from the rating, review count and
+        // total price actually present in each hotel line.
+        if (groups.length === 1 && groups[0].title === 'Alojamientos') {
+          const hotels = groups[0].hotels;
+          const metrics = hotels.map(hotel => {
+            const text = hotel.lines.join(' ').replace(/\\[[^\\]]+\\]\\(https?:\\/\\/[^)]+\\)/g, '');
+            const ratingMatch = text.match(/(?:valoraci[oó]n\\s*)?(\\d(?:[.,]\\d{1,2})?)\\s*\\/\\s*5/i);
+            const reviewsMatch = text.match(/([\\d.]+)\\s*(?:reseñas|opiniones|reviews)/i);
+            const priceMatch = text.match(/(?:€\\s*)?([\\d.]+(?:,\\d{1,2})?)\\s*€(?:\\s*(?:total|\\/noche))?/i);
+            const rating = ratingMatch ? Number(ratingMatch[1].replace(',', '.')) : 0;
+            const reviews = reviewsMatch ? Number(reviewsMatch[1].replace(/\\./g, '')) : 0;
+            const price = priceMatch ? Number(priceMatch[1].replace(/\\./g, '').replace(',', '.')) : 0;
+            return { hotel, rating, reviews, price };
+          });
+          const knownPrices = metrics.map(item => item.price).filter(price => price > 0).sort((a, b) => a - b);
+          const medianPrice = knownPrices.length
+            ? knownPrices[Math.floor((knownPrices.length - 1) / 2)]
+            : 0;
+          const recommended = [];
+          const economic = [];
+          const others = [];
+
+          metrics.forEach(item => {
+            const hasReliableRating = item.rating >= 4.2 && item.reviews >= 50;
+            if (hasReliableRating && item.price > 0 && medianPrice > 0 && item.price <= medianPrice) {
+              economic.push(item.hotel);
+            } else if (item.rating >= 4.3 && item.reviews >= 100) {
+              recommended.push(item.hotel);
+            } else {
+              others.push(item.hotel);
+            }
+          });
+
+          groups.length = 0;
+          if (recommended.length) groups.push({ title: 'Alojamientos recomendados', hotels: recommended });
+          if (economic.length) groups.push({ title: 'Alojamientos económicos', hotels: economic });
+          if (others.length) groups.push({ title: 'Otros alojamientos', hotels: others });
+        }
+
         const renderedGroups = groups.map(category => {
           const cards = category.hotels.map(hotel => {
             const allText = hotel.lines.join(' ');
