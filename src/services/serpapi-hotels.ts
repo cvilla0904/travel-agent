@@ -90,9 +90,14 @@ export async function buscarHotelesSerpApi(params: {
         (typeof nightly === 'number' && Number.isFinite(nightly) && nightly > 0);
       const stars = hotel.extracted_hotel_class ??
         Number((hotel.hotel_class ?? '').match(/\d+/)?.[0] ?? 0);
-      const propertyLink = hotel.link ??
-        hotel.prices?.find((price) => price.link)?.link ??
-        hotel.serpapi_property_details_link ?? '';
+      // The displayed price is Google's aggregate lowest rate, not
+      // necessarily the price on the hotel's own website. Prefer Google's
+      // property-details comparison page so the user can see the offers
+      // associated with that price. Use the official property link only
+      // when the comparison page is unavailable.
+      const propertyLink = hotel.serpapi_property_details_link ??
+        hotel.link ??
+        hotel.prices?.find((price) => price.link)?.link ?? '';
 
       return {
         nombre: hotel.name ?? '',
@@ -117,7 +122,9 @@ export async function buscarHotelesSerpApi(params: {
         imagen: hotel.images?.[0]?.original_image ?? hotel.images?.[0]?.thumbnail ?? '',
         zona: (hotel.nearby_places ?? []).map((place) => place.name).filter(Boolean).slice(0, 2).join(', '),
         distanciaCentro: '',
-        fuentePrecio: hotel.prices?.[0]?.source ?? 'Google Hotels',
+        // The total/nightly price comes from Google's property-level
+        // aggregate, so do not label it with the first provider in prices.
+        fuentePrecio: 'Google Hotels',
         descripcion: hotel.description ?? '',
         tipo: hotel.type ?? 'hotel',
       };
