@@ -1274,7 +1274,10 @@ const buscarActividades = tool({
     // El actor espera ciudades en searchQueries; las preferencias no deben contaminar la consulta.
     const resultados = await buscarActividadesApify({ destino });
     const conTitulo = resultados.filter(
-      (actividad: any) => typeof actividad?.title === 'string' && actividad.title.trim(),
+      (actividad: any) =>
+        typeof actividad?.title === 'string' &&
+        actividad.title.trim() &&
+        actividadEsDeCiudad(actividad, destino),
     );
     const normalizarTexto = (valor: unknown) => String(valor ?? '')
       .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().trim();
