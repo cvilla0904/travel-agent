@@ -56,7 +56,16 @@ export async function buscarHotelesSerpApi(params: {
       reviews?: number;
       rate_per_night?: { extracted_lowest?: number; lowest?: string };
       total_rate?: { extracted_lowest?: number; lowest?: string };
-      prices?: Array<{ source?: string; link?: string }>;
+      prices?: Array<{
+        source?: string;
+        link?: string;
+        official?: boolean;
+        num_guests?: number | string;
+        rate_per_night?: { extracted_lowest?: number; lowest?: string };
+        total_rate?: { extracted_lowest?: number; lowest?: string };
+        free_cancellation?: boolean;
+        free_cancellation_until_date?: string;
+      }>;
       images?: Array<{ thumbnail?: string; original_image?: string }>;
       nearby_places?: Array<{ name?: string }>;
       property_token?: string;
@@ -89,13 +98,47 @@ export async function buscarHotelesSerpApi(params: {
       const hasUsablePrice = (typeof total === 'number' && Number.isFinite(total) && total > 0) ||
         (typeof nightly === 'number' && Number.isFinite(nightly) && nightly > 0);
       const stars = hotel.extracted_hotel_class ??
-        Number((hotel.hotel_class ?? '').match(/\d+/)?.[0] ?? 0);
-      // The displayed price is Google's aggregate lowest rate, not
-      // necessarily the price on the hotel's own website. Prefer Google's
-      // property-details comparison page so the user can see the offers
-      // associated with that price. Use the official property link only
-      // when the comparison page is unavailable.
-      const propertyLink = hotel.serpapi_property_details_link ??
+        Number((hotel.hotel_class ?? '').match(/\\d+/)?.[0] ?? 0);
+
+      // Compare only provider offers with a real total for these dates and
+      // guests. Do not invent a stay total by multiplying a nightly price.
+      const ofertas = (hotel.prices ?? [])
+        .filter((price) =>
+          typeof price.source === 'string' &&
+          price.source.trim().length > 0 &&
+          typeof price.link === 'string' &&
+          /^https?:\\/\\//i.test(price.link) &&
+          typeof price.total_rate?.extracted_lowest === 'number' &&
+          Number.isFinite(price.total_rate.extracted_lowest) &&
+          price.total_rate.extracted_lowest > 0
+        )
+        .map((price) => ({
+          proveedor: price.source!.trim(),
+          precioTotal: Number(price.total_rate!.extracted_lowest),
+          precioPorNoche: typeof price.rate_per_night?.extracted_lowest === 'number' &&
+            Number.isFinite(price.rate_per_night.extracted_lowest) &&
+            price.rate_per_night.extracted_lowest > 0
+              ? Number(price.rate_per_night.extracted_lowest)
+              : Number((Number(price.total_rate!.extracted_lowest) / nights).toFixed(2)),
+          url: price.link!,
+          esWebOficial: price.official === true,
+          cancelacionGratuita: price.free_cancellation === true,
+          cancelacionHasta: price.free_cancellation_until_date ?? '',
+        }))
+        .sort((a, b) => a.precioTotal - b.precioTotal)
+        .slice(0, 5);
+
+      // The selected price and booking URL always come from the same offer.
+      // If no provider total is available, use Google's aggregate price and
+      // its comparison page rather than pairing it with an unrelated URL.
+      const mejorOferta = ofertas[0];
+      const precioMostrado = mejorOferta?.precioTotal ?? priceTotal;
+      const precioPorNocheMostrado = mejorOferta?.precioPorNoche ??
+        (typeof nightly === 'number' && nightly > 0
+          ? nightly
+          : Number((priceTotal / nights).toFixed(2)));
+      const urlMostrada = mejorOferta?.url ??
+        hotel.serpapi_property_details_link ??
         hotel.link ??
         hotel.prices?.find((price) => price.link)?.link ?? '';
 
@@ -105,12 +148,8 @@ export async function buscarHotelesSerpApi(params: {
         valoracion: Number(hotel.overall_rating ?? 0),
         numeroResenas: Number(hotel.reviews ?? 0),
         // 0 is a sentinel for "price not provided", never a free stay.
-        precioTotal: hasUsablePrice ? priceTotal : 0,
-        precioPorNoche: hasUsablePrice
-          ? (typeof nightly === 'number' && nightly > 0
-              ? nightly
-              : Number((priceTotal / nights).toFixed(2)))
-          : 0,
+        precioTotal: hasUsablePrice ? precioMostrado : 0,
+        precioPorNoche: hasUsablePrice ? precioPorNocheMostrado : 0,
         precioDisponible: hasUsablePrice,
         moneda: 'EUR',
         habitacion: '',
@@ -118,13 +157,13 @@ export async function buscarHotelesSerpApi(params: {
         habitacionesDisponibles: 0,
         cancelacionGratuita: false,
         cancelacionHasta: '',
-        url: propertyLink,
+        url: urlMostrada,
+        ofertas,
         imagen: hotel.images?.[0]?.original_image ?? hotel.images?.[0]?.thumbnail ?? '',
         zona: (hotel.nearby_places ?? []).map((place) => place.name).filter(Boolean).slice(0, 2).join(', '),
         distanciaCentro: '',
-        // The total/nightly price comes from Google's property-level
-        // aggregate, so do not label it with the first provider in prices.
-        fuentePrecio: 'Google Hotels',
+        // Keep the displayed provider consistent with the selected offer.
+        fuentePrecio: mejorOferta?.proveedor ?? 'Google Hotels',
         descripcion: hotel.description ?? '',
         tipo: hotel.type ?? 'hotel',
       };
