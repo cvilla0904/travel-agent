@@ -2382,6 +2382,8 @@ export const travelAgent = new Agent({
     valoración, número de reseñas y enlace real. Si incluye ofertas comparables,
     muestra debajo del hotel los proveedores y precios totales disponibles,
     cada uno con su propio enlace. No combines precios y enlaces distintos.
+    Añade las ofertas adicionales en una línea de continuación del hotel, sin
+    crear nuevas viñetas, para que cada alojamiento siga siendo una sola tarjeta.
     No afirmes que una tarifa es la más barata de todo el mercado: solo de las
     ofertas que ha devuelto Google Hotels para las mismas fechas y viajeros.
 
