@@ -5,6 +5,33 @@ const PLATFORMS = ['civitatis', 'tiqets'];
 const MAX_RESULTS_PER_QUERY = 10;
 const WAIT_SECS = 20;
 
+// Consultamos el nombre local y el habitual en inglés. El actor puede responder
+// de forma diferente según el idioma de la búsqueda, aunque el destino sea el mismo.
+const ALIASES_DESTINO: Record<string, string[]> = {
+  roma: ['Rome', 'Roma'],
+  rome: ['Rome', 'Roma'],
+  florencia: ['Florence', 'Florencia'],
+  florence: ['Florence', 'Florencia'],
+  venecia: ['Venice', 'Venecia'],
+  venice: ['Venice', 'Venecia'],
+  londres: ['London', 'Londres'],
+  london: ['London', 'Londres'],
+  munich: ['Munich', 'Múnich'],
+  múnich: ['Munich', 'Múnich'],
+  paris: ['Paris', 'París'],
+  parís: ['Paris', 'París'],
+  amsterdam: ['Amsterdam'],
+  barcelona: ['Barcelona'],
+  madrid: ['Madrid'],
+};
+
+function consultasParaDestino(destino: string): string[] {
+  const limpio = destino.trim();
+  const clave = limpio.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const alias = ALIASES_DESTINO[clave];
+  return alias ? [...new Set([limpio, ...alias])] : [limpio];
+}
+
 async function ejecutarActor(searchQueries: string[]) {
   const token = process.env.APIFY_API_TOKEN;
   if (!token) throw new Error('APIFY_API_TOKEN no está configurada.');
@@ -18,7 +45,6 @@ async function ejecutarActor(searchQueries: string[]) {
     searchQueries: consultas,
     platforms: PLATFORMS,
     currency: 'EUR',
-    // Restauramos la configuración del proveedor que se utilizaba antes de los cambios.
     language: 'en',
     includeActivityDetails: true,
     maxResults: Math.max(10, consultas.length * MAX_RESULTS_PER_QUERY),
@@ -42,10 +68,9 @@ export async function buscarActividadesApify(params: {
   destino: string;
   categoria?: string;
 }) {
-  // La consulta principal debe ser el destino, como en la versión anterior.
-  return ejecutarActor([params.destino]);
+  return ejecutarActor(consultasParaDestino(params.destino));
 }
 
 export async function buscarActividadesApifyMultidestino(destinos: string[]) {
-  return ejecutarActor(destinos);
+  return ejecutarActor(destinos.flatMap(consultasParaDestino));
 }
