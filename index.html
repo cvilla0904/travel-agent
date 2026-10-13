@@ -356,7 +356,7 @@
           const trimmed = line.trim();
           if (!trimmed) return;
 
-          const heading = trimmed.match(/^#{1,6}\s*(Alojamientos recomendados|Alojamientos económicos)\s*$/i);
+          const heading = trimmed.match(/^#{1,6}\s*(Alojamientos recomendados|Alojamientos económicos|Otros alojamientos)\s*$/i);
           if (heading) {
             finishGroup();
             group = { title: heading[1], hotels: [] };
@@ -580,7 +580,7 @@
       }
 
       if (headingIndex === -1) {
-        const hotelMarker = lines.findIndex(line => /^(?:###\s*)?Alojamientos encontrados\s*$/i.test(line.trim()));
+        const hotelMarker = lines.findIndex(line => /^(?:#{1,6}\s*)?Alojamientos(?: encontrados| reales)?\s*$/i.test(line.trim()));
         const multicitySection = parseMultidestinationSections(lines);
         const hasStructuredResults = hotelMarker !== -1 || multicitySection.html;
 
