@@ -321,19 +321,19 @@
       function parseHotelBlocks(sectionLines) {
         const normalizeLine = line => String(line)
           .trim()
-          .replace(/^#{1,6}\\s*/, '')
-          .replace(/^\\*{1,2}\\s*/, '')
-          .replace(/\\*{1,2}\\s*$/, '')
+          .replace(/^#{1,6}\s*/, '')
+          .replace(/^\*{1,2}\s*/, '')
+          .replace(/\*{1,2}\s*$/, '')
           .trim();
 
         const markerIndex = sectionLines.findIndex(line => {
-          const normalized = normalizeLine(line).replace(/\\*{2}/g, '');
-          return /^(?:Alojamientos|Alojamientos encontrados|Alojamientos reales)\\s*:??$/i.test(normalized);
+          const normalized = normalizeLine(line).replace(/\*{2}/g, '');
+          return /^(?:Alojamientos|Alojamientos encontrados|Alojamientos reales)\s*:??$/i.test(normalized);
         });
         if (markerIndex === -1) return { html: '' };
 
         const hotelEndIndex = sectionLines.findIndex((line, index) =>
-          index > markerIndex && /^(?:#{1,6}\\s*)?Actividades(?:\\s|$)/i.test(line.trim())
+          index > markerIndex && /^(?:#{1,6}\s*)?Actividades(?:\s|$)/i.test(line.trim())
         );
         const hotelLines = sectionLines.slice(
           markerIndex + 1,
@@ -356,14 +356,14 @@
           const trimmed = line.trim();
           if (!trimmed) return;
 
-          const heading = trimmed.match(/^#{1,6}\\s*(Alojamientos recomendados|Alojamientos económicos)\\s*$/i);
+          const heading = trimmed.match(/^#{1,6}\s*(Alojamientos recomendados|Alojamientos económicos)\s*$/i);
           if (heading) {
             finishGroup();
             group = { title: heading[1], hotels: [] };
             return;
           }
 
-          const itemMatch = trimmed.match(/^(?:[-•]\\s*|\\d+[.)]\\s*)(.+)$/);
+          const itemMatch = trimmed.match(/^(?:[-•]\s*|\d+[.)]\s*)(.+)$/);
           if (itemMatch) {
             finishHotel();
             current = { text: itemMatch[1].trim(), lines: [itemMatch[1].trim()] };
@@ -379,23 +379,23 @@
         const renderedGroups = groups.map(category => {
           const cards = category.hotels.map(hotel => {
             const allText = hotel.lines.join(' ');
-            const linkPattern = /\\[([^\\]]+)\\]\\((https?:\\/\\/[^)]+)\\)/g;
+            const linkPattern = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
             const links = [];
             let match;
             while ((match = linkPattern.exec(allText)) !== null) {
               const url = match[2].replace(/[),.;]+$/, '');
-              if (/^https?:\\/\\//i.test(url) && !links.some(item => item.url === url)) {
+              if (/^https?:\/\//i.test(url) && !links.some(item => item.url === url)) {
                 links.push({ label: match[1], url });
               }
             }
 
             const plain = allText
               .replace(linkPattern, '')
-              .replace(/\\*{1,2}/g, '')
-              .replace(/Ver alojamiento\\s*↗?/gi, '')
-              .replace(/\\s+/g, ' ')
+              .replace(/\*{1,2}/g, '')
+              .replace(/Ver alojamiento\s*↗?/gi, '')
+              .replace(/\s+/g, ' ')
               .trim();
-            const separator = plain.match(/^(.+?)\\s*[—–-]\\s*(.+)$/);
+            const separator = plain.match(/^(.+?)\s*[—–-]\s*(.+)$/);
             const name = (separator ? separator[1] : plain).trim();
             const detail = separator ? separator[2].trim() : '';
             const mainLink = links[0];
