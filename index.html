@@ -399,21 +399,22 @@
           const economic = [];
           const others = [];
 
+          // Clasificación tolerante con respuestas de presupuesto que no incluyen
+          // número de reseñas: no descartamos alojamientos por faltar ese dato.
           metrics.forEach(item => {
-            const hasReliableRating = item.rating >= 4.2 && item.reviews >= 50;
-            if (hasReliableRating && item.price > 0 && medianPrice > 0 && item.price <= medianPrice) {
-              economic.push(item.hotel);
-            } else if (item.rating >= 4.3 && item.reviews >= 100) {
-              recommended.push(item.hotel);
-            } else {
-              others.push(item.hotel);
-            }
+            const hasGoodRating = item.rating >= 4.2;
+            const isRecommended = item.rating >= 4.3 && (item.reviews >= 100 || item.reviews === 0);
+            const isEconomic = item.price > 0 && medianPrice > 0 &&
+              item.price <= medianPrice && hasGoodRating && !isRecommended;
+            if (isRecommended) recommended.push(item.hotel);
+            else if (isEconomic) economic.push(item.hotel);
+            else others.push(item.hotel);
           });
 
           groups.length = 0;
-          if (recommended.length) groups.push({ title: 'Alojamientos recomendados', hotels: recommended });
-          if (economic.length) groups.push({ title: 'Alojamientos económicos', hotels: economic });
-          if (others.length) groups.push({ title: 'Otros alojamientos', hotels: others });
+          groups.push({ title: 'Alojamientos recomendados', hotels: recommended });
+          groups.push({ title: 'Alojamientos económicos', hotels: economic });
+          groups.push({ title: 'Otros alojamientos', hotels: others });
         }
 
         const renderedGroups = groups.map(category => {
@@ -456,8 +457,10 @@
               '</article>';
           }).join('');
 
+          const categoryBody = cards ||
+            '<div class="search-note">No hay alojamientos que cumplan los criterios de esta categoría en los resultados actuales.</div>';
           return '<section class="hotel-category"><h4 class="hotel-category-title">' +
-            escapeHtml(category.title) + '</h4><div class="hotel-results">' + cards + '</div></section>';
+            escapeHtml(category.title) + '</h4><div class="hotel-results">' + categoryBody + '</div></section>';
         }).join('');
 
         return {
@@ -782,8 +785,12 @@
         document.getElementById('results');
 
       results.style.display = 'block';
-      results.innerHTML =
-        '<div class="loading">Preparando una respuesta...</div>';
+      // En mensajes de seguimiento no borres los resultados del viaje ya
+      // mostrados. La respuesta nueva se añadirá o actualizará al terminar.
+      const hadResults = Boolean(results.innerHTML.trim());
+      if (!hadResults) {
+        results.innerHTML = '<div class="loading">Preparando una respuesta...</div>';
+      }
 
       input.value = '';
 
