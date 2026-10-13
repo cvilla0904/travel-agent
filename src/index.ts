@@ -1276,13 +1276,14 @@ const buscarActividades = tool({
     // Restauramos el criterio sencillo de la versión anterior: el propio proveedor
     // busca por ciudad. El filtro geográfico estricto estaba descartando resultados
     // válidos cuando la etiqueta city del actor no coincidía con el idioma del destino.
-    const conTitulo = resultados.filter(
-      (actividad: any) =>
-        typeof actividad?.title === 'string' &&
-        actividad.title.trim() &&
-        typeof actividad?.priceFrom === 'number' &&
-        Number.isFinite(actividad.priceFrom),
-    );
+    // No descartamos una actividad real solo porque el proveedor no publique precio.
+    // Exigimos título y URL HTTP(S); el precio se normaliza y puede quedar como null.
+    const conTitulo = resultados.filter((actividad: any) => {
+      const url = typeof actividad?.url === 'string' ? actividad.url.trim() : '';
+      return typeof actividad?.title === 'string' &&
+        actividad.title.trim().length > 0 &&
+        /^https?:\\/\\//i.test(url);
+    });
     const normalizarTexto = (valor: unknown) => String(valor ?? '')
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
     const parsearPrecio = (valor: unknown): number | null => {
