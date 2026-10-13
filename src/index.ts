@@ -1282,7 +1282,7 @@ const buscarActividades = tool({
       const url = typeof actividad?.url === 'string' ? actividad.url.trim() : '';
       return typeof actividad?.title === 'string' &&
         actividad.title.trim().length > 0 &&
-        /^https?:\\/\\//i.test(url);
+        (url.startsWith('https://') || url.startsWith('http://'));
     });
     const normalizarTexto = (valor: unknown) => String(valor ?? '')
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
