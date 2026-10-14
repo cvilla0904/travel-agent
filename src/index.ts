@@ -297,7 +297,11 @@ function extraerSegmentosApify(leg: any, fallbackOrigen = '', fallbackDestino = 
   return segmentos.map((segmento: any) => {
     const salida = segmento.departureAirport ?? segmento.departure_airport ?? segmento.departure ?? {};
     const llegada = segmento.arrivalAirport ?? segmento.arrival_airport ?? segmento.arrival ?? {};
-    const hora = (value: any) => typeof value === 'string' ? value : value?.time ?? value?.datetime ?? '';
+    const hora = (value: any) => {
+      const raw = typeof value === 'string' ? value : value?.time ?? value?.datetime ?? '';
+      const match = typeof raw === 'string' ? raw.match(/(?:^|\\s)(\\d{1,2}:\\d{2})(?::\\d{2})?$/) : null;
+      return match ? match[1] : raw;
+    };
     const codigo = (value: any) => typeof value === 'string' ? (/^[A-Z]{3}$/i.test(value) ? value.toUpperCase() : '') : value?.code ?? value?.iata ?? value?.id ?? '';
     const nombre = (value: any, fallback: string) => typeof value === 'string' ? value : value?.name ?? value?.city ?? fallback;
     const duracion = parsearDuracionMinutos(segmento.durationMinutes ?? segmento.duration_minutes ?? segmento.duration ?? 0);
@@ -365,7 +369,7 @@ function combinarItinerarioAbierto(idaRaw: any, vueltaRaw: any, ctx: {
     moneda: ida.moneda || vuelta.moneda || 'EUR',
     enlace: ida.enlace || vuelta.enlace || '',
     esIdaVuelta: true,
-    tipo: 'Itinerario abierto / multidestino',
+    tipo: ctx.destinoRegreso === ctx.destino ? 'Ida y vuelta' : 'Itinerario abierto / multidestino',
     escalasIda: ida.escalasIda,
     escalasVuelta: vuelta.escalasIda,
     esDirecto: ida.esDirecto && vuelta.esDirecto,
