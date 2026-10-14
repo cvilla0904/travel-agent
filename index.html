@@ -328,7 +328,7 @@
 
         const markerIndex = sectionLines.findIndex(line => {
           const normalized = normalizeLine(line).replace(/\*{2}/g, '');
-          return /^(?:Alojamientos|Alojamientos encontrados|Alojamientos reales)\s*:??$/i.test(normalized);
+          return /^(?:Alojamiento|Alojamientos)(?:\s+(?:encontrados|reales))?\s*:??$/i.test(normalized);
         });
         if (markerIndex === -1) return { html: '' };
 
@@ -670,7 +670,7 @@
 
       flightLines.forEach(line => {
         const trimmed = line.trim();
-        if (/^-\s+\*\*.+?\*\*:/i.test(trimmed)) {
+        if (/^(?:-\s+|\d+[.)]\s+)?(?:\*\*)?.+?(?:\*\*)?:/i.test(trimmed) && /(?:€|EUR|precio|\[[^\]]+\]\(https?:\/\/)/i.test(trimmed)) {
           if (currentBlock.length) flightBlocks.push(currentBlock);
           currentBlock = [trimmed];
           return;
@@ -681,10 +681,11 @@
 
       const flights = flightBlocks.map(block => {
         const firstLine = block[0];
-        const match = firstLine.match(/^-\s+\*\*(.+?)\*\*:\s*(.*)$/);
+        const match = firstLine.match(/^(?:-\s+|\d+[.)]\s+)?\*\*(.+?)\*\*:\s*(.*)$/) ||
+          firstLine.match(/^(?:-\s+|\d+[.)]\s+)?([^:|]+):\s*(.*)$/);
         if (!match) return null;
 
-        const airline = match[1].trim();
+        const airline = match[1].replace(/\*\*/g, '').trim();
         const blockText = [match[2].trim(), ...block.slice(1)].filter(Boolean).join(' ');
         const markdownUrlMatch = blockText.match(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/);
         const rawUrlMatch = blockText.match(/https?:\/\/[^\s)]+/);
