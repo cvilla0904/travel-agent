@@ -12,7 +12,7 @@ import {
   buscarGoogleTravelExplore,
   resolverAeropuerto,
 } from './services/serpapi.js';
-import { buscarHotelesSerpApi } from './services/serpapi-hotels.js';
+import { buscarHotelesSearchApi } from './services/searchapi.js';
 
 /* =========================================================
    1. FUNCIONES AUXILIARES
@@ -1132,7 +1132,7 @@ const flightAgent = new Agent({
 
 const buscarHoteles = tool({
   name: 'buscar_hoteles',
-  description: 'Busca alojamientos reales con fechas y precios de Google Hotels a través de SerpApi. Presenta los resultados disponibles y conserva los enlaces reales proporcionados por la búsqueda.',
+  description: 'Busca alojamientos en Booking.com mediante SearchAPI con destino, fechas y número de adultos. Presenta únicamente los resultados con precio y conserva los enlaces devueltos por el proveedor.',
   parameters: {
     type: 'object',
     properties: {
@@ -1146,7 +1146,7 @@ const buscarHoteles = tool({
   },
   execute: async (input) => {
     const { destino, fechaEntrada, fechaSalida, adultos } = input as { destino:string; fechaEntrada:string; fechaSalida:string; adultos:number };
-    return await buscarHotelesSerpApi({ destino, fechaEntrada, fechaSalida, adultos });
+    return await buscarHotelesSearchApi({ destino, fechaEntrada, fechaSalida, adultos });
   },
 });
 
@@ -1175,7 +1175,7 @@ const hotelAgent = new Agent({
 
     Utiliza SIEMPRE la herramienta buscar_hoteles.
 
-    La herramienta buscar_hoteles obtiene alojamientos reales mediante Google Hotels a través de SerpApi.
+    La herramienta buscar_hoteles obtiene alojamientos mediante Booking.com a través de SearchAPI.
 
     Necesitas:
     - destino
@@ -1733,7 +1733,7 @@ const buscarRecursosMultidestino = tool({
       let errorAlojamientos: string | null = null;
 
       try {
-        const hotelResult = await buscarHotelesSerpApi({
+        const hotelResult = await buscarHotelesSearchApi({
           destino: normalizarCiudadBusquedaMultidestino(
             ciudad,
             rutaGuardada.pais,
