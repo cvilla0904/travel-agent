@@ -912,7 +912,7 @@ function slugCiudadActividades(ciudad: string): string {
 
 function actividadEsDeCiudad(actividad: any, ciudad: string): boolean {
   const normalizar = (valor: unknown) => String(valor ?? '')
-    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().trim();
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   const ciudadNormalizada = normalizar(ciudad);
   const ciudadActividad = normalizar(actividad?.city);
   const url = typeof actividad?.url === 'string' ? actividad.url.toLowerCase() : '';
@@ -940,8 +940,8 @@ function actividadEsDeCiudad(actividad: any, ciudad: string): boolean {
     // Algunos resultados etiquetan la ciudad como "Atracciones Florence"
     // y otros usan "Florence Attractions". Quitamos solo etiquetas genéricas.
     const ciudadLimpia = ciudadActividad
-      .replace(/^(atracciones|attractions|things to do)\\s+/, '')
-      .replace(/\\s+(attractions|things to do)$/, '')
+      .replace(/^(atracciones|attractions|things to do)\s+/, '')
+      .replace(/\s+(attractions|things to do)$/, '')
       .trim();
     return nombresValidos.some((nombre) =>
       ciudadLimpia === nombre ||
@@ -956,7 +956,7 @@ function actividadEsDeCiudad(actividad: any, ciudad: string): boolean {
     return url.includes('/cartagena-de-indias/') || url.includes('/cartagena/');
   }
   return nombresValidos.some((nombre) =>
-    url.includes('/' + nombre.replace(/\\s+/g, '-') + '/') ||
+    url.includes('/' + nombre.replace(/\s+/g, '-') + '/') ||
     titulo.includes(nombre)
   );
 }
