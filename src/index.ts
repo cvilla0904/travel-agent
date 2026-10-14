@@ -35,7 +35,7 @@ function calcularDuracionDias(
   );
 }
 
-/* Descubrimiento de destinos externo retirado: Mogavel no depende de SerpApi. */
+/* Los destinos se concretan a partir de las preferencias del usuario y los resultados de los proveedores activos. */
 
 const routeStore = new Redis({
   url: process.env.KV_REST_API_URL!,
