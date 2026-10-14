@@ -267,6 +267,17 @@ const buscarVuelos = tool({
   },
 });
 
+function parsearDuracionMinutos(value: any): number {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value !== 'string') return 0;
+  const texto = value.trim().toLowerCase();
+  const horas = texto.match(/(\\d+)\\s*h/);
+  const minutos = texto.match(/(\\d+)\\s*m/);
+  if (horas || minutos) return Number(horas?.[1] ?? 0) * 60 + Number(minutos?.[1] ?? 0);
+  const numerico = Number(texto);
+  return Number.isFinite(numerico) ? numerico : 0;
+}
+
 function extraerSegmentosApify(leg: any, fallbackOrigen = '', fallbackDestino = '') {
   const segmentos = Array.isArray(leg?.segments) ? leg.segments
     : Array.isArray(leg?.flights) ? leg.flights
@@ -277,7 +288,7 @@ function extraerSegmentosApify(leg: any, fallbackOrigen = '', fallbackDestino = 
     const hora = (value: any) => typeof value === 'string' ? value : value?.time ?? value?.datetime ?? '';
     const codigo = (value: any) => typeof value === 'string' ? (/^[A-Z]{3}$/i.test(value) ? value.toUpperCase() : '') : value?.code ?? value?.iata ?? value?.id ?? '';
     const nombre = (value: any, fallback: string) => typeof value === 'string' ? value : value?.name ?? value?.city ?? fallback;
-    const duracion = Number(segmento.durationMinutes ?? segmento.duration_minutes ?? segmento.duration ?? 0);
+    const duracion = parsearDuracionMinutos(segmento.durationMinutes ?? segmento.duration_minutes ?? segmento.duration ?? 0);
     return {
       aeropuertoSalida: nombre(salida, fallbackOrigen),
       codigoSalida: codigo(salida),
@@ -295,8 +306,8 @@ function extraerSegmentosApify(leg: any, fallbackOrigen = '', fallbackDestino = 
 function normalizarVueloIdaVuelta(vuelo: any, ctx: {
   origen: string; destino: string; fechaIda: string; fechaVuelta: string; pasajeros: number;
 }) {
-  const ida = vuelo.outbound ?? vuelo.outboundLeg ?? vuelo.departure ?? vuelo;
-  const vuelta = vuelo.return ?? vuelo.returnLeg ?? vuelo.inbound ?? null;
+  const ida = vuelo.outbound ?? vuelo.outboundLeg ?? vuelo.departure ?? vuelo.legs?.[0] ?? vuelo;
+  const vuelta = vuelo.return ?? vuelo.returnLeg ?? vuelo.inbound ?? vuelo.legs?.[1] ?? null;
   const segmentosIda = extraerSegmentosApify(ida, ctx.origen, ctx.destino);
   const segmentosVuelta = extraerSegmentosApify(vuelta, ctx.destino, ctx.origen);
   const precioTotal = Number(vuelo.price ?? vuelo.totalPrice ?? vuelo.total_price ?? vuelo.priceTotal ?? 0);
@@ -315,12 +326,12 @@ function normalizarVueloIdaVuelta(vuelo: any, ctx: {
     ida: {
       fecha: ctx.fechaIda,
       segmentos: segmentosIda,
-      duracionMinutos: Number(ida?.durationMinutes ?? ida?.duration_minutes ?? ida?.duration ?? segmentosIda.reduce((t: number, s: any) => t + s.duracionMinutos, 0)),
+      duracionMinutos: parsearDuracionMinutos(ida?.durationMinutes ?? ida?.duration_minutes ?? ida?.duration ?? segmentosIda.reduce((t: number, s: any) => t + s.duracionMinutos, 0)),
     },
     vuelta: {
       fecha: ctx.fechaVuelta,
       segmentos: segmentosVuelta,
-      duracionMinutos: Number(vuelta?.durationMinutes ?? vuelta?.duration_minutes ?? vuelta?.duration ?? segmentosVuelta.reduce((t: number, s: any) => t + s.duracionMinutos, 0)),
+      duracionMinutos: parsearDuracionMinutos(vuelta?.durationMinutes ?? vuelta?.duration_minutes ?? vuelta?.duration ?? segmentosVuelta.reduce((t: number, s: any) => t + s.duracionMinutos, 0)),
     },
   };
 }
