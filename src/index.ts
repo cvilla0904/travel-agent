@@ -7,107 +7,12 @@ import { stdin as input, stdout as output } from 'node:process';
 import { z } from 'zod';
 import { buscarLugaresGeoapify } from './services/geoapify.js';
 import { buscarActividadesApify, buscarActividadesApifyMultidestino } from './services/apify.js';
-import {
-  buscarGoogleFlights,
-  buscarGoogleTravelExplore,
-  resolverAeropuerto,
-} from './services/serpapi.js';
+import { buscarVuelosApify } from './services/apify-flights.js';
 import { buscarHotelesSearchApi } from './services/searchapi.js';
 
 /* =========================================================
    1. FUNCIONES AUXILIARES
    ========================================================= */
-
-/**
- * Resuelve una ciudad o aeropuerto introducido por el usuario
- * utilizando SerpApi Google Flights Autocomplete.
- *
- * Devuelve los códigos IATA encontrados para la primera
- * sugerencia relevante.
- */
-async function resolverIdsAeropuerto(
-  texto: string,
-): Promise<string[]> {
-  const consultaOriginal = texto.trim();
-
-  if (!consultaOriginal) {
-    throw new Error('El origen o destino del vuelo está vacío.');
-  }
-
-  // Si el usuario ya proporciona un código IATA, no necesitamos
-  // depender del autocompletado de SerpApi.
-  if (/^[A-Za-z]{3}$/.test(consultaOriginal)) {
-    return [consultaOriginal.toUpperCase()];
-  }
-
-  const sugerencias = await resolverAeropuerto(consultaOriginal);
-
-  if (!Array.isArray(sugerencias) || sugerencias.length === 0) {
-    throw new Error(
-      `No se ha encontrado ningún aeropuerto para "${consultaOriginal}".`,
-    );
-  }
-
-  const normalizar = (valor: string) =>
-    valor
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .trim();
-
-  const consultaNormalizada = normalizar(consultaOriginal);
-
-  // Nunca usamos "la primera sugerencia" como fallback.
-  // Eso fue lo que permitía que una respuesta incorrecta del
-  // autocompletado pudiera convertir Bilbao en otra ciudad.
-  const candidatos = sugerencias.filter(
-    (sugerencia: any) =>
-      Array.isArray(sugerencia?.airports) &&
-      sugerencia.airports.length > 0,
-  );
-
-  const sugerenciaExacta = candidatos.find(
-    (sugerencia: any) => {
-      const nombre = normalizar(sugerencia.name ?? '');
-      const descripcion = normalizar(sugerencia.description ?? '');
-
-      return (
-        nombre === consultaNormalizada ||
-        nombre.startsWith(consultaNormalizada + ',') ||
-        descripcion === consultaNormalizada ||
-        descripcion.startsWith(consultaNormalizada + ',') ||
-        sugerencia.airports.some(
-          (airport: any) =>
-            normalizar(airport?.city ?? '') === consultaNormalizada ||
-            normalizar(airport?.name ?? '') === consultaNormalizada,
-        )
-      );
-    },
-  );
-
-  if (!sugerenciaExacta) {
-    throw new Error(
-      `No se ha podido verificar "${consultaOriginal}" como ciudad o aeropuerto. No se realizará una búsqueda para evitar resultados de otra ciudad.`,
-    );
-  }
-
-  const ids = sugerenciaExacta.airports
-    .map((airport: any) => airport?.id)
-    .filter(
-      (id: any): id is string =>
-        typeof id === 'string' &&
-        /^[A-Za-z]{3}$/.test(id.trim()),
-    )
-    .map((id: string) => id.trim().toUpperCase());
-
-  if (ids.length === 0) {
-    throw new Error(
-      `No se han encontrado códigos IATA válidos para "${consultaOriginal}".`,
-    );
-  }
-
-  return Array.from(new Set(ids));
-}
 
 /**
  * Calcula la duración del viaje en días a partir de las fechas.
@@ -130,198 +35,7 @@ function calcularDuracionDias(
   );
 }
 
-/* =========================================================
-   2. TOOL: DESCUBRIMIENTO DE DESTINOS
-   ========================================================= */
-
-const buscarDestinos = tool({
-  name: 'buscar_destinos',
-
-  description:
-    'Descubre destinos reales desde el origen indicado utilizando Google Travel Explore mediante SerpApi. Los precios devueltos son datos reales de búsqueda y no precios inventados.',
-
-  parameters: {
-    type: 'object',
-
-    properties: {
-      origen: {
-        type: 'string',
-        description: 'Ciudad o aeropuerto de origen.',
-      },
-
-      fechaIda: {
-        type: 'string',
-        description:
-          'Fecha de ida en formato YYYY-MM-DD.',
-      },
-
-      fechaVuelta: {
-        type: 'string',
-        description:
-          'Fecha de vuelta en formato YYYY-MM-DD.',
-      },
-
-      pasajeros: {
-        type: 'number',
-        description:
-          'Número de pasajeros adultos.',
-      },
-
-      presupuestoTotal: {
-        type: 'number',
-        description:
-          'Presupuesto total disponible para todo el viaje.',
-      },
-
-      preferencias: {
-        type: 'array',
-
-        items: {
-          type: 'string',
-        },
-
-        description:
-          'Preferencias del viaje.',
-      },
-    },
-
-    required: [
-      'origen',
-      'fechaIda',
-      'fechaVuelta',
-      'pasajeros',
-      'presupuestoTotal',
-      'preferencias',
-    ],
-
-    additionalProperties: false,
-  },
-
-  execute: async (input) => {
-    const {
-      origen,
-      fechaIda,
-      fechaVuelta,
-      pasajeros,
-      presupuestoTotal,
-      preferencias,
-    } = input as {
-      origen: string;
-      fechaIda: string;
-      fechaVuelta: string;
-      pasajeros: number;
-      presupuestoTotal: number;
-      preferencias: string[];
-    };
-
-    const departureIds =
-      await resolverIdsAeropuerto(origen);
-
-    const departureId =
-      departureIds.join(',');
-
-    const data =
-      await buscarGoogleTravelExplore({
-        departureId,
-        outboundDate: fechaIda,
-        returnDate: fechaVuelta,
-      });
-
-    const destinos =
-      (data.destinations ?? [])
-        .filter(
-          (destino: any) =>
-            destino?.name &&
-            destino?.destination_airport?.code &&
-            Number.isFinite(
-              Number(destino?.flight_price),
-            ),
-        )
-
-        .map((destino: any) => {
-          const precioVueloPorPersona =
-            Number(destino.flight_price);
-
-          const precioVueloTotal =
-            Math.round(
-              precioVueloPorPersona *
-                pasajeros,
-            );
-
-          const precioHotel =
-            Number.isFinite(
-              Number(destino.hotel_price),
-            )
-              ? Number(destino.hotel_price)
-              : null;
-
-          return {
-            destino: destino.name,
-
-            pais:
-              destino.country ?? '',
-
-            aeropuerto:
-              destino.destination_airport.code,
-
-            precioVueloPorPersona,
-
-            precioVueloTotal,
-
-            precioHotelReferencia:
-              precioHotel,
-
-            escalas:
-              Number(
-                destino.number_of_stops ?? 0,
-              ),
-
-            duracionVueloMinutos:
-              Number(
-                destino.flight_duration ?? 0,
-              ),
-
-            fechaIda:
-              destino.start_date ??
-              fechaIda,
-
-            fechaVuelta:
-              destino.end_date ??
-              fechaVuelta,
-
-            enlace:
-              destino.link ?? '',
-          };
-        })
-
-        .filter(
-          (destino: any) =>
-            destino.precioVueloTotal <=
-            presupuestoTotal,
-        )
-
-        .sort(
-          (a: any, b: any) =>
-            a.precioVueloTotal -
-            b.precioVueloTotal,
-        )
-
-        .slice(0, 10);
-
-    return {
-      origen,
-      fechaIda,
-      fechaVuelta,
-      pasajeros,
-      presupuestoTotal,
-      preferencias,
-      destinos,
-
-      nota:
-        'Los precios de vuelo proceden de Google Travel Explore mediante SerpApi. La relevancia respecto a las preferencias se verificará posteriormente mediante los datos reales del destino.',
-    };
-  },
-});
+/* Descubrimiento de destinos externo retirado: Mogavel no depende de SerpApi. */
 
 const routeStore = new Redis({
   url: process.env.KV_REST_API_URL!,
@@ -482,532 +196,160 @@ const planificarRuta = tool({
 
 const buscarVuelos = tool({
   name: 'buscar_vuelos',
-
   description:
-    'Busca vuelos reales de ida y vuelta utilizando Google Flights mediante SerpApi. Resuelve automáticamente cualquier ciudad o aeropuerto introducido por el usuario y devuelve horarios reales de ida y vuelta.',
-
+    'Busca vuelos reales con Apify Google Flights Scraper. Acepta nombres de ciudades o códigos IATA y devuelve precios, horarios, escalas y enlaces del proveedor.',
   parameters: {
     type: 'object',
-
     properties: {
-      origen: {
-        type: 'string',
-        description:
-          'Ciudad o aeropuerto de origen.',
-      },
-
-      destino: {
-        type: 'string',
-        description:
-          'Ciudad o aeropuerto de destino.',
-      },
-
-      fechaIda: {
-        type: 'string',
-        description:
-          'Fecha de ida en formato YYYY-MM-DD.',
-      },
-
-      fechaVuelta: {
-        type: 'string',
-        description:
-          'Fecha de vuelta en formato YYYY-MM-DD.',
-      },
-
-      pasajeros: {
-        type: 'number',
-        description:
-          'Número de pasajeros adultos.',
-      },
-
-      aeropuertoDestino: {
-        type: 'string',
-        description:
-          'Código IATA del aeropuerto de destino cuando ya haya sido identificado. Puede contener varios códigos separados por comas.',
-      },
-      destinoRegreso: {
-        type: 'string',
-        description:
-          'Opcional. Para un itinerario abierto/multidestino, ciudad desde la que se toma el vuelo de regreso al origen (por ejemplo Cartagena). Si se proporciona, busca dos trayectos de solo ida: origen→destino y destinoRegreso→origen.',
-      },
+      origen: { type: 'string', description: 'Ciudad, aeropuerto o código IATA de origen.' },
+      destino: { type: 'string', description: 'Ciudad, aeropuerto o código IATA de destino.' },
+      fechaIda: { type: 'string', description: 'Fecha de ida en formato YYYY-MM-DD.' },
+      fechaVuelta: { type: 'string', description: 'Fecha de vuelta en formato YYYY-MM-DD.' },
+      pasajeros: { type: 'number', description: 'Número de pasajeros adultos.' },
+      aeropuertoDestino: { type: 'string', description: 'Opcional: código IATA de destino si ya está identificado.' },
+      destinoRegreso: { type: 'string', description: 'Opcional: ciudad desde la que se vuelve al origen en un itinerario abierto.' },
     },
-
-    required: [
-      'origen',
-      'destino',
-      'fechaIda',
-      'fechaVuelta',
-      'pasajeros',
-    ],
-
+    required: ['origen', 'destino', 'fechaIda', 'fechaVuelta', 'pasajeros'],
     additionalProperties: false,
   },
-
   execute: async (input) => {
     const {
-      origen,
-      destino,
-      fechaIda,
-      fechaVuelta,
-      pasajeros,
-      aeropuertoDestino,
-      destinoRegreso,
+      origen, destino, fechaIda, fechaVuelta, pasajeros,
+      aeropuertoDestino, destinoRegreso,
     } = input as {
-      origen: string;
-      destino: string;
-      fechaIda: string;
-      fechaVuelta: string;
-      pasajeros: number;
-      aeropuertoDestino?: string;
-      destinoRegreso?: string;
+      origen: string; destino: string; fechaIda: string; fechaVuelta: string;
+      pasajeros: number; aeropuertoDestino?: string; destinoRegreso?: string;
     };
 
-    const departureIds =
-      await resolverIdsAeropuerto(origen);
+    const idaYVuelta = await buscarVuelosApify({
+      origen,
+      destino: aeropuertoDestino?.trim() || destino,
+      fechaIda,
+      fechaVuelta: destinoRegreso ? undefined : fechaVuelta,
+      pasajeros,
+    });
 
-    const departureId =
-      departureIds.join(',');
-
-    let arrivalId =
-      aeropuertoDestino?.trim().toUpperCase();
-
-    if (!arrivalId) {
-      const arrivalIds =
-        await resolverIdsAeropuerto(destino);
-
-      arrivalId =
-        arrivalIds.join(',');
-    }
-
-    /*
-     * PRIMERA CONSULTA
-     *
-     * Google Flights devuelve las opciones
-     * de ida y un departure_token para obtener
-     * las opciones reales de vuelta.
-     */
-
-    let data =
-      await buscarGoogleFlights({
-        departureId,
-        arrivalId,
-        outboundDate: fechaIda,
-        returnDate: fechaVuelta,
-        adults: pasajeros,
-        deepSearch: true,
-        oneWay: Boolean(destinoRegreso),
-      });
-
-    let resultadosIniciales = [
-      ...(data.best_flights ?? []),
-      ...(data.other_flights ?? []),
-    ];
-
-    /*
-     * Si Google Flights no devuelve resultados en la primera consulta,
-     * repetimos con una búsqueda profunda. SerpApi indica que
-     * deep_search puede producir resultados más completos.
-     */
-    if (resultadosIniciales.length === 0) {
-      data = await buscarGoogleFlights({
-        departureId,
-        arrivalId,
-        outboundDate: fechaIda,
-        returnDate: fechaVuelta,
-        adults: pasajeros,
-        deepSearch: true,
-        oneWay: Boolean(destinoRegreso),
-      });
-
-      resultadosIniciales = [
-        ...(data.best_flights ?? []),
-        ...(data.other_flights ?? []),
-      ];
-    }
-
-    resultadosIniciales = resultadosIniciales
-      .filter(
-        (vuelo: any) =>
-          typeof vuelo.price === 'number' &&
-          vuelo.price > 0,
-      )
-      .sort(
-        (a: any, b: any) =>
-          Number(a.price) -
-          Number(b.price),
-      )
-      .slice(0, 10);
-
-    /*
-     * Obtiene la información de ida de un vuelo.
-     */
-
-    function extraerSegmentos(
-      segmentos: any[],
-    ) {
-      return (segmentos ?? []).map(
-        (segmento: any) => ({
-          aeropuertoSalida:
-            segmento.departure_airport?.name ??
-            '',
-
-          codigoSalida:
-            segmento.departure_airport?.id ??
-            '',
-
-          horaSalida:
-            segmento.departure_airport?.time ??
-            '',
-
-          aeropuertoLlegada:
-            segmento.arrival_airport?.name ??
-            '',
-
-          codigoLlegada:
-            segmento.arrival_airport?.id ??
-            '',
-
-          horaLlegada:
-            segmento.arrival_airport?.time ??
-            '',
-
-          duracionMinutos:
-            Number(segmento.duration ?? 0),
-
-          aerolinea:
-            segmento.airline ?? '',
-
-          numeroVuelo:
-            segmento.flight_number ?? '',
-        }),
-      );
-    }
-
+    let opciones = idaYVuelta;
+    let opcionesRegreso: any[] = [];
     if (destinoRegreso) {
-      const idsCiudadRegreso = await resolverIdsAeropuerto(destinoRegreso);
-      const dataRegreso = await buscarGoogleFlights({
-        departureId: idsCiudadRegreso.join(','),
-        arrivalId: departureId,
-        outboundDate: fechaVuelta,
-        adults: pasajeros,
-        deepSearch: true,
-        oneWay: true,
-      });
-      const opcionesRegreso = [
-        ...(dataRegreso.best_flights ?? []),
-        ...(dataRegreso.other_flights ?? []),
-      ].filter((vuelo: any) => typeof vuelo.price === 'number' && vuelo.price > 0)
-       .sort((a: any, b: any) => Number(a.price) - Number(b.price))
-       .slice(0, 5);
-
-      const opcionesIda = resultadosIniciales.slice(0, 5);
-      const vuelosAbiertos = [];
-      for (const ida of opcionesIda) {
-        const segmentosIda = extraerSegmentos(ida.flights ?? []);
-        const salidaIda = segmentosIda[0]?.codigoSalida?.toUpperCase();
-        const llegadaIda = segmentosIda[segmentosIda.length - 1]?.codigoLlegada?.toUpperCase();
-        if (!segmentosIda.length ||
-            !departureId.split(',').map((v) => v.trim().toUpperCase()).includes(salidaIda) ||
-            !arrivalId.split(',').map((v) => v.trim().toUpperCase()).includes(llegadaIda)) continue;
-
-        for (const vuelta of opcionesRegreso) {
-          const segmentosVuelta = extraerSegmentos(vuelta.flights ?? []);
-          const salidaVuelta = segmentosVuelta[0]?.codigoSalida?.toUpperCase();
-          const llegadaVuelta = segmentosVuelta[segmentosVuelta.length - 1]?.codigoLlegada?.toUpperCase();
-          if (!segmentosVuelta.length ||
-              !idsCiudadRegreso.some((id) => id.toUpperCase() === salidaVuelta) ||
-              !departureId.split(',').map((v) => v.trim().toUpperCase()).includes(llegadaVuelta)) continue;
-
-          const precioTotal = Number(ida.price) + Number(vuelta.price);
-          const aerolineas = [...new Set([...segmentosIda, ...segmentosVuelta].map((s) => s.aerolinea).filter(Boolean))];
-          vuelosAbiertos.push({
-            aerolinea: aerolineas.join(' + '),
-            precioPorPersona: Math.round(precioTotal / pasajeros),
-            precioTotal,
-            moneda: 'EUR',
-            enlace: data.search_metadata?.google_flights_url ?? dataRegreso.search_metadata?.google_flights_url ?? '',
-            esIdaVuelta: true,
-            tipo: 'Itinerario abierto / multidestino',
-            escalasIda: Math.max(0, segmentosIda.length - 1),
-            escalasVuelta: Math.max(0, segmentosVuelta.length - 1),
-            esDirecto: segmentosIda.length === 1 && segmentosVuelta.length === 1,
-            ida: { fecha: fechaIda, segmentos: segmentosIda, duracionMinutos: Number(ida.total_duration ?? segmentosIda.reduce((t, s) => t + s.duracionMinutos, 0)) },
-            vuelta: { fecha: fechaVuelta, segmentos: segmentosVuelta, duracionMinutos: Number(vuelta.total_duration ?? segmentosVuelta.reduce((t, s) => t + s.duracionMinutos, 0)) },
-          });
-        }
-      }
-
-      return {
-        origen,
-        destino,
-        destinoRegreso,
-        aeropuertoDestino: arrivalId,
-        aeropuertoOrigen: departureId,
-        fechaIda,
-        fechaVuelta,
+      opcionesRegreso = await buscarVuelosApify({
+        origen: destinoRegreso,
+        destino: origen,
+        fechaIda: fechaVuelta,
         pasajeros,
-        vuelos: vuelosAbiertos.sort((a, b) => a.precioTotal - b.precioTotal).slice(0, 10),
-      };
+      });
     }
 
-    /*
-     * SEGUNDA CONSULTA
-     *
-     * Para cada vuelo de ida obtenemos
-     * las opciones reales de vuelta.
-     */
-
-    const vuelosCompletos =
-      await Promise.all(
-        resultadosIniciales.map(
-          async (vuelo: any) => {
-            let vueltaData: any = null;
-
-            if (typeof vuelo.departure_token === 'string') {
-              try {
-                vueltaData =
-                  await buscarGoogleFlights({
-                    departureId,
-                    arrivalId,
-                    outboundDate: fechaIda,
-                    returnDate: fechaVuelta,
-                    adults: pasajeros,
-                    departureToken:
-                      vuelo.departure_token,
-                  });
-              } catch {
-                vueltaData = null;
-              }
-            }
-
-            const opcionesVuelta = [
-              ...(vueltaData?.best_flights ?? []),
-              ...(vueltaData?.other_flights ?? []),
-            ]
-              .filter(
-                (opcion: any) =>
-                  Array.isArray(
-                    opcion.flights,
-                  ) &&
-                  opcion.flights.length > 0,
-              )
-              .sort(
-                (a: any, b: any) =>
-                  Number(a.price ?? 0) -
-                  Number(b.price ?? 0),
-              );
-
-            /*
-             * Elegimos la primera opción de vuelta
-             * devuelta por Google Flights.
-             */
-
-            const vuelta =
-              opcionesVuelta[0] ?? null;
-
-            const idaSegmentos =
-              extraerSegmentos(
-                vuelo.flights ?? [],
-              );
-
-            const vueltaSegmentos =
-              extraerSegmentos(
-                vuelta?.flights ?? [],
-              );
-
-            const aerolineas = [
-              ...new Set(
-                [
-                  ...idaSegmentos,
-                  ...vueltaSegmentos,
-                ]
-                  .map(
-                    (segmento) =>
-                      segmento.aerolinea,
-                  )
-                  .filter(Boolean),
-              ),
-            ];
-
-            const departureAirportIds = new Set(
-              departureId
-                .split(',')
-                .map((id) => id.trim().toUpperCase())
-                .filter(Boolean),
-            );
-
-            const arrivalAirportIds = new Set(
-              arrivalId
-                .split(',')
-                .map((id) => id.trim().toUpperCase())
-                .filter(Boolean),
-            );
-
-            const idaValida =
-              idaSegmentos.length > 0 &&
-              departureAirportIds.has(
-                idaSegmentos[0].codigoSalida.toUpperCase(),
-              ) &&
-              arrivalAirportIds.has(
-                idaSegmentos[idaSegmentos.length - 1].codigoLlegada.toUpperCase(),
-              );
-
-            const vueltaValida =
-              vueltaSegmentos.length === 0 ||
-              (
-                departureAirportIds.has(
-                  vueltaSegmentos[vueltaSegmentos.length - 1].codigoLlegada.toUpperCase(),
-                ) &&
-                arrivalAirportIds.has(
-                  vueltaSegmentos[0].codigoSalida.toUpperCase(),
-                )
-              );
-
-            if (!idaValida || !vueltaValida) {
-              return null;
-            }
-
-            const escalasIda =
-              Math.max(
-                0,
-                idaSegmentos.length - 1,
-              );
-
-            const escalasVuelta =
-              Math.max(
-                0,
-                vueltaSegmentos.length - 1,
-              );
-
-            /*
-             * El precio de la combinación
-             * completa procede del resultado
-             * seleccionado por Google Flights.
-             *
-             * Si no tenemos precio de vuelta,
-             * conservamos el precio inicial.
-             */
-
-            const precioTotal =
-              Number(vuelo.price);
-
-            const enlace =
-              data?.search_metadata?.google_flights_url ??
-              vueltaData?.search_metadata?.google_flights_url ??
-              '';
-
-            return {
-              aerolinea:
-                aerolineas.join(' + '),
-
-              precioPorPersona:
-                Math.round(
-                  precioTotal /
-                    pasajeros,
-                ),
-
-              precioTotal,
-
-              moneda: 'EUR',
-
-              enlace,
-
-              esIdaVuelta: true,
-
-              tipo:
-                'Ida y vuelta',
-
-              escalasIda,
-
-              escalasVuelta,
-
-              esDirecto:
-                escalasIda === 0 &&
-                escalasVuelta === 0,
-
-              ida: {
-                fecha:
-                  fechaIda,
-
-                segmentos:
-                  idaSegmentos,
-
-                duracionMinutos:
-                  Number(
-                    vuelo.total_duration ??
-                      idaSegmentos.reduce(
-                        (
-                          total,
-                          segmento,
-                        ) =>
-                          total +
-                          segmento.duracionMinutos,
-                        0,
-                      ),
-                  ),
-              },
-
-              vuelta: {
-                fecha:
-                  fechaVuelta,
-
-                segmentos:
-                  vueltaSegmentos,
-
-                duracionMinutos:
-                  Number(
-                    vuelta?.total_duration ??
-                      vueltaSegmentos.reduce(
-                        (
-                          total,
-                          segmento,
-                        ) =>
-                          total +
-                          segmento.duracionMinutos,
-                        0,
-                      ),
-                  ),
-              },
-            };
-          },
-        ),
-      );
-
-    const vuelos =
-      vuelosCompletos
-        .filter(
-          (vuelo) =>
-            vuelo !== null &&
-            vuelo.precioTotal > 0,
+    const vuelos = destinoRegreso
+      ? opciones.slice(0, 5).flatMap((ida: any) =>
+          opcionesRegreso.slice(0, 5).map((vuelta: any) => combinarItinerarioAbierto(ida, vuelta, {
+            origen, destino, destinoRegreso, fechaIda, fechaVuelta, pasajeros,
+          })),
         )
-        .sort(
-          (a, b) =>
-            a.precioTotal -
-            b.precioTotal,
-        )
-        .slice(0, 10);
+      : opciones.map((vuelo: any) => normalizarVueloIdaVuelta(vuelo, {
+          origen, destino, fechaIda, fechaVuelta, pasajeros,
+        }));
 
     return {
       origen,
-
       destino,
-
-      aeropuertoDestino:
-        arrivalId,
-
-      aeropuertoOrigen:
-        departureId,
-
+      ...(destinoRegreso ? { destinoRegreso } : {}),
+      aeropuertoDestino: aeropuertoDestino?.trim().toUpperCase() || destino,
+      aeropuertoOrigen: origen,
       fechaIda,
-
       fechaVuelta,
-
       pasajeros,
-
-      vuelos,
+      vuelos: vuelos
+        .filter((vuelo: any) => Number.isFinite(vuelo.precioTotal) && vuelo.precioTotal > 0)
+        .sort((a: any, b: any) => a.precioTotal - b.precioTotal)
+        .slice(0, 10),
     };
   },
 });
+
+function extraerSegmentosApify(leg: any, fallbackOrigen = '', fallbackDestino = '') {
+  const segmentos = Array.isArray(leg?.segments) ? leg.segments
+    : Array.isArray(leg?.flights) ? leg.flights
+    : Array.isArray(leg) ? leg : [];
+  return segmentos.map((segmento: any) => {
+    const salida = segmento.departureAirport ?? segmento.departure_airport ?? segmento.departure ?? {};
+    const llegada = segmento.arrivalAirport ?? segmento.arrival_airport ?? segmento.arrival ?? {};
+    const hora = (value: any) => typeof value === 'string' ? value : value?.time ?? value?.datetime ?? '';
+    const codigo = (value: any) => typeof value === 'string' ? (/^[A-Z]{3}$/i.test(value) ? value.toUpperCase() : '') : value?.code ?? value?.iata ?? value?.id ?? '';
+    const nombre = (value: any, fallback: string) => typeof value === 'string' ? value : value?.name ?? value?.city ?? fallback;
+    const duracion = Number(segmento.durationMinutes ?? segmento.duration_minutes ?? segmento.duration ?? 0);
+    return {
+      aeropuertoSalida: nombre(salida, fallbackOrigen),
+      codigoSalida: codigo(salida),
+      horaSalida: hora(salida),
+      aeropuertoLlegada: nombre(llegada, fallbackDestino),
+      codigoLlegada: codigo(llegada),
+      horaLlegada: hora(llegada),
+      duracionMinutos: duracion,
+      aerolinea: String(segmento.airline ?? segmento.airlineName ?? segmento.carrier ?? ''),
+      numeroVuelo: String(segmento.flightNumber ?? segmento.flight_number ?? ''),
+    };
+  });
+}
+
+function normalizarVueloIdaVuelta(vuelo: any, ctx: {
+  origen: string; destino: string; fechaIda: string; fechaVuelta: string; pasajeros: number;
+}) {
+  const ida = vuelo.outbound ?? vuelo.outboundLeg ?? vuelo.departure ?? vuelo;
+  const vuelta = vuelo.return ?? vuelo.returnLeg ?? vuelo.inbound ?? null;
+  const segmentosIda = extraerSegmentosApify(ida, ctx.origen, ctx.destino);
+  const segmentosVuelta = extraerSegmentosApify(vuelta, ctx.destino, ctx.origen);
+  const precioTotal = Number(vuelo.price ?? vuelo.totalPrice ?? vuelo.total_price ?? vuelo.priceTotal ?? 0);
+  const aerolineas = [...new Set([...segmentosIda, ...segmentosVuelta].map((s: any) => s.aerolinea).filter(Boolean))];
+  return {
+    aerolinea: String(vuelo.airlines?.join?.(' + ') ?? aerolineas.join(' + ') ?? 'Aerolínea no indicada'),
+    precioPorPersona: Number(vuelo.pricePerPassenger ?? vuelo.price_per_passenger ?? (precioTotal / ctx.pasajeros)),
+    precioTotal,
+    moneda: String(vuelo.currency ?? 'EUR'),
+    enlace: String(vuelo.googleFlightsUrl ?? vuelo.google_flights_url ?? vuelo.url ?? ''),
+    esIdaVuelta: true,
+    tipo: 'Ida y vuelta',
+    escalasIda: Math.max(0, segmentosIda.length - 1),
+    escalasVuelta: Math.max(0, segmentosVuelta.length - 1),
+    esDirecto: segmentosIda.length === 1 && segmentosVuelta.length === 1,
+    ida: {
+      fecha: ctx.fechaIda,
+      segmentos: segmentosIda,
+      duracionMinutos: Number(ida?.durationMinutes ?? ida?.duration_minutes ?? ida?.duration ?? segmentosIda.reduce((t: number, s: any) => t + s.duracionMinutos, 0)),
+    },
+    vuelta: {
+      fecha: ctx.fechaVuelta,
+      segmentos: segmentosVuelta,
+      duracionMinutos: Number(vuelta?.durationMinutes ?? vuelta?.duration_minutes ?? vuelta?.duration ?? segmentosVuelta.reduce((t: number, s: any) => t + s.duracionMinutos, 0)),
+    },
+  };
+}
+
+function combinarItinerarioAbierto(idaRaw: any, vueltaRaw: any, ctx: {
+  origen: string; destino: string; destinoRegreso: string; fechaIda: string; fechaVuelta: string; pasajeros: number;
+}) {
+  const ida = normalizarVueloIdaVuelta({ ...idaRaw, return: null }, {
+    origen: ctx.origen, destino: ctx.destino, fechaIda: ctx.fechaIda, fechaVuelta: ctx.fechaIda, pasajeros: ctx.pasajeros,
+  });
+  const vuelta = normalizarVueloIdaVuelta({ ...vueltaRaw, return: null }, {
+    origen: ctx.destinoRegreso, destino: ctx.origen, fechaIda: ctx.fechaVuelta, fechaVuelta: ctx.fechaVuelta, pasajeros: ctx.pasajeros,
+  });
+  const precioTotal = ida.precioTotal + vuelta.precioTotal;
+  return {
+    aerolinea: [ida.aerolinea, vuelta.aerolinea].filter(Boolean).join(' + '),
+    precioPorPersona: Math.round(precioTotal / ctx.pasajeros),
+    precioTotal,
+    moneda: ida.moneda || vuelta.moneda || 'EUR',
+    enlace: ida.enlace || vuelta.enlace || '',
+    esIdaVuelta: true,
+    tipo: 'Itinerario abierto / multidestino',
+    escalasIda: ida.escalasIda,
+    escalasVuelta: vuelta.escalasIda,
+    esDirecto: ida.esDirecto && vuelta.esDirecto,
+    ida: ida.ida,
+    vuelta: { ...vuelta.ida, fecha: ctx.fechaVuelta },
+  };
+}
 
 const flightSegmentSchema =
   z.object({
@@ -1083,8 +425,7 @@ const flightAgent = new Agent({
     desde la que se vuelve al origen. Así se buscarán dos trayectos de
     solo ida y no un ida-vuelta a la primera ciudad.
 
-    La herramienta resuelve automáticamente los aeropuertos.
-    No necesitas ningún mapa interno de ciudades o aeropuertos.
+    Apify admite nombres de ciudades y códigos IATA; si un código IATA está disponible, úsalo.
 
     Los vuelos devueltos son opciones reales de ida y vuelta.
     El precioTotal es el precio total de la opción para todos los pasajeros.
@@ -2120,11 +1461,9 @@ export const travelAgent = new Agent({
 
     Cuando tengas esos datos utiliza:
 
-    buscar_destinos
+    buscar_vuelos para consultar opciones de vuelo.
 
-    para descubrir destinos reales.
-
-    NO inventes destinos.
+    NO inventes destinos ni precios.
 
     NO inventes precios.
 
@@ -2144,7 +1483,7 @@ export const travelAgent = new Agent({
     ELECCIÓN DE DESTINO O RUTA
     =========================================================
 
-    Si el usuario elige una ciudad de una búsqueda de destinos,
+    Si el usuario indica una ciudad como destino,
     utiliza esa ciudad como destino único.
 
     Si el usuario acepta una ruta multidestino propuesta
@@ -2174,11 +1513,11 @@ export const travelAgent = new Agent({
     - si una ciudad devuelve cero hoteles o cero actividades,
       indícalo específicamente en esa ciudad, sin ocultar el resto.
 
-    Cuando el usuario elija uno de los destinos descubiertos:
+    Cuando el usuario indique el destino elegido:
 
     utiliza el destino seleccionado.
 
-    Si buscar_destinos proporciona un código IATA,
+    Si se dispone de un código IATA,
     pásalo a flight_agent mediante aeropuertoDestino.
 
     Después ejecuta:
@@ -2335,9 +1674,7 @@ export const travelAgent = new Agent({
     Utiliza siempre las herramientas para obtener
     información real.
 
-    No dependas de una lista fija de aeropuertos.
-    Los aeropuertos deben resolverse dinámicamente
-    mediante SerpApi.
+    No dependas de una lista fija de aeropuertos. Envía los nombres de ciudades o los códigos IATA a Apify.
 
     No vuelvas a preguntar datos ya conocidos.
 
@@ -2487,7 +1824,6 @@ export const travelAgent = new Agent({
   `,
 
   tools: [
-    buscarDestinos,
 
     planificarRuta,
 
