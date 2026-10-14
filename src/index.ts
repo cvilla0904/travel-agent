@@ -486,10 +486,11 @@ const flightAgent = new Agent({
 
     FORMATO OBLIGATORIO PARA CADA VUELO:
     Cada vuelo debe ocupar UNA ÚNICA LÍNEA y seguir exactamente este formato:
-    - **[Aerolínea]**: [precio total] € | Ida: [hora salida] [aeropuerto salida] ([IATA]) → [hora llegada] [aeropuerto llegada] ([IATA]) | [duración] | [escalas] | Vuelta: [hora salida] [aeropuerto salida] ([IATA]) → [hora llegada] [aeropuerto llegada] ([IATA]) | [duración] | [escalas] | [número(s) de vuelo] | https://...
+    - **[Aerolínea]**: [precio total] [moneda devuelta por el proveedor] | Ida: [hora salida] [aeropuerto salida] ([IATA]) → [hora llegada] [aeropuerto llegada] ([IATA]) | [duración] | [escalas] | Vuelta: [hora salida] [aeropuerto salida] ([IATA]) → [hora llegada] [aeropuerto llegada] ([IATA]) | [duración] | [escalas] | [número(s) de vuelo] | [enlace real o "Enlace no disponible"]
 
     Es obligatorio incluir al final de cada línea el campo "enlace" real proporcionado por buscar_vuelos.
     Si el campo enlace está vacío, NO inventes una URL y escribe "Enlace no disponible".
+    Respeta siempre el campo moneda devuelto por la herramienta; no añadas el símbolo € si la moneda es USD u otra distinta.
     No omitas horarios, aeropuertos, duración, escalas ni el enlace cuando estén disponibles.
 
     No inventes:
