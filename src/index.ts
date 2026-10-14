@@ -37,10 +37,7 @@ function calcularDuracionDias(
 
 /* Los destinos se concretan a partir de las preferencias del usuario y los resultados de los proveedores activos. */
 
-const routeStore = new Redis({
-  url: process.env.KV_REST_API_URL!,
-  token: process.env.KV_REST_API_TOKEN!,
-});
+const routeStore = Redis.fromEnv();
 
 /* =========================================================
    3. TOOL: PLANIFICACIÓN DE RUTA MULTIDESTINO
@@ -937,8 +934,7 @@ function actividadEsDeCiudad(actividad: any, ciudad: string): boolean {
   const nombresValidos = equivalencias[ciudadNormalizada] ?? [ciudadNormalizada];
 
   if (ciudadActividad) {
-    // Algunos resultados etiquetan la ciudad como "Atracciones Florence"
-    // y otros usan "Florence Attractions". Quitamos solo etiquetas genéricas.
+    // La ciudad estructurada es la señal geográfica más fiable.
     const ciudadLimpia = ciudadActividad
       .replace(/^(atracciones|attractions|things to do)\s+/, '')
       .replace(/\s+(attractions|things to do)$/, '')
@@ -951,12 +947,10 @@ function actividadEsDeCiudad(actividad: any, ciudad: string): boolean {
     );
   }
 
-  if (!url) return false;
-  if (slug === 'cartagena-de-indias') {
-    return url.includes('/cartagena-de-indias/') || url.includes('/cartagena/');
-  }
+  // Sin ciudad estructurada, no aceptamos una actividad solo porque la URL
+  // esté bajo una categoría de ciudad: excursiones a otros destinos suelen
+  // publicarse dentro de páginas de Roma. Exigimos mención explícita en título.
   return nombresValidos.some((nombre) =>
-    url.includes('/' + nombre.replace(/\s+/g, '-') + '/') ||
     titulo.includes(nombre)
   );
 }
