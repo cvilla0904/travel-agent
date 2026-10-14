@@ -1,6 +1,7 @@
 import { ApifyClient } from 'apify-client';
 
-const ACTOR_ID = 'automation-lab/google-flights-scraper';
+// Actor probado manualmente en Apify: devuelve resultados estructurados de Google Flights.
+const ACTOR_ID = 'johnvc/google-flights-data-scraper-flight-and-price-search';
 const MAX_RESULTS = 10;
 
 export type BuscarVuelosApifyParams = {
@@ -10,6 +11,40 @@ export type BuscarVuelosApifyParams = {
   fechaVuelta?: string;
   pasajeros: number;
 };
+
+const AEROPUERTOS: Record<string, string> = {
+  'bilbao': 'BIO', 'donostia': 'EAS', 'san sebastian': 'EAS', 'san sebastián': 'EAS',
+  'pasaia': 'EAS', 'pasajes': 'EAS', 'madrid': 'MAD', 'barcelona': 'BCN',
+  'malaga': 'AGP', 'málaga': 'AGP', 'sevilla': 'SVQ', 'valencia': 'VLC',
+  'alicante': 'ALC', 'ibiza': 'IBZ', 'palma': 'PMI', 'palma de mallorca': 'PMI',
+  'santiago de compostela': 'SCQ', 'vigo': 'VGO', 'a coruña': 'LCG',
+  'paris': 'CDG', 'parís': 'CDG', 'londres': 'LHR', 'roma': 'FCO',
+  'rome': 'FCO', 'milan': 'MXP', 'milán': 'MXP', 'venecia': 'VCE',
+  'florencia': 'FLR', 'florence': 'FLR', 'amsterdam': 'AMS', 'berlin': 'BER',
+  'berlín': 'BER', 'munich': 'MUC', 'múnich': 'MUC', 'frankfurt': 'FRA',
+  'lisboa': 'LIS', 'lisbon': 'LIS', 'oporto': 'OPO', 'porto': 'OPO',
+  'bruselas': 'BRU', 'praga': 'PRG', 'viena': 'VIE', 'zurich': 'ZRH',
+  'zúrich': 'ZRH', 'atenas': 'ATH', 'athens': 'ATH', 'estambul': 'IST',
+  'istanbul': 'IST', 'nueva york': 'JFK', 'new york': 'JFK', 'los angeles': 'LAX',
+  'los ángeles': 'LAX', 'tokio': 'HND', 'tokyo': 'HND', 'osaka': 'KIX',
+  'bangkok': 'BKK', 'singapur': 'SIN', 'singapore': 'SIN', 'dubai': 'DXB',
+  'dublín': 'DUB', 'dublin': 'DUB', 'copenhague': 'CPH', 'estocolmo': 'ARN',
+  'helsinki': 'HEL', 'varsovia': 'WAW', 'budapest': 'BUD', 'bogota': 'BOG',
+  'bogotá': 'BOG', 'medellin': 'MDE', 'medellín': 'MDE', 'cartagena': 'CTG',
+  'ciudad de mexico': 'MEX', 'ciudad de méxico': 'MEX', 'mexico city': 'MEX',
+  'buenos aires': 'EZE', 'sao paulo': 'GRU', 'são paulo': 'GRU', 'rio de janeiro': 'GIG',
+};
+
+function resolverAeropuerto(value: string, campo: string): string {
+  const limpio = value.trim();
+  if (/^[A-Z]{3}$/i.test(limpio)) return limpio.toUpperCase();
+  const normalizado = limpio.toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const codigo = AEROPUERTOS[normalizado] ?? AEROPUERTOS[limpio.toLocaleLowerCase('es')];
+  if (codigo) return codigo;
+  throw new Error(
+    `No he podido identificar el aeropuerto IATA de ${campo} ("${limpio}"). Prueba indicando el código IATA de tres letras (por ejemplo, BIO, MAD o FCO).`,
+  );
+}
 
 export async function buscarVuelosApify(params: BuscarVuelosApifyParams): Promise<any[]> {
   const token = process.env.APIFY_API_TOKEN;
@@ -25,26 +60,30 @@ export async function buscarVuelosApify(params: BuscarVuelosApifyParams): Promis
     throw new Error('La fecha de vuelta debe tener formato YYYY-MM-DD.');
   }
 
+  const origin = resolverAeropuerto(params.origen, 'origen');
+  const destination = resolverAeropuerto(params.destino, 'destino');
+  const adults = Math.max(1, Math.min(9, Math.floor(params.pasajeros || 1)));
   const client = new ApifyClient({ token });
   const actorInput = {
-    origin: params.origen.trim(),
-    destination: params.destino.trim(),
-    departureDate: params.fechaIda,
-    ...(params.fechaVuelta ? { returnDate: params.fechaVuelta } : {}),
-    adults: Math.max(1, Math.min(9, Math.floor(params.pasajeros || 1))),
-    maxResults: MAX_RESULTS,
+    departure_id: origin,
+    arrival_id: destination,
+    outbound_date: params.fechaIda,
+    adults,
     currency: 'EUR',
-    language: 'es',
-    proxyConfiguration: { useApifyProxy: true },
+    hl: 'es',
+    gl: 'es',
+    max_pages: 1,
+    // La búsqueda de ida y vuelta se compone con dos búsquedas de solo ida,
+    // porque el dataset probado expone cada tramo por separado.
   };
 
-  console.info('[APIFY_FLIGHTS] Starting search', JSON.stringify({
+  console.info('[APIFY_FLIGHTS] Starting one-way search', JSON.stringify({
     actor: ACTOR_ID,
-    origin: actorInput.origin,
-    destination: actorInput.destination,
-    departureDate: actorInput.departureDate,
-    returnDate: actorInput.returnDate ?? null,
-    adults: actorInput.adults,
+    origin,
+    destination,
+    outboundDate: params.fechaIda,
+    adults,
+    currency: actorInput.currency,
   }));
 
   const run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: 120 });
@@ -60,6 +99,9 @@ export async function buscarVuelosApify(params: BuscarVuelosApifyParams): Promis
     runId: run.id,
     resultCount: items.length,
     status: run.status,
+    origin,
+    destination,
+    outboundDate: params.fechaIda,
   }));
   return items as any[];
 }
