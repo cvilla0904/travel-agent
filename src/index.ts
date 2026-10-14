@@ -484,7 +484,7 @@ const flightAgent = new Agent({
 
 const buscarHoteles = tool({
   name: 'buscar_hoteles',
-  description: 'Busca alojamientos en Booking.com mediante SearchAPI con destino, fechas y número de adultos. Presenta únicamente los resultados con precio y conserva los enlaces devueltos por el proveedor.',
+  description: 'Busca alojamientos en Booking.com mediante SearchAPI con destino, fechas y número de adultos. Conserva los alojamientos reales aunque el proveedor no publique precio y marca el precio como no disponible.',
   parameters: {
     type: 'object',
     properties: {
@@ -649,7 +649,10 @@ const buscarActividades = tool({
       const url = typeof actividad?.url === 'string' ? actividad.url.trim() : '';
       return typeof actividad?.title === 'string' &&
         actividad.title.trim().length > 0 &&
-        (url.startsWith('https://') || url.startsWith('http://'));
+        (url.startsWith('https://') || url.startsWith('http://')) &&
+        // El actor puede mezclar resultados de varias consultas en el mismo dataset.
+        // Nunca mostramos una actividad si no podemos verificar que pertenece al destino.
+        actividadEsDeCiudad(actividad, destino);
     });
     const normalizarTexto = (valor: unknown) => String(valor ?? '')
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
