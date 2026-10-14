@@ -218,34 +218,47 @@ const buscarVuelos = tool({
       pasajeros: number; aeropuertoDestino?: string; destinoRegreso?: string;
     };
 
-    const idaYVuelta = await buscarVuelosApify({
+    const destinoBusqueda = aeropuertoDestino?.trim() || destino;
+    const opcionesIda = await buscarVuelosApify({
       origen,
-      destino: aeropuertoDestino?.trim() || destino,
+      destino: destinoBusqueda,
       fechaIda,
-      fechaVuelta: destinoRegreso ? undefined : fechaVuelta,
       pasajeros,
     });
 
-    let opciones = idaYVuelta;
-    let opcionesRegreso: any[] = [];
+    let vuelos: any[];
     if (destinoRegreso) {
-      opcionesRegreso = await buscarVuelosApify({
+      const opcionesRegreso = await buscarVuelosApify({
         origen: destinoRegreso,
         destino: origen,
         fechaIda: fechaVuelta,
         pasajeros,
       });
+      vuelos = opcionesIda.slice(0, 5).flatMap((ida: any) =>
+        opcionesRegreso.slice(0, 5).map((vuelta: any) => combinarItinerarioAbierto(ida, vuelta, {
+          origen, destino, destinoRegreso, fechaIda, fechaVuelta, pasajeros,
+        })),
+      );
+    } else if (fechaVuelta) {
+      // El actor probado devuelve tramos individuales. Para ida y vuelta,
+      // buscamos cada sentido por separado y combinamos opciones reales.
+      const opcionesVuelta = await buscarVuelosApify({
+        origen: destinoBusqueda,
+        destino: origen,
+        fechaIda: fechaVuelta,
+        pasajeros,
+      });
+      vuelos = opcionesIda.slice(0, 5).flatMap((ida: any) =>
+        opcionesVuelta.slice(0, 5).map((vuelta: any) => combinarItinerarioAbierto(ida, vuelta, {
+          origen, destino: destinoBusqueda, destinoRegreso: destinoBusqueda,
+          fechaIda, fechaVuelta, pasajeros,
+        })),
+      );
+    } else {
+      vuelos = opcionesIda.map((vuelo: any) => normalizarVueloIdaVuelta(vuelo, {
+        origen, destino: destinoBusqueda, fechaIda, fechaVuelta: '', pasajeros,
+      }));
     }
-
-    const vuelos = destinoRegreso
-      ? opciones.slice(0, 5).flatMap((ida: any) =>
-          opcionesRegreso.slice(0, 5).map((vuelta: any) => combinarItinerarioAbierto(ida, vuelta, {
-            origen, destino, destinoRegreso, fechaIda, fechaVuelta, pasajeros,
-          })),
-        )
-      : opciones.map((vuelo: any) => normalizarVueloIdaVuelta(vuelo, {
-          origen, destino, fechaIda, fechaVuelta, pasajeros,
-        }));
 
     return {
       origen,
@@ -278,7 +291,9 @@ function parsearDuracionMinutos(value: any): number {
 function extraerSegmentosApify(leg: any, fallbackOrigen = '', fallbackDestino = '') {
   const segmentos = Array.isArray(leg?.segments) ? leg.segments
     : Array.isArray(leg?.flights) ? leg.flights
-    : Array.isArray(leg) ? leg : [];
+    : Array.isArray(leg) ? leg
+    : leg && (leg.departure_airport || leg.departureAirport) && (leg.departure_time || leg.departureTime) ? [leg]
+    : [];
   return segmentos.map((segmento: any) => {
     const salida = segmento.departureAirport ?? segmento.departure_airport ?? segmento.departure ?? {};
     const llegada = segmento.arrivalAirport ?? segmento.arrival_airport ?? segmento.arrival ?? {};
@@ -294,8 +309,8 @@ function extraerSegmentosApify(leg: any, fallbackOrigen = '', fallbackDestino = 
       codigoLlegada: codigo(llegada),
       horaLlegada: hora(llegada),
       duracionMinutos: duracion,
-      aerolinea: String(segmento.airline ?? segmento.airlineName ?? segmento.carrier ?? ''),
-      numeroVuelo: String(segmento.flightNumber ?? segmento.flight_number ?? ''),
+      aerolinea: String(segmento.airlines ?? segmento.airline ?? segmento.airlineName ?? segmento.carrier ?? ''),
+      numeroVuelo: String(segmento.flight_numbers ?? segmento.flightNumber ?? segmento.flight_number ?? ''),
     };
   });
 }
@@ -310,16 +325,16 @@ function normalizarVueloIdaVuelta(vuelo: any, ctx: {
   const precioTotal = Number(vuelo.price ?? vuelo.totalPrice ?? vuelo.total_price ?? vuelo.priceTotal ?? 0);
   const aerolineas = [...new Set([...segmentosIda, ...segmentosVuelta].map((s: any) => s.aerolinea).filter(Boolean))];
   return {
-    aerolinea: String(vuelo.airlines?.join?.(' + ') ?? aerolineas.join(' + ') ?? 'Aerolínea no indicada'),
+    aerolinea: String(Array.isArray(vuelo.airlines) ? vuelo.airlines.join(' + ') : (vuelo.airlines || aerolineas.join(' + ') || 'Aerolínea no indicada')),
     precioPorPersona: Number(vuelo.pricePerPassenger ?? vuelo.price_per_passenger ?? (precioTotal / ctx.pasajeros)),
     precioTotal,
     moneda: String(vuelo.currency ?? 'EUR'),
-    enlace: String(vuelo.googleFlightsUrl ?? vuelo.google_flights_url ?? vuelo.url ?? ''),
+    enlace: String(vuelo.booking_url ?? vuelo.bookingUrl ?? vuelo.googleFlightsUrl ?? vuelo.google_flights_url ?? vuelo.url ?? ''),
     esIdaVuelta: true,
     tipo: 'Ida y vuelta',
     escalasIda: Math.max(0, segmentosIda.length - 1),
     escalasVuelta: Math.max(0, segmentosVuelta.length - 1),
-    esDirecto: segmentosIda.length === 1 && segmentosVuelta.length === 1,
+    esDirecto: segmentosIda.length === 1 && (!vuelta || segmentosVuelta.length === 1),
     ida: {
       fecha: ctx.fechaIda,
       segmentos: segmentosIda,
