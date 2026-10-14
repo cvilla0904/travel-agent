@@ -292,7 +292,21 @@ function extraerSegmentosApify(leg: any, fallbackOrigen = '', fallbackDestino = 
   const segmentos = Array.isArray(leg?.segments) ? leg.segments
     : Array.isArray(leg?.flights) ? leg.flights
     : Array.isArray(leg) ? leg
-    : leg && (leg.departure_airport || leg.departureAirport) && (leg.departure_time || leg.departureTime) ? [leg]
+    : leg && (leg.departure_airport || leg.departureAirport) && (leg.departs || leg.departure_time || leg.departureTime) ? [{
+        departure_airport: {
+          name: typeof leg.departure_airport === 'object' ? leg.departure_airport.name : (leg.departure_airport ?? leg.departureAirport ?? fallbackOrigen),
+          id: typeof leg.departure_airport === 'object' ? leg.departure_airport.id : (leg.departure_airport ?? leg.departureAirport ?? ''),
+          time: leg.departs ?? leg.departure_time ?? leg.departureTime,
+        },
+        arrival_airport: {
+          name: typeof leg.arrival_airport === 'object' ? leg.arrival_airport.name : (leg.arrival_airport ?? leg.arrivalAirport ?? fallbackDestino),
+          id: typeof leg.arrival_airport === 'object' ? leg.arrival_airport.id : (leg.arrival_airport ?? leg.arrivalAirport ?? ''),
+          time: leg.arrives ?? leg.arrival_time ?? leg.arrivalTime,
+        },
+        duration: leg.duration,
+        airline: Array.isArray(leg.airlines) ? leg.airlines.join(' + ') : (leg.airlines ?? leg.airline ?? ''),
+        flight_number: Array.isArray(leg.flight_numbers) ? leg.flight_numbers.join(', ') : (leg.flight_numbers ?? leg.flight_number ?? ''),
+      }]
     : [];
   return segmentos.map((segmento: any) => {
     const salida = segmento.departureAirport ?? segmento.departure_airport ?? segmento.departure ?? {};
@@ -336,9 +350,10 @@ function normalizarVueloIdaVuelta(vuelo: any, ctx: {
     enlace: String(vuelo.booking_url ?? vuelo.bookingUrl ?? vuelo.googleFlightsUrl ?? vuelo.google_flights_url ?? vuelo.url ?? ''),
     esIdaVuelta: true,
     tipo: 'Ida y vuelta',
-    escalasIda: Math.max(0, segmentosIda.length - 1),
-    escalasVuelta: Math.max(0, segmentosVuelta.length - 1),
-    esDirecto: segmentosIda.length === 1 && (!vuelta || segmentosVuelta.length === 1),
+    escalasIda: Number.isFinite(Number(vuelo.stops)) ? Math.max(0, Number(vuelo.stops)) : Math.max(0, segmentosIda.length - 1),
+    escalasVuelta: vuelta && Number.isFinite(Number(vuelta.stops)) ? Math.max(0, Number(vuelta.stops)) : Math.max(0, segmentosVuelta.length - 1),
+    esDirecto: (Number.isFinite(Number(vuelo.stops)) ? Number(vuelo.stops) === 0 : segmentosIda.length === 1) &&
+      (!vuelta || (Number.isFinite(Number(vuelta.stops)) ? Number(vuelta.stops) === 0 : segmentosVuelta.length === 1)),
     ida: {
       fecha: ctx.fechaIda,
       segmentos: segmentosIda,
