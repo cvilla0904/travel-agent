@@ -271,8 +271,8 @@ function parsearDuracionMinutos(value: any): number {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   if (typeof value !== 'string') return 0;
   const texto = value.trim().toLowerCase();
-  const horas = texto.match(/(\\d+)\\s*h/);
-  const minutos = texto.match(/(\\d+)\\s*m/);
+  const horas = texto.match(/(\d+)\s*h/);
+  const minutos = texto.match(/(\d+)\s*m/);
   if (horas || minutos) return Number(horas?.[1] ?? 0) * 60 + Number(minutos?.[1] ?? 0);
   const numerico = Number(texto);
   return Number.isFinite(numerico) ? numerico : 0;
