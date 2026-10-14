@@ -299,7 +299,7 @@ function extraerSegmentosApify(leg: any, fallbackOrigen = '', fallbackDestino = 
     const llegada = segmento.arrivalAirport ?? segmento.arrival_airport ?? segmento.arrival ?? {};
     const hora = (value: any) => {
       const raw = typeof value === 'string' ? value : value?.time ?? value?.datetime ?? '';
-      const match = typeof raw === 'string' ? raw.match(/(?:^|\\s)(\\d{1,2}:\\d{2})(?::\\d{2})?$/) : null;
+      const match = typeof raw === 'string' ? raw.match(/(?:^|\s)(\d{1,2}:\d{2})(?::\d{2})?$/) : null;
       return match ? match[1] : raw;
     };
     const codigo = (value: any) => typeof value === 'string' ? (/^[A-Z]{3}$/i.test(value) ? value.toUpperCase() : '') : value?.code ?? value?.iata ?? value?.id ?? '';
