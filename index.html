@@ -204,21 +204,27 @@
         ).map(input => input.value);
 
       const partes = [];
-      if (idea) partes.push(idea);
-      if (origen || destino) partes.push(`Quiero viajar${origen ? ` de ${origen}` : ''}${destino ? ` a ${destino}` : ''}`);
-      if (ida || vuelta) partes.push(`del ${ida} al ${vuelta}`);
-      if (viajeros) partes.push(`para ${viajeros} personas`);
+      if (idea) {
+        // Si el usuario escribe una petición libre, no mezclarla con campos
+        // estructurados que pueden conservar datos de un viaje anterior.
+        // Para usar el formulario de detalles, deja vacía la petición libre.
+        partes.push(idea);
+      } else {
+        if (origen || destino) partes.push(`Quiero viajar${origen ? ` de ${origen}` : ''}${destino ? ` a ${destino}` : ''}`);
+        if (ida || vuelta) partes.push(`del ${ida} al ${vuelta}`);
+        if (viajeros) partes.push(`para ${viajeros} personas`);
 
-      if (presupuesto) {
-        partes.push(
-          `con un presupuesto total de ${presupuesto} euros`
-        );
-      }
+        if (presupuesto) {
+          partes.push(
+            `con un presupuesto total de ${presupuesto} euros`
+          );
+        }
 
-      if (preferencias.length) {
-        partes.push(
-          `y me interesan actividades relacionadas con ${preferencias.join(', ')}`
-        );
+        if (preferencias.length) {
+          partes.push(
+            `y me interesan actividades relacionadas con ${preferencias.join(', ')}`
+          );
+        }
       }
 
       const message =
