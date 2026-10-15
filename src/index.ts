@@ -1149,6 +1149,7 @@ const buscarRecursosMultidestino = tool({
           fechaEntrada,
           fechaSalida,
           adultos,
+          paisCodigo: obtenerCodigoPais(rutaGuardada.pais),
         });
 
         hoteles = hotelResult.hoteles.slice(0, 10);
