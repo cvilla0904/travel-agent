@@ -44,6 +44,26 @@
     footer{padding:28px 0;color:#8290a0;font-size:12px;border-top:1px solid #e7ebef}.footer-inner{display:flex;justify-content:space-between;align-items:center}.footer-brand{font-weight:700;color:var(--navy)}
     @media(max-width:850px){.nav-links{gap:17px}.hero-layout{grid-template-columns:1fr}.how-panel{min-height:0}.hero-copy{padding-top:0}.destinations{grid-template-columns:repeat(2,1fr)}.destination{height:270px}.how-inner{grid-template-columns:1fr;gap:30px}}
     @media(max-width:600px){.wrap{width:min(100% - 32px,1160px)}header{height:68px}.nav{gap:12px}.brand{font-size:16px}.brand-mark{width:33px;height:33px}.nav-links{display:none}.login{padding:9px 12px;font-size:12px}.hero{padding:54px 0 35px}.hero h1{font-size:43px;letter-spacing:-1px}.hero>p{font-size:15px}.planner{padding:17px;margin-top:26px;border-radius:18px}.planner-icon{display:none}.planner textarea{min-height:112px;font-size:15px}.planner-bottom{align-items:stretch;flex-direction:column}.planner-hint{text-align:center}.primary{width:100%}.example{font-size:11px;padding:9px 12px}.benefit-row{grid-template-columns:repeat(2,1fr);gap:19px 7px}.benefit{justify-content:flex-start;font-size:11px}.benefit-icon{width:31px;height:31px;flex:0 0 31px}.content{padding:58px 0!important}.how-panel{padding:24px 18px}.how-panel h2{font-size:30px}.illustration-wrap{height:440px}.flow-card{width:108px;padding:8px 9px}.flow-card span{font-size:8px}.trip-brief{grid-template-columns:repeat(2,1fr)}.how-step{grid-template-columns:42px 1fr;padding:14px}.hero-layout{gap:30px}.section-head{display:block}.section-head h2,.how-title h2{font-size:32px}.section-head p{margin-top:9px}.destinations{gap:11px}.destination{height:205px;border-radius:15px}.destination-copy{left:13px;bottom:14px}.destination-copy strong{font-size:20px}.steps{grid-template-columns:1fr;gap:20px}.detail-grid{grid-template-columns:1fr}.chat-box{padding:19px}.chat-input{flex-direction:column}.send-button{width:100%}.footer-inner{gap:12px;flex-direction:column;align-items:flex-start}}
+  
+    /* Mogavel: autocomplete de ciudades */
+    .city-autocomplete{position:relative;width:100%;min-width:0}
+    .city-autocomplete input{width:100%}
+    .city-suggestions{display:none;position:absolute;z-index:30;top:calc(100% + 5px);left:0;right:0;max-height:260px;overflow:auto;background:#fff;border:1px solid #dfe6ec;border-radius:13px;box-shadow:0 14px 32px rgba(20,43,72,.16);padding:5px}
+    .city-suggestions.is-open{display:block}
+    .city-suggestion{display:flex;width:100%;gap:11px;align-items:center;padding:10px;border:0;border-radius:9px;background:transparent;text-align:left;cursor:pointer;color:var(--ink);font:inherit}
+    .city-suggestion:hover,.city-suggestion[aria-selected="true"]{background:#edf3f0}
+    .city-suggestion-icon{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:9px;background:#f0f3f5;color:var(--navy)}
+    .city-suggestion-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
+    .city-suggestion-copy strong{font-size:13px;font-weight:700}
+    .city-suggestion-copy small{font-size:11px;color:var(--muted)}
+    .city-suggestion-code{font-size:10px;color:var(--muted)}
+    .city-suggestion-empty{padding:12px;color:var(--muted);font-size:12px;line-height:1.5}
+    .footer-inner{flex-wrap:wrap;gap:18px}
+    .footer-links{display:flex;flex-wrap:wrap;gap:16px;margin-left:auto}
+    .footer-links a{font-size:12px;color:var(--muted)}
+    .footer-links a:hover{color:var(--navy);text-decoration:underline}
+    @media(max-width:700px){.footer-links{width:100%;margin-left:0;gap:12px 16px}.city-suggestions{max-height:220px}}
+
   </style>
 </head>
 <body>
@@ -67,8 +87,8 @@
         <details class="trip-details">
           <summary>Añadir detalles del viaje</summary>
           <div class="detail-grid">
-            <label>Origen<input id="origen" placeholder="Ej. Bilbao"></label>
-            <label>Destino<input id="destino" placeholder="Ej. Florencia"></label>
+            <label>Origen<div class="city-autocomplete"><input id="origen" class="city-input" placeholder="Ciudad o aeropuerto" autocomplete="off" aria-autocomplete="list" aria-expanded="false"><div class="city-suggestions" id="origen-suggestions" role="listbox"></div></div></label>
+            <label>Destino<div class="city-autocomplete"><input id="destino" class="city-input" placeholder="¿A dónde quieres ir?" autocomplete="off" aria-autocomplete="list" aria-expanded="false"><div class="city-suggestions" id="destino-suggestions" role="listbox"></div></div></label>
             <label>Fecha de ida<input id="ida" type="date"></label>
             <label>Fecha de vuelta<input id="vuelta" type="date"></label>
             <label>Viajeros<input id="viajeros" type="number" min="1" value="2"></label>
@@ -82,13 +102,7 @@
           </div>
         </details>
           </div>
-          <div class="quick-label">¿Necesitas inspiración? Prueba con una idea</div>
-      <div class="examples">
-        <button class="example" type="button" onclick="usarEjemplo(this)">Una escapada de 4 días por Europa por menos de 500 €</button>
-        <button class="example" type="button" onclick="usarEjemplo(this)">Somos dos y tenemos 1.500 € para una semana</button>
-        <button class="example" type="button" onclick="usarEjemplo(this)">Quiero naturaleza y buena comida</button>
-        <button class="example" type="button" onclick="usarEjemplo(this)">Quiero conocer Japón en primavera</button>
-      </div>
+
         </div>
         <aside class="how-panel" aria-labelledby="como-funciona-panel">
           <span class="how-badge">Así funciona Travel Agent</span>
@@ -118,7 +132,7 @@
       </div>
     </section>
   </main>
-  <footer><div class="footer-inner wrap"><span class="footer-brand">✦ Travel Agent</span><span>Viajes pensados para ti.</span></div></footer>
+  <footer><div class="footer-inner wrap"><span class="footer-brand">✦ Mogavel</span><span>Viajes pensados para ti.</span><nav class="footer-links" aria-label="Enlaces legales"><a href="#como-funciona">Cómo funciona</a><a href="mailto:hola@mogavel.com">Contacto</a><a href="#privacidad">Privacidad</a><a href="#cookies">Cookies</a><a href="#terminos">Términos y condiciones</a></nav></div></footer>
   <script>
     /* Cada carga de la página empieza una sesión nueva.
        Las conversaciones posteriores dentro de esta página
@@ -155,6 +169,79 @@
 
       return data.response;
     }
+
+
+    /* Autocompletado visual de ciudades. Catálogo inicial local; no modifica las APIs de búsqueda. */
+    const ciudadesMogavel = [
+      {ciudad:'Madrid',pais:'España',codigo:'MAD',aliases:['madrid','mad']},
+      {ciudad:'Barcelona',pais:'España',codigo:'BCN',aliases:['barcelona','bcn']},
+      {ciudad:'Bilbao',pais:'España',codigo:'BIO',aliases:['bilbao','bio']},
+      {ciudad:'San Sebastián',pais:'España',codigo:'EAS',aliases:['san sebastian','donostia','eas']},
+      {ciudad:'Málaga',pais:'España',codigo:'AGP',aliases:['malaga','agp']},
+      {ciudad:'Sevilla',pais:'España',codigo:'SVQ',aliases:['sevilla','seville','svq']},
+      {ciudad:'Valencia',pais:'España',codigo:'VLC',aliases:['valencia','vlc']},
+      {ciudad:'Roma',pais:'Italia',codigo:'ROM',aliases:['roma','rome','rom']},
+      {ciudad:'Florencia',pais:'Italia',codigo:'FLR',aliases:['florencia','florence','flr']},
+      {ciudad:'Venecia',pais:'Italia',codigo:'VCE',aliases:['venecia','venice','vce']},
+      {ciudad:'Milán',pais:'Italia',codigo:'MIL',aliases:['milan','mil']},
+      {ciudad:'París',pais:'Francia',codigo:'PAR',aliases:['paris','par']},
+      {ciudad:'Londres',pais:'Reino Unido',codigo:'LON',aliases:['londres','london','lon']},
+      {ciudad:'Lisboa',pais:'Portugal',codigo:'LIS',aliases:['lisboa','lisbon','lis']},
+      {ciudad:'Oporto',pais:'Portugal',codigo:'OPO',aliases:['oporto','porto','opo']},
+      {ciudad:'Ámsterdam',pais:'Países Bajos',codigo:'AMS',aliases:['amsterdam','ams']},
+      {ciudad:'Bruselas',pais:'Bélgica',codigo:'BRU',aliases:['bruselas','brussels','bru']},
+      {ciudad:'Berlín',pais:'Alemania',codigo:'BER',aliases:['berlin','ber']},
+      {ciudad:'Múnich',pais:'Alemania',codigo:'MUC',aliases:['munich','munich','muc']},
+      {ciudad:'Viena',pais:'Austria',codigo:'VIE',aliases:['viena','vienna','vie']},
+      {ciudad:'Praga',pais:'Chequia',codigo:'PRG',aliases:['praga','prague','prg']},
+      {ciudad:'Atenas',pais:'Grecia',codigo:'ATH',aliases:['atenas','athens','ath']},
+      {ciudad:'Estambul',pais:'Turquía',codigo:'IST',aliases:['estambul','istanbul','ist']},
+      {ciudad:'Nueva York',pais:'Estados Unidos',codigo:'NYC',aliases:['nueva york','new york','nyc']},
+      {ciudad:'Miami',pais:'Estados Unidos',codigo:'MIA',aliases:['miami','mia']},
+      {ciudad:'Tokio',pais:'Japón',codigo:'TYO',aliases:['tokio','tokyo','tyo']},
+      {ciudad:'Kioto',pais:'Japón',codigo:'UKY',aliases:['kioto','kyoto']},
+      {ciudad:'Bangkok',pais:'Tailandia',codigo:'BKK',aliases:['bangkok','bkk']},
+      {ciudad:'Madinah',pais:'Arabia Saudí',codigo:'MED',aliases:['madinah','medina','med']},
+      {ciudad:'Madison',pais:'Estados Unidos',codigo:'MSN',aliases:['madison','msn']}
+    ];
+    const normalizarCiudad = valor => String(valor || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().trim();
+    function configurarAutocompletado(inputId) {
+      const input = document.getElementById(inputId);
+      const panel = document.getElementById(inputId + '-suggestions');
+      if (!input || !panel) return;
+      let opciones = [];
+      let activo = -1;
+      function cerrar() { panel.classList.remove('is-open'); input.setAttribute('aria-expanded','false'); activo = -1; }
+      function elegir(opcion) { input.value = opcion.ciudad; input.dataset.codigoCiudad = opcion.codigo; input.dataset.paisCiudad = opcion.pais; cerrar(); input.dispatchEvent(new Event('change',{bubbles:true})); }
+      function pintar() {
+        const consulta = normalizarCiudad(input.value);
+        if (consulta.length < 3) { cerrar(); return; }
+        opciones = ciudadesMogavel.map(ciudad => ({...ciudad,puntuacion: ciudad.aliases.some(alias => normalizarCiudad(alias).startsWith(consulta)) ? 0 : normalizarCiudad(ciudad.ciudad + ' ' + ciudad.pais).includes(consulta) ? 1 : 2}))
+          .filter(ciudad => ciudad.puntuacion < 2)
+          .sort((a,b)=>a.puntuacion-b.puntuacion || a.ciudad.localeCompare(b.ciudad,'es'))
+          .slice(0,7);
+        if (!opciones.length) {
+          panel.innerHTML = '<div class="city-suggestion-empty">No hay coincidencias en la selección inicial. Puedes continuar escribiendo el destino completo.</div>';
+        } else {
+          panel.innerHTML = opciones.map((ciudad,index) => '<button type="button" class="city-suggestion" role="option" aria-selected="'+(index===activo)+'" data-index="'+index+'"><span class="city-suggestion-icon" aria-hidden="true">⌖</span><span class="city-suggestion-copy"><strong>'+escaparHtmlCiudad(ciudad.ciudad)+'</strong><small>'+escaparHtmlCiudad(ciudad.pais)+'</small></span><span class="city-suggestion-code">'+escaparHtmlCiudad(ciudad.codigo)+'</span></button>').join('');
+        }
+        panel.classList.add('is-open'); input.setAttribute('aria-expanded','true');
+      }
+      input.addEventListener('input',()=>{delete input.dataset.codigoCiudad; delete input.dataset.paisCiudad; activo=-1; pintar();});
+      input.addEventListener('keydown',event=>{
+        if (!panel.classList.contains('is-open')) return;
+        if (event.key==='ArrowDown') {event.preventDefault();activo=Math.min(activo+1,opciones.length-1);pintar();}
+        else if (event.key==='ArrowUp') {event.preventDefault();activo=Math.max(activo-1,0);pintar();}
+        else if (event.key==='Enter' && activo>=0 && opciones[activo]) {event.preventDefault();elegir(opciones[activo]);}
+        else if (event.key==='Escape') cerrar();
+      });
+      panel.addEventListener('mousedown',event=>{const boton=event.target.closest('[data-index]');if(boton){event.preventDefault();elegir(opciones[Number(boton.dataset.index)]);}});
+      document.addEventListener('click',event=>{if(!input.parentElement.contains(event.target))cerrar();});
+      input.addEventListener('blur',()=>{setTimeout(()=>{if(!panel.contains(document.activeElement))cerrar();},120);});
+    }
+    function escaparHtmlCiudad(valor) { return String(valor).replace(/[&<>"']/g,caracter=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[caracter])); }
+    configurarAutocompletado('origen');
+    configurarAutocompletado('destino');
 
     function usarEjemplo(button) {
       document.getElementById('ideaViaje').value = button.textContent.trim();
