@@ -18,10 +18,10 @@
     .flight-card:before{counter-increment:flight;content:counter(flight);position:absolute;left:0;top:0;bottom:0;width:4px;background:#8aabbc;display:grid;place-items:center}
     .flight-card:hover{border-color:#b9ccd8;box-shadow:0 10px 26px rgba(22,42,67,.09);transform:translateY(-2px)}
     .flight-main{min-width:0}.flight-airline{display:flex;align-items:center;gap:9px;color:var(--navy);font-weight:800;font-size:14px;letter-spacing:-.1px}.flight-airline:before{content:"✈";display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:#edf4f7;color:#416a80;font-size:13px}
-    .flight-detail{margin-top:8px;color:#68798b;font-size:12px;line-height:1.55}.flight-price{white-space:nowrap;text-align:right;color:var(--navy);font-weight:850;font-size:20px;letter-spacing:-.3px}.flight-price small{display:block;margin-top:3px;color:#8a96a5;font-size:10px;font-weight:600;letter-spacing:.02em}.result-text{white-space:pre-wrap;line-height:1.65;color:#53677d}.result-link{display:inline-flex;align-items:center;justify-content:center;gap:5px;color:#315f75;text-decoration:none;font-weight:750}.result-link:hover{text-decoration:underline}.flight-no-link{font-size:11px;color:#8a96a4}
+    .flight-detail{margin-top:8px;color:#68798b;font-size:12px;line-height:1.55}.flight-itinerary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:13px}.flight-leg{padding:11px 12px;border:1px solid #e8edf1;border-radius:12px;background:#fff}.flight-leg-label{display:block;margin-bottom:7px;color:#8491a0;font-size:9px;font-weight:800;letter-spacing:.12em}.flight-leg-route{display:flex;align-items:center;gap:7px;flex-wrap:wrap;color:var(--navy);font-size:12px;font-weight:750}.flight-route-arrow{color:#9ba8b5}.flight-leg-meta,.flight-extra{margin-top:7px;color:#718093;font-size:11px;line-height:1.5}.flight-carrier{display:inline-flex;margin-right:5px;padding:4px 7px;border-radius:7px;background:#edf4f7;font-size:12px}.flight-price{white-space:nowrap;text-align:right;color:var(--navy);font-weight:850;font-size:20px;letter-spacing:-.3px}.flight-price small{display:block;margin-top:3px;color:#8a96a5;font-size:10px;font-weight:600;letter-spacing:.02em}.result-text{white-space:pre-wrap;line-height:1.65;color:#53677d}.result-link{display:inline-flex;align-items:center;justify-content:center;gap:5px;color:#315f75;text-decoration:none;font-weight:750}.result-link:hover{text-decoration:underline}.flight-no-link{font-size:11px;color:#8a96a4}
     .flight-select{border:0;background:var(--navy);color:white;border-radius:11px;padding:11px 15px;font:inherit;font-size:12px;font-weight:750;cursor:pointer;white-space:nowrap;box-shadow:0 4px 10px rgba(20,43,72,.12)}.flight-select:hover{background:var(--navy2)}
-    @media(max-width:850px){.hotel-category-grid{grid-template-columns:1fr}.flight-card{grid-template-columns:minmax(0,1fr) auto}.flight-card .flight-select{grid-column:2;grid-row:1 / span 2}}
-    @media(max-width:600px){.flight-card{display:flex;align-items:flex-start;flex-direction:column}.flight-price{text-align:left}.flight-select{width:100%}.hotel-card{align-items:flex-start}.hotel-card:before{margin-top:1px}.hotel-link{align-self:center}}
+    @media(max-width:850px){.hotel-category-grid{grid-template-columns:1fr}.flight-card{grid-template-columns:minmax(0,1fr) auto}.flight-card .flight-select{grid-column:2;grid-row:1 / span 2}.flight-itinerary{grid-template-columns:1fr}}
+    @media(max-width:600px){.flight-card{display:flex;align-items:stretch;flex-direction:column}.flight-price{text-align:left}.flight-select{width:100%}.flight-itinerary{grid-template-columns:1fr}.hotel-card{align-items:flex-start}.hotel-card:before{margin-top:1px}.hotel-link{align-self:center}}
     .benefits{padding:29px 0;border-top:1px solid #e9edf1;border-bottom:1px solid #e9edf1;background:white}.benefit-row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.benefit{display:flex;align-items:center;justify-content:center;gap:11px;color:#405267;font-size:13px;font-weight:650}.benefit-icon{width:35px;height:35px;display:grid;place-items:center;border-radius:11px;background:#f0f4f6;font-size:16px}
     section.content{padding:82px 0}.section-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:26px;gap:20px}.section-head h2{margin:0;color:var(--navy);font-family:Georgia,"Times New Roman",serif;font-size:38px;font-weight:500;letter-spacing:-.7px}.section-head p{margin:0;color:var(--muted);font-size:14px}.destinations{display:grid;grid-template-columns:repeat(4,1fr);gap:17px}.destination{height:290px;position:relative;overflow:hidden;border-radius:19px;background:#d9e2e8;box-shadow:0 8px 22px rgba(23,43,65,.1)}.destination img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s}.destination:hover img{transform:scale(1.05)}.destination:after{content:"";position:absolute;inset:35% 0 0;background:linear-gradient(transparent,rgba(9,25,43,.72))}.destination-copy{position:absolute;z-index:1;bottom:20px;left:19px;color:white}.destination-copy small{display:block;margin-bottom:5px;opacity:.82;font-size:11px;letter-spacing:.08em;text-transform:uppercase}.destination-copy strong{font-family:Georgia,"Times New Roman",serif;font-size:25px;font-weight:500}
     .how{background:#eef3f6}.how-inner{display:grid;grid-template-columns:.8fr 1.2fr;gap:55px;align-items:start}.how-title h2{margin:0 0 14px;color:var(--navy);font-family:Georgia,"Times New Roman",serif;font-size:40px;font-weight:500}.how-title p{color:var(--muted);line-height:1.7;margin:0}.steps{display:grid;grid-template-columns:repeat(2,1fr);gap:24px 28px}.step{display:flex;gap:14px}.step-num{width:36px;height:36px;flex:0 0 36px;border-radius:12px;background:white;color:var(--navy);display:grid;place-items:center;font-size:13px;font-weight:750;box-shadow:0 3px 10px rgba(20,43,72,.06)}.step h3{margin:2px 0 6px;color:var(--navy);font-size:15px}.step p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
@@ -297,8 +297,16 @@
       const results = document.getElementById('results');
       const chatBox = document.getElementById('chatBox');
       if (chatBox) chatBox.style.display = 'block';
-      const lines = respuesta.replace(/\r/g, '').split('\n');
-      const headingIndex = lines.findIndex(line => /^###\s+Vuelos\s*$/i.test(line.trim()));
+      const lines = respuesta.replace(/\r/g, '').split('\n').map(line => {
+        const trimmed = line.trim();
+        // The agent sometimes emits plain section labels instead of Markdown headings.
+        if (/^(?:#{1,6}\s*)?Vuelos(?:\s+.+)?$/i.test(trimmed)) return '### ' + trimmed.replace(/^#{1,6}\s*/, '');
+        if (/^(?:#{1,6}\s*)?Alojamientos(?:\s+en\s+.+|\s+encontrados|\s+reales)?\s*$/i.test(trimmed)) return '### ' + trimmed.replace(/^#{1,6}\s*/, '');
+        if (/^(?:#{1,6}\s*)?Actividades(?:\s+.+)?$/i.test(trimmed)) return '### ' + trimmed.replace(/^#{1,6}\s*/, '');
+        if (/^(?:#{1,6}\s*)?Presupuesto\s*$/i.test(trimmed)) return '### ' + trimmed.replace(/^#{1,6}\s*/, '');
+        return line;
+      });
+      const headingIndex = lines.findIndex(line => /^###\s+Vuelos(?:\s+.+)?\s*$/i.test(line.trim()));
 
       function markdownLink(text) {
         const match = String(text).match(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/);
@@ -520,19 +528,20 @@
 
         const sections = groups.map(group => {
           const cards = group.activities.map(activity => {
-            const clean = activity.text
-              .replace(/\[[^\]]+\]\(https?:\/\/[^)]+\)/g, '')
+            const linkedTitle = activity.text.match(/^\[\*\*(.+?)\*\*\]\((https?:\/\/[^)]+)\)/);
+            const markdownTitle = activity.text.match(/^\[(.+?)\]\((https?:\/\/[^)]+)\)/);
+            const name = (linkedTitle ? linkedTitle[1] : markdownTitle ? markdownTitle[1].replace(/\*\*/g, '') : activity.text)
+              .replace(/\*\*/g, '').trim();
+            const detail = activity.text
+              .replace(/^\[[^\]]+\]\(https?:\/\/[^)]+\)\s*/, '')
               .replace(/Ver actividad\s*↗?/gi, '')
-              .replace(/\*\*/g, '')
-              .trim();
-
-            const separator = clean.match(/^(.+?)\s*[—–]\s*(.+)$/);
-            const name = separator ? separator[1].trim() : clean;
-            const detail = separator ? separator[2].trim() : '';
+              .replace(/^\s*[—–-]\s*/, '')
+              .replace(/\*\*/g, '').trim();
+            const link = activity.link || (linkedTitle ? { url: linkedTitle[2] } : markdownTitle ? { url: markdownTitle[2] } : null);
 
             return '<article class="activity-card' + (group.adventure ? ' adventure' : '') + '">' +
               '<div class="activity-main"><div class="activity-name">' + escapeHtml(name) + '</div><div class="activity-detail">' + escapeHtml(detail) + '</div></div>' +
-              (activity.link ? '<a class="activity-link result-link" href="' + escapeHtml(activity.link.url) + '" target="_blank" rel="noopener noreferrer">Ver actividad ↗</a>' : '') +
+              (link ? '<a class="activity-link result-link" href="' + escapeHtml(link.url) + '" target="_blank" rel="noopener noreferrer">Ver actividad ↗</a>' : '') +
             '</article>';
           }).join('');
 
@@ -667,7 +676,7 @@
         return;
       }
       const beforeLines = lines.slice(0, headingIndex);
-      const afterStart = lines.findIndex((line, index) => index > headingIndex && /^###\s+/.test(line.trim()));
+      const afterStart = lines.findIndex((line, index) => index > headingIndex && /^###\s+(?:Alojamientos|Actividades|Presupuesto|Experiencias)\b/i.test(line.trim()));
       const flightEnd = afterStart === -1 ? lines.length : afterStart;
       const flightLines = lines.slice(headingIndex + 1, flightEnd);
 
@@ -754,18 +763,36 @@
           ? parseActivityBlocks(lines.slice(activityMarker))
           : { html: '' };
 
-      const cards = flights.map(flight =>
-        '<article class="flight-card">' +
+      const cards = flights.map(flight => {
+        const parts = flight.details.split(/\s*\|\s*/).filter(Boolean);
+        const outbound = parts.find(part => /^Ida:/i.test(part)) || '';
+        const inbound = parts.find(part => /^Vuelta:/i.test(part)) || '';
+        const extra = parts.filter(part => !/^Ida:|^Vuelta:/i.test(part));
+        const legMarkup = (label, value) => {
+          if (!value) return '';
+          const content = value.replace(/^Ida:\s*|^Vuelta:\s*/i, '');
+          const route = content.match(/^(.+?)\s*→\s*(.+?)(?=\s*\|\s*|$)/);
+          const tail = route ? content.slice(route[0].length).replace(/^\s*\|\s*/, '') : '';
+          return '<div class="flight-leg"><span class="flight-leg-label">' + label + '</span>' +
+            '<div class="flight-leg-route">' + (route
+              ? '<span>' + escapeHtml(route[1].trim()) + '</span><span class="flight-route-arrow">→</span><span>' + escapeHtml(route[2].trim()) + '</span>'
+              : escapeHtml(content)) + '</div>' +
+            (tail ? '<div class="flight-leg-meta">' + escapeHtml(tail) + '</div>' : '') +
+          '</div>';
+        };
+        const airlineNames = flight.airline.split(/\s*\+\s*/).map(name => '<span class="flight-carrier">' + escapeHtml(name) + '</span>').join('');
+        return '<article class="flight-card">' +
           '<div class="flight-main">' +
-            '<div class="flight-airline">' + escapeHtml(flight.airline) + '</div>' +
-            '<div class="flight-detail">' + escapeHtml(flight.details) + '</div>' +
+            '<div class="flight-airline">' + airlineNames + '</div>' +
+            '<div class="flight-itinerary">' + legMarkup('IDA', outbound) + legMarkup('VUELTA', inbound) + '</div>' +
+            (extra.length ? '<div class="flight-extra">' + escapeHtml(extra.join(' · ')) + '</div>' : '') +
           '</div>' +
-          '<div class="flight-price">' + escapeHtml(flight.price) + '<small>Total mostrado</small></div>' +
+          '<div class="flight-price">' + escapeHtml(flight.price) + '<small>Precio total</small></div>' +
           (flight.url
-            ? '<a class="flight-select result-link" href="' + escapeHtml(flight.url) + '" target="_blank" rel="noopener noreferrer">Ver vuelo ↗</a>'
-            : '<span class="flight-no-link">Enlace no disponible</span>') +
-        '</article>'
-      ).join('');
+            ? '<a class="flight-select result-link" href="' + escapeHtml(flight.url) + '" target="_blank" rel="noopener noreferrer">Ver vuelos ↗</a>'
+            : '<span class="flight-no-link">Ver búsqueda en Google Flights</span>') +
+        '</article>';
+      }).join('');
 
       results.innerHTML =
         renderTripSummary(beforeLines) +
