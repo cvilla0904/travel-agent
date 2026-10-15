@@ -204,7 +204,7 @@
       {ciudad:'Madinah',pais:'Arabia Saudí',codigo:'MED',aliases:['madinah','medina','med']},
       {ciudad:'Madison',pais:'Estados Unidos',codigo:'MSN',aliases:['madison','msn']}
     ];
-    const normalizarCiudad = valor => String(valor || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().trim();
+    const normalizarCiudad = valor => String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
     function configurarAutocompletado(inputId) {
       const input = document.getElementById(inputId);
       const panel = document.getElementById(inputId + '-suggestions');
