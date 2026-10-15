@@ -333,6 +333,30 @@ function extraerSegmentosApify(leg: any, fallbackOrigen = '', fallbackDestino = 
   });
 }
 
+function parsearPrecioApify(value: any): number {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  if (typeof value !== 'string') return 0;
+
+  // Los actores pueden devolver precios como "$123", "€123", "1.234,56 €"
+  // o "1,234.56". Convertimos el valor sin depender del símbolo de moneda.
+  let texto = value.trim().replace(/[^0-9,.-]/g, '');
+  if (!texto) return 0;
+  if (texto.includes(',') && texto.includes('.')) {
+    if (texto.lastIndexOf(',') > texto.lastIndexOf('.')) {
+      texto = texto.replace(/\./g, '').replace(',', '.');
+    } else {
+      texto = texto.replace(/,/g, '');
+    }
+  } else if (texto.includes(',')) {
+    const decimales = texto.length - texto.lastIndexOf(',') - 1;
+    texto = decimales > 0 && decimales <= 2
+      ? texto.replace(',', '.')
+      : texto.replace(/,/g, '');
+  }
+  const numero = Number(texto);
+  return Number.isFinite(numero) ? numero : 0;
+}
+
 function normalizarVueloIdaVuelta(vuelo: any, ctx: {
   origen: string; destino: string; fechaIda: string; fechaVuelta: string; pasajeros: number;
 }) {
@@ -340,7 +364,7 @@ function normalizarVueloIdaVuelta(vuelo: any, ctx: {
   const vuelta = vuelo.return ?? vuelo.returnLeg ?? vuelo.inbound ?? vuelo.legs?.[1] ?? null;
   const segmentosIda = extraerSegmentosApify(ida, ctx.origen, ctx.destino);
   const segmentosVuelta = extraerSegmentosApify(vuelta, ctx.destino, ctx.origen);
-  const precioTotal = Number(vuelo.price ?? vuelo.totalPrice ?? vuelo.total_price ?? vuelo.priceTotal ?? 0);
+  const precioTotal = parsearPrecioApify(vuelo.price ?? vuelo.totalPrice ?? vuelo.total_price ?? vuelo.priceTotal ?? 0);
   const aerolineas = [...new Set([...segmentosIda, ...segmentosVuelta].map((s: any) => s.aerolinea).filter(Boolean))];
   return {
     aerolinea: String(Array.isArray(vuelo.airlines) ? vuelo.airlines.join(' + ') : (vuelo.airlines || aerolineas.join(' + ') || 'Aerolínea no indicada')),
