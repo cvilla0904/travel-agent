@@ -8,8 +8,8 @@ export async function buscarHotelesSearchApi(params: {
   const apiKey = process.env.SEARCHAPI_API_KEY;
   if (!apiKey) throw new Error('SEARCHAPI_API_KEY no está configurada.');
   if (!params.destino.trim()) throw new Error('El destino del alojamiento está vacío.');
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(params.fechaEntrada) ||
-      !/^\\d{4}-\\d{2}-\\d{2}$/.test(params.fechaSalida)) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(params.fechaEntrada) ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(params.fechaSalida)) {
     throw new Error('Las fechas de alojamiento deben tener formato YYYY-MM-DD.');
   }
   if (params.fechaSalida <= params.fechaEntrada) {
@@ -115,7 +115,7 @@ export async function buscarHotelesSearchApi(params: {
       if (!limpio) continue;
       if (limpio.includes(',') && limpio.includes('.')) {
         limpio = limpio.lastIndexOf(',') > limpio.lastIndexOf('.')
-          ? limpio.replace(/\\./g, '').replace(',', '.')
+          ? limpio.replace(/\./g, '').replace(',', '.')
           : limpio.replace(/,/g, '');
       } else if (limpio.includes(',')) {
         const decimales = limpio.length - limpio.lastIndexOf(',') - 1;
