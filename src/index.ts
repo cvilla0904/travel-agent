@@ -8,7 +8,8 @@ import { z } from 'zod';
 import { buscarLugaresGeoapify } from './services/geoapify.js';
 import { buscarActividadesApify, buscarActividadesApifyMultidestino } from './services/apify.js';
 import { buscarVuelosApify } from './services/apify-flights.js';
-import { buscarHotelesSearchApi } from './services/searchapi.js';
+import { buscarHotelesConEstado } from './services/searchapi.js';
+import { hotelOutputSchema } from './schemas/hotels.js';
 
 /* =========================================================
    1. FUNCIONES AUXILIARES
@@ -560,25 +561,8 @@ const buscarHoteles = tool({
   },
   execute: async (input) => {
     const { destino, fechaEntrada, fechaSalida, adultos } = input as { destino:string; fechaEntrada:string; fechaSalida:string; adultos:number };
-    return await buscarHotelesSearchApi({ destino, fechaEntrada, fechaSalida, adultos });
+    return await buscarHotelesConEstado({ destino, fechaEntrada, fechaSalida, adultos });
   },
-});
-
-const hotelOutputSchema = z.object({
-  destino: z.string(), fechaEntrada: z.string(), fechaSalida: z.string(), adultos: z.number(),
-  hoteles: z.array(z.object({
-    nombre:z.string(), estrellas:z.number(), valoracion:z.number(), numeroResenas:z.number(),
-    precioTotal:z.number(), precioPorNoche:z.number(), moneda:z.string(), habitacion:z.string(),
-    disponibilidad:z.string(), habitacionesDisponibles:z.number(), cancelacionGratuita:z.boolean(),
-    cancelacionHasta:z.string(), url:z.string(), imagen:z.string(), zona:z.string(), distanciaCentro:z.string(),
-    precioDisponible:z.boolean().optional(), fuentePrecio:z.string().optional(),
-    ofertas:z.array(z.object({
-      proveedor:z.string(), precioTotal:z.number(), precioPorNoche:z.number(),
-      url:z.string(), esWebOficial:z.boolean(), cancelacionGratuita:z.boolean(),
-      cancelacionHasta:z.string(),
-    })).optional(),
-    descripcion:z.string().optional(), tipo:z.string().optional(),
-  })),
 });
 
 const hotelAgent = new Agent({
@@ -619,17 +603,16 @@ const hotelAgent = new Agent({
     - distancia al centro
 
     No inventes alojamientos, precios, estrellas, valoraciones, reseñas, disponibilidad ni condiciones.
-    Si precioTotal o precioPorNoche es 0, significa que Google Hotels no proporcionó un precio utilizable: NO lo presentes como 0 €, gratis ni como precio real. Indica "Precio no disponible; consultar proveedor".
-    No reduzcas las opciones a una única opción.
-    Conserva el enlace real que devuelve Google Hotels. No inventes enlaces ni proveedores.
+    La herramienta devuelve "estado":
+    - "ok": hay alojamientos; devuélvelos todos (hasta 10) tal cual.
+    - "sin_resultados": el proveedor respondió sin alojamientos para esas fechas; indícalo en "error" como null y deja "hoteles" vacío.
+    - "error_proveedor" o "error_interno": la búsqueda FALLÓ. Copia "estado" y "error" tal cual y deja "hoteles" vacío. NUNCA lo presentes como que el destino no tiene alojamientos.
+    Copia también "diagnostico".
 
-    Si el alojamiento incluye el array "ofertas", utiliza sus ofertas como
-    comparación de precios para las mismas fechas y adultos. Muestra el precio
-    total y el proveedor de cada oferta, con su enlace real correspondiente.
-    No combines el precio de un proveedor con el enlace de otro. Si no hay
-    ofertas comparables, conserva el precio agregado de Google Hotels y su
-    enlace de comparación. No afirmes que una opción es la más barata de todo
-    el mercado: solo es la más barata entre las ofertas devueltas.
+    Si precioDisponible es false (precioTotal y precioPorNoche son 0), el proveedor no dio precio: NO lo presentes como 0 €, gratis ni como precio real. Indica "Precio no disponible; consultar proveedor". Si precioCalculado es true, el importe se ha derivado dividiendo/multiplicando por las noches: no lo presentes como dato literal del proveedor.
+    Respeta valoracionEscala (la valoración de Booking suele ser sobre 10); no conviertas ni inventes escalas.
+    No reduzcas las opciones a una única opción.
+    Conserva el enlace real que devuelve la herramienta (campo url). No inventes enlaces ni proveedores.
   `,
   tools: [buscarHoteles],
 });
@@ -1143,29 +1126,18 @@ const buscarRecursosMultidestino = tool({
     for (const tramo of tramos) {
       const { ciudad, dias, fechaEntrada, fechaSalida } = tramo;
 
-      let hoteles: any[] = [];
-      let errorAlojamientos: string | null = null;
-
-      try {
-        const hotelResult = await buscarHotelesSearchApi({
-          destino: normalizarCiudadBusquedaMultidestino(
-            ciudad,
-            rutaGuardada.pais,
-          ),
-          fechaEntrada,
-          fechaSalida,
-          adultos,
-          paisCodigo: obtenerCodigoPais(rutaGuardada.pais),
-        });
-
-        hoteles = hotelResult.hoteles.slice(0, 10);
-      } catch (error: any) {
-        errorAlojamientos =
-          String(
-            error?.message ??
-              'No se pudieron consultar los alojamientos.',
-          );
-      }
+      const hotelResult = await buscarHotelesConEstado({
+        destino: normalizarCiudadBusquedaMultidestino(
+          ciudad,
+          rutaGuardada.pais,
+        ),
+        fechaEntrada,
+        fechaSalida,
+        adultos,
+        paisCodigo: obtenerCodigoPais(rutaGuardada.pais),
+      });
+      const hoteles: any[] = hotelResult.hoteles.slice(0, 10);
+      const errorAlojamientos: string | null = hotelResult.error;
 
       const actividades = actividadesProveedor
         .filter(
@@ -1790,14 +1762,16 @@ export const travelAgent = new Agent({
     categoría neutral llamada "Otros alojamientos".
 
     Cada hotel debe aparecer en una sola categoría y conservar precio,
-    valoración, número de reseñas y enlace real. Si incluye ofertas comparables,
-    muestra debajo del hotel los proveedores y precios totales disponibles,
-    cada uno con su propio enlace. Si esWebOficial es true, identifícala
-    como "web oficial"; no deduzcas que un proveedor es oficial si el dato falta.
-    Añade las ofertas adicionales en una línea de continuación del hotel, sin
-    crear nuevas viñetas, para que cada alojamiento siga siendo una sola tarjeta.
-    No afirmes que una tarifa es la más barata de todo el mercado: solo de las
-    ofertas que ha devuelto Google Hotels para las mismas fechas y viajeros.
+    valoración, número de reseñas y enlace real. Escribe la valoración con su
+    escala (por ejemplo "8,6/10"; Booking puntúa sobre 10) y el precio con su
+    moneda. Si precioDisponible es false escribe "Precio no disponible" y no un
+    0 €. Enlaza cada alojamiento con su url como [Ver alojamiento](url).
+    No afirmes que un alojamiento es el más barato del mercado: solo lo es
+    entre los resultados devueltos por Booking.com para esas fechas y viajeros.
+
+    Si hotel_agent devuelve estado "error_proveedor" o "error_interno", di
+    claramente que la búsqueda de alojamiento falló, con el motivo del campo
+    error, y NO digas que no hay alojamientos ni inventes opciones.
 
     El usuario es quien decide qué vuelo y qué alojamiento quiere.
     Tu función es mostrar todas las opciones con información comparable,

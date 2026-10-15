@@ -397,10 +397,11 @@
           const hotels = groups[0].hotels;
           const metrics = hotels.map(hotel => {
             const text = hotel.lines.join(' ').replace(/\[[^\]]+\]\(https?:\/\/[^)]+\)/g, '');
-            const ratingMatch = text.match(/(?:valoraci[oó]n\s*)?(\d(?:[.,]\d{1,2})?)\s*\/\s*5/i);
+            // Booking puntúa sobre 10; se admite /10 y se normaliza a escala 5.
+            const ratingMatch = text.match(/(?:valoraci[oó]n\s*)?(\d+(?:[.,]\d{1,2})?)\s*\/\s*(10|5)(?!\d)/i);
             const reviewsMatch = text.match(/([\d.]+)\s*(?:reseñas|opiniones|reviews)/i);
             const priceMatch = text.match(/(?:€\s*)?([\d.]+(?:,\d{1,2})?)\s*€(?:\s*(?:total|\/noche))?/i);
-            const rating = ratingMatch ? Number(ratingMatch[1].replace(',', '.')) : 0;
+            const rating = ratingMatch ? Number(ratingMatch[1].replace(',', '.')) * (ratingMatch[2] === '10' ? 0.5 : 1) : 0;
             const reviews = reviewsMatch ? Number(reviewsMatch[1].replace(/\./g, '')) : 0;
             const price = priceMatch ? Number(priceMatch[1].replace(/\./g, '').replace(',', '.')) : 0;
             return { hotel, rating, reviews, price };
