@@ -1,9 +1,11 @@
 import { ApifyClient } from 'apify-client';
 
-// Actor probado manualmente en Apify y con resultados reales.
-// Importante: cada elemento del dataset puede contener los vuelos dentro de all_flights.
+// Integración de vuelos basada en el patrón operativo de la integración Apify
+// de actividades: ejecutar actor, comprobar el estado, leer el dataset y validar
+// los registros reales antes de entregarlos al agente.
 const ACTOR_ID = 'johnvc/google-flights-data-scraper-flight-and-price-search';
 const MAX_RESULTS = 10;
+const WAIT_SECS = 20;
 
 export type BuscarVuelosApifyParams = {
   origen: string;
@@ -44,22 +46,51 @@ function resolverAeropuerto(value: string, campo: string): string {
   throw new Error(`No he podido identificar el aeropuerto IATA de ${campo} ("${limpio}"). Prueba con un código IATA de tres letras, por ejemplo BIO, MAD o FCO.`);
 }
 
-function extraerVuelosDelDataset(items: any[]): any[] {
-  const vuelos: any[] = [];
-  for (const item of items) {
-    if (Array.isArray(item?.all_flights)) vuelos.push(...item.all_flights);
-    else if (Array.isArray(item?.best_flights) || Array.isArray(item?.other_flights)) {
-      if (Array.isArray(item.best_flights)) vuelos.push(...item.best_flights);
-      if (Array.isArray(item.other_flights)) vuelos.push(...item.other_flights);
-    } else if (item && typeof item === 'object' && ('price' in item || 'price_total' in item)) {
-      // Compatibilidad con datasets que entreguen un vuelo por registro.
-      vuelos.push(item);
+function pareceVuelo(value: unknown): value is Record<string, any> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const vuelo = value as Record<string, any>;
+  return ('price' in vuelo || 'price_total' in vuelo || 'priceTotal' in vuelo) &&
+    ('departure_airport' in vuelo || 'departureAirport' in vuelo || 'route' in vuelo ||
+      'arrival_airport' in vuelo || 'arrivalAirport' in vuelo);
+}
+
+/**
+ * El actor puede entregar los vuelos como:
+ * - registros individuales;
+ * - un único registro que contiene un array de vuelos;
+ * - all_flights, best_flights/other_flights o results/data.
+ * La vista Table de Apify puede expandir un array aunque el dataset muestre
+ * un solo registro. Por eso se aplanan arrays antes de validar cada vuelo.
+ */
+function extraerVuelosDelDataset(items: unknown[]): Record<string, any>[] {
+  const vuelos: Record<string, any>[] = [];
+
+  const procesar = (value: unknown, depth = 0): void => {
+    if (depth > 5 || value == null) return;
+
+    if (Array.isArray(value)) {
+      for (const child of value) procesar(child, depth + 1);
+      return;
     }
-  }
+
+    if (typeof value !== 'object') return;
+    const item = value as Record<string, any>;
+
+    if (pareceVuelo(item)) {
+      vuelos.push(item);
+      return;
+    }
+
+    for (const key of ['all_flights', 'best_flights', 'other_flights', 'flights', 'results', 'data', 'items']) {
+      if (item[key] != null) procesar(item[key], depth + 1);
+    }
+  };
+
+  for (const item of items) procesar(item);
   return vuelos;
 }
 
-export async function buscarVuelosApify(params: BuscarVuelosApifyParams): Promise<any[]> {
+export async function buscarVuelosApify(params: BuscarVuelosApifyParams): Promise<Record<string, any>[]> {
   const token = process.env.APIFY_API_TOKEN;
   if (!token) throw new Error('APIFY_API_TOKEN no está configurada.');
   if (!params.origen.trim() || !params.destino.trim()) throw new Error('El origen y el destino son obligatorios.');
@@ -70,37 +101,62 @@ export async function buscarVuelosApify(params: BuscarVuelosApifyParams): Promis
   const destination = resolverAeropuerto(params.destino, 'destino');
   const adults = Math.max(1, Math.min(9, Math.floor(params.pasajeros || 1)));
   const client = new ApifyClient({ token });
+
+  // Nombres de campos contrastados con el formulario real del actor en Apify.
+  // Ida y vuelta se consultan por separado desde buscar_vuelos, de modo que
+  // cada ejecución representa una sola dirección y una fecha inequívoca.
   const actorInput = {
     departure_id: origin,
     arrival_id: destination,
     outbound_date: params.fechaIda,
     adults,
     currency: 'EUR',
-    hl: 'es',
-    gl: 'es',
+    language: 'es',
+    country_code: 'es',
+    exclude_basic: false,
+    fetch_booking_options: false,
     max_pages: 1,
   };
 
-  console.info('[APIFY_FLIGHTS] Starting search', JSON.stringify({
-    actor: ACTOR_ID, origin, destination, outboundDate: params.fechaIda,
-    adults, currency: actorInput.currency,
+  console.info('[APIFY_FLIGHTS] Starting actor', JSON.stringify({
+    actor: ACTOR_ID, input: actorInput,
   }));
 
-  const run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: 120 });
-  if (run.status !== 'SUCCEEDED') {
+  const run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: WAIT_SECS });
+  console.info('[APIFY_FLIGHTS] Actor returned', JSON.stringify({
+    runId: run.id, status: run.status, datasetId: run.defaultDatasetId ?? null,
+  }));
+
+  if (!run.defaultDatasetId) {
+    throw new Error(`Apify no devolvió un dataset para vuelos (estado: ${String(run.status ?? 'UNKNOWN')}).`);
+  }
+  if (run.status !== 'SUCCEEDED' && run.status !== 'RUNNING') {
     throw new Error(`Apify no completó la búsqueda de vuelos (estado: ${String(run.status ?? 'UNKNOWN')}).`);
   }
-  if (!run.defaultDatasetId) throw new Error('Apify no devolvió un dataset para los resultados de vuelos.');
 
-  const { items } = await client.dataset(run.defaultDatasetId).listItems({ limit: 10 });
+  // No limitar a 10 registros: el actor puede guardar todos los vuelos dentro
+  // de un único elemento del dataset. El límite se aplica tras aplanar el JSON.
+  const { items } = await client.dataset(run.defaultDatasetId).listItems({ limit: 1000 });
   const flights = extraerVuelosDelDataset(items);
-  console.info('[APIFY_FLIGHTS] Search completed', JSON.stringify({
-    runId: run.id, datasetRecords: items.length, flightCount: flights.length,
-    status: run.status, origin, destination, outboundDate: params.fechaIda,
+
+  console.info('[APIFY_FLIGHTS] Dataset read', JSON.stringify({
+    runId: run.id,
+    status: run.status,
+    datasetRecords: items.length,
+    extractedFlights: flights.length,
+    sampleKeys: flights[0] ? Object.keys(flights[0]) : [],
+    origin,
+    destination,
+    outboundDate: params.fechaIda,
   }));
 
   if (flights.length === 0) {
-    throw new Error('Apify terminó correctamente, pero el dataset no contiene vuelos reconocibles. Revisa la pestaña JSON de esa ejecución.');
+    throw new Error(
+      run.status === 'RUNNING'
+        ? 'Apify sigue ejecutando la búsqueda y todavía no ha guardado vuelos reconocibles.'
+        : 'Apify terminó, pero no se reconocieron vuelos en el JSON del dataset. Revisa la estructura del resultado del actor.',
+    );
   }
+
   return flights.slice(0, MAX_RESULTS);
 }
