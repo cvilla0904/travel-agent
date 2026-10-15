@@ -46,12 +46,66 @@ function resolverAeropuerto(value: string, campo: string): string {
   throw new Error(`No he podido identificar el aeropuerto IATA de ${campo} ("${limpio}"). Prueba con un código IATA de tres letras, por ejemplo BIO, MAD o FCO.`);
 }
 
+function normalizarClave(value: string): string {
+  return value.toLocaleLowerCase('en').replace(/[^a-z0-9]/g, '');
+}
+
+function obtenerCampo(objeto: Record<string, any>, aliases: string[]): any {
+  const claves = new Set(aliases.map(normalizarClave));
+  const clave = Object.keys(objeto).find((key) => claves.has(normalizarClave(key)));
+  return clave === undefined ? undefined : objeto[clave];
+}
+
+function normalizarRegistroVuelo(value: Record<string, any>): Record<string, any> {
+  const price = obtenerCampo(value, ['price', 'price_total', 'priceTotal', 'total_price', 'totalPrice']);
+  const currency = obtenerCampo(value, ['currency']) ?? 'EUR';
+  const airline = obtenerCampo(value, ['airlines', 'airline(s)', 'airline', 'airlineName']);
+  const departureAirport = obtenerCampo(value, ['departure_airport', 'departureAirport']);
+  const arrivalAirport = obtenerCampo(value, ['arrival_airport', 'arrivalAirport']);
+  const departs = obtenerCampo(value, ['departs', 'departure_time', 'departureTime', 'departure']);
+  const arrives = obtenerCampo(value, ['arrives', 'arrival_time', 'arrivalTime', 'arrival']);
+  const durationMinutes = obtenerCampo(value, ['duration_minutes', 'durationMinutes']);
+  const duration = obtenerCampo(value, ['duration']);
+  const flightNumber = obtenerCampo(value, ['flight_number', 'flight_numbers', 'flightNumber', 'flightNumbers']);
+  const rawStops = obtenerCampo(value, ['stops', 'number_of_stops', 'numberOfStops']);
+
+  let stops: number | undefined;
+  if (typeof rawStops === 'number' && Number.isFinite(rawStops)) {
+    stops = Math.max(0, rawStops);
+  } else if (typeof rawStops === 'string' && rawStops.trim()) {
+    const text = rawStops.trim().toLowerCase();
+    if (/^(?:direct|nonstop|non-stop|sin escalas?)$/.test(text)) {
+      stops = 0;
+    } else {
+      const match = text.match(/\d+/);
+      if (match) stops = Math.max(0, Number(match[0]));
+    }
+  }
+
+  return {
+    ...value,
+    price,
+    currency,
+    airlines: airline,
+    departure_airport: departureAirport,
+    arrival_airport: arrivalAirport,
+    departs,
+    arrives,
+    duration_minutes: durationMinutes,
+    duration,
+    flight_number: flightNumber,
+    ...(stops === undefined ? {} : { stops }),
+  };
+}
+
 function pareceVuelo(value: unknown): value is Record<string, any> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const vuelo = value as Record<string, any>;
-  return ('price' in vuelo || 'price_total' in vuelo || 'priceTotal' in vuelo) &&
-    ('departure_airport' in vuelo || 'departureAirport' in vuelo || 'route' in vuelo ||
-      'arrival_airport' in vuelo || 'arrivalAirport' in vuelo);
+  const price = obtenerCampo(vuelo, ['price', 'price_total', 'priceTotal', 'total_price', 'totalPrice']);
+  const departure = obtenerCampo(vuelo, ['departure_airport', 'departureAirport', 'departs', 'departure_time', 'departureTime']);
+  const arrival = obtenerCampo(vuelo, ['arrival_airport', 'arrivalAirport', 'arrives', 'arrival_time', 'arrivalTime']);
+  const route = obtenerCampo(vuelo, ['route']);
+  return price != null && (departure != null || arrival != null || route != null);
 }
 
 /**
@@ -77,12 +131,18 @@ function extraerVuelosDelDataset(items: unknown[]): Record<string, any>[] {
     const item = value as Record<string, any>;
 
     if (pareceVuelo(item)) {
-      vuelos.push(item);
+      vuelos.push(normalizarRegistroVuelo(item));
       return;
     }
 
-    for (const key of ['all_flights', 'best_flights', 'other_flights', 'flights', 'results', 'data', 'items']) {
-      if (item[key] != null) procesar(item[key], depth + 1);
+    const contenedores = new Set([
+      'allflights', 'bestflights', 'otherflights', 'flights',
+      'results', 'data', 'items',
+    ]);
+    for (const key of Object.keys(item)) {
+      if (contenedores.has(normalizarClave(key)) && item[key] != null) {
+        procesar(item[key], depth + 1);
+      }
     }
   };
 
