@@ -357,6 +357,12 @@ function parsearPrecioApify(value: any): number {
   return Number.isFinite(numero) ? numero : 0;
 }
 
+function crearEnlaceBusquedaGoogleFlights(origen: string, destino: string, fechaIda: string, fechaVuelta = ''): string {
+  const ida = `Flights from ${origen} to ${destino} on ${fechaIda}`;
+  const consulta = fechaVuelta ? `${ida} through ${fechaVuelta}` : ida;
+  return `https://www.google.com/travel/flights?hl=en&gl=us&curr=EUR&q=${encodeURIComponent(consulta)}`;
+}
+
 function normalizarVueloIdaVuelta(vuelo: any, ctx: {
   origen: string; destino: string; fechaIda: string; fechaVuelta: string; pasajeros: number;
 }) {
@@ -371,7 +377,7 @@ function normalizarVueloIdaVuelta(vuelo: any, ctx: {
     precioPorPersona: Number(vuelo.pricePerPassenger ?? vuelo.price_per_passenger ?? (precioTotal / ctx.pasajeros)),
     precioTotal,
     moneda: String(vuelo.currency ?? 'EUR'),
-    enlace: String(vuelo.booking_url ?? vuelo.bookingUrl ?? vuelo.googleFlightsUrl ?? vuelo.google_flights_url ?? vuelo.url ?? ''),
+    enlace: String(vuelo.booking_url ?? vuelo.bookingUrl ?? vuelo.googleFlightsUrl ?? vuelo.google_flights_url ?? vuelo.url ?? crearEnlaceBusquedaGoogleFlights(ctx.origen, ctx.destino, ctx.fechaIda, ctx.fechaVuelta)),
     esIdaVuelta: true,
     tipo: 'Ida y vuelta',
     escalasIda: Number.isFinite(Number(vuelo.stops)) ? Math.max(0, Number(vuelo.stops)) : Math.max(0, segmentosIda.length - 1),
@@ -406,7 +412,7 @@ function combinarItinerarioAbierto(idaRaw: any, vueltaRaw: any, ctx: {
     precioPorPersona: Math.round(precioTotal / ctx.pasajeros),
     precioTotal,
     moneda: ida.moneda || vuelta.moneda || 'EUR',
-    enlace: ida.enlace || vuelta.enlace || '',
+    enlace: crearEnlaceBusquedaGoogleFlights(ctx.origen, ctx.destino, ctx.fechaIda, ctx.fechaVuelta),
     esIdaVuelta: true,
     tipo: ctx.destinoRegreso === ctx.destino ? 'Ida y vuelta' : 'Itinerario abierto / multidestino',
     escalasIda: ida.escalasIda,
@@ -1732,7 +1738,7 @@ export const travelAgent = new Agent({
     Cada opción de vuelo, hotel o actividad que presentes debe
     conservar su URL real si la herramienta la proporciona.
 
-    - Vuelo: muestra su campo enlace como "Ver vuelo".
+    - Vuelo: muestra su campo enlace. Si apunta a Google Flights con una consulta de ruta/fechas, etiquétalo "Ver búsqueda en Google Flights"; no afirmes que es un enlace de compra directa. Si el proveedor devuelve una URL de reserva directa, etiquétala "Ver oferta de vuelo".
     - Hotel: muestra su campo url como "Ver alojamiento".
     - Actividad: muestra su campo url como "Ver actividad".
 
