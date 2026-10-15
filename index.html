@@ -789,8 +789,8 @@
           '</div>' +
           '<div class="flight-price">' + escapeHtml(flight.price) + '<small>Precio total</small></div>' +
           (flight.url
-            ? '<a class="flight-select result-link" href="' + escapeHtml(flight.url) + '" target="_blank" rel="noopener noreferrer">Ver vuelos ↗</a>'
-            : '<span class="flight-no-link">Ver búsqueda en Google Flights</span>') +
+            ? '<a class="flight-select result-link" href="' + escapeHtml(flight.url) + '" target="_blank" rel="noopener noreferrer">' + (/google\.com\/travel\/flights/i.test(flight.url) ? 'Ver búsqueda en Google Flights ↗' : 'Ver oferta de vuelo ↗') + '</a>'
+            : '<span class="flight-no-link">Enlace no disponible</span>') +
         '</article>';
       }).join('');
 
