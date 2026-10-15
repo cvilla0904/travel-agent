@@ -342,7 +342,7 @@
 
         const markerIndex = sectionLines.findIndex(line => {
           const normalized = normalizeLine(line).replace(/\*{2}/g, '');
-          return /^(?:Alojamiento|Alojamientos)(?:\s+(?:encontrados|reales))?\s*:??$/i.test(normalized);
+          return /^(?:(?:Alojamiento|Alojamientos)(?:\s+(?:en\s+.+|encontrados|reales|recomendados|econ[oó]micos))?|Hoteles(?:\s+(?:en\s+.+|encontrados|reales))?|Otros alojamientos)\s*:??$/i.test(normalized);
         });
         if (markerIndex === -1) return { html: '' };
 
