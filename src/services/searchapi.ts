@@ -19,7 +19,7 @@ export async function buscarHotelesSearchApi(params: {
   const headers = { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' };
   const normalizar = (valor: unknown) => String(valor ?? '')
     .normalize('NFD')
-    .replace(/[\\u0300-\\u036f]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim();
 
