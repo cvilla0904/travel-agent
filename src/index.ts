@@ -1650,7 +1650,7 @@ export const travelAgent = new Agent({
     - enlace real
 
     Formato preferido para cada vuelo:
-    - **[Aerolínea]**: [precio total] € | Ida: [hora] [aeropuerto] ([IATA]) → [hora] [aeropuerto] ([IATA]) | [duración] | [escalas] | Vuelta: [hora] [aeropuerto] ([IATA]) → [hora] [aeropuerto] ([IATA]) | [duración] | [escalas] | [número de vuelo] | [Ver vuelo](URL REAL)
+    - **[Aerolínea]**: [precio total] € | Ida: [hora] [aeropuerto] ([IATA]) → [hora] [aeropuerto] ([IATA]) | [duración] | [escalas] | Vuelta: [hora] [aeropuerto] ([IATA]) → [hora] [aeropuerto] ([IATA]) | [duración] | [escalas] | [número de vuelo] | [Ver búsqueda en Google Flights o Ver oferta de vuelo](URL REAL DEL CAMPO enlace)
 
     No inventes ningún dato que no esté presente en el resultado
     de flight_agent. Si un campo no está disponible, omítelo.
