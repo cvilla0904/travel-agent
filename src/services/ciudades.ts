@@ -17,6 +17,7 @@ export function normalizarTexto(valor: unknown): string {
  * `nombres` ya van normalizados (sin acentos, en minúsculas).
  */
 const CIUDADES_EQUIVALENTES: Array<{ consulta: string; nombres: string[] }> = [
+  { consulta: 'Amsterdam', nombres: ['amsterdam'] },
   { consulta: 'Florence', nombres: ['florencia', 'florence', 'firenze'] },
   { consulta: 'Venice', nombres: ['venecia', 'venice', 'venezia'] },
   { consulta: 'Rome', nombres: ['roma', 'rome'] },
@@ -69,4 +70,45 @@ export function variantesCiudad(ciudad: string): string[] {
   if (!clave) return [];
   const grupo = CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave));
   return grupo ? [...grupo.nombres] : [clave];
+}
+
+/** Países habituales (nombres normalizados, en español e inglés) -> código ISO en minúsculas. */
+const CODIGOS_PAIS: Record<string, string> = {
+  espana: 'es', spain: 'es',
+  italia: 'it', italy: 'it',
+  francia: 'fr', france: 'fr',
+  portugal: 'pt',
+  alemania: 'de', germany: 'de',
+  austria: 'at',
+  'paises bajos': 'nl', holanda: 'nl', netherlands: 'nl', 'the netherlands': 'nl',
+  belgica: 'be', belgium: 'be',
+  suiza: 'ch', switzerland: 'ch',
+  'reino unido': 'gb', 'united kingdom': 'gb', inglaterra: 'gb', uk: 'gb',
+  irlanda: 'ie', ireland: 'ie',
+  grecia: 'gr', greece: 'gr',
+  turquia: 'tr', turkey: 'tr',
+  'republica checa': 'cz', chequia: 'cz', 'czech republic': 'cz', czechia: 'cz',
+  polonia: 'pl', poland: 'pl',
+  dinamarca: 'dk', denmark: 'dk',
+  hungria: 'hu', hungary: 'hu',
+  croacia: 'hr', croatia: 'hr',
+  japon: 'jp', japan: 'jp',
+  mexico: 'mx',
+  colombia: 'co',
+  'estados unidos': 'us', 'united states': 'us', usa: 'us', eeuu: 'us',
+};
+
+/** "Italia" / "Italy" / "IT" -> "it". undefined si no se reconoce. */
+export function codigoPaisDesdeNombre(pais: unknown): string | undefined {
+  const clave = normalizarTexto(pais);
+  if (!clave) return undefined;
+  if (/^[a-z]{2}$/.test(clave)) return clave;
+  return CODIGOS_PAIS[clave];
+}
+
+/** "Florencia, Italia" -> código del país escrito tras la última coma, si se reconoce. */
+export function codigoPaisDesdeDestino(destino: string): string | undefined {
+  const partes = String(destino ?? '').split(',');
+  if (partes.length < 2) return undefined;
+  return codigoPaisDesdeNombre(partes[partes.length - 1]);
 }

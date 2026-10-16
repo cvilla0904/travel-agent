@@ -12,7 +12,14 @@
  *    de otros (total <-> noche) se marcan con `precioCalculado`.
  */
 
-import { consultaProveedorParaCiudad, nombreBaseCiudad, normalizarTexto, variantesCiudad } from './ciudades.js';
+import {
+  codigoPaisDesdeDestino,
+  codigoPaisDesdeNombre,
+  consultaProveedorParaCiudad,
+  nombreBaseCiudad,
+  normalizarTexto,
+  variantesCiudad,
+} from './ciudades.js';
 
 const URL_BASE = 'https://www.searchapi.io/api/v1/search';
 const ESPERA_MAXIMA_MS = 25_000;
@@ -413,7 +420,10 @@ export async function buscarHotelesSearchApi(
   }
 
   const adultos = Math.max(1, Math.min(30, Math.floor(params.adultos || 1)));
-  const pais = normalizarTexto(params.paisCodigo);
+  // País: el parámetro explícito manda; si no, el que acompaña al destino
+  // ("Florencia, Italia"). Se exige al resolver el destino para no confundir
+  // ciudades homónimas (Florence, Alabama).
+  const pais = normalizarTexto(codigoPaisDesdeNombre(params.paisCodigo) ?? codigoPaisDesdeDestino(params.destino));
 
   // Paso 1: resolver el destino. Se prueba primero el nombre en inglés
   // (Booking responde en en-us) y, si no hay coincidencia, el original.
@@ -422,7 +432,7 @@ export async function buscarHotelesSearchApi(
   const etiquetasVistas: string[] = [];
   for (const consulta of consultas) {
     const sugerencias = await autocompletar(consulta, clave, llamarFetch);
-    destino = resolverDestinoBooking(sugerencias, params.destino, params.paisCodigo);
+    destino = resolverDestinoBooking(sugerencias, params.destino, pais || undefined);
     if (destino) break;
     for (const s of sugerencias.slice(0, 3)) {
       const etiqueta = texto((s as Record<string, unknown>)?.label) || texto((s as Record<string, unknown>)?.title);
@@ -433,7 +443,7 @@ export async function buscarHotelesSearchApi(
     throw new HotelesProveedorError(
       'destino_no_verificado',
       `Booking no devolvió un destino verificable para "${params.destino}"` +
-        (params.paisCodigo ? ` en el país "${params.paisCodigo}"` : '') +
+        (pais ? ` en el país "${pais}"` : '') +
         (etiquetasVistas.length ? ` (sugerencias recibidas: ${etiquetasVistas.join(' | ')}).` : '.'),
     );
   }

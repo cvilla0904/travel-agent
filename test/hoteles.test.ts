@@ -9,6 +9,7 @@ import {
   resolverDestinoBooking,
 } from '../src/services/searchapi.js';
 import { hotelOutputSchema } from '../src/schemas/hotels.js';
+import { codigoPaisDesdeDestino } from '../src/services/ciudades.js';
 
 // Datos SIMULADOS con la forma documentada del motor booking; no son respuestas reales.
 const sug = (title: string, label: string, id: string, type: string, cc: string) => ({
@@ -22,6 +23,7 @@ const AUTOCOMPLETE: Record<string, unknown[]> = {
   ],
   Amsterdam: [sug('Amsterdam', 'Amsterdam, North Holland, Netherlands', '-2140479', 'city', 'nl')],
 };
+const FLORENCE_ORIGINAL = AUTOCOMPLETE.Florence;
 const PROPS = [
   { title: 'Hotel A', hotel_class: '4', rating: '8,6', reviews: '1,234 reviews', extracted_price: 480, link: 'https://www.booking.com/hotel/a.html?x=1', currency: 'EUR', has_free_cancellation: true },
   { title: 'Hotel B', rating: 9.1, reviews: 50, price: '€ 1.200,50', link: 'https://www.booking.com/hotel/b.html' },
@@ -74,14 +76,79 @@ test('destino 1: "Florencia" (español) resuelve a Florence/Italia y devuelve ho
   assert.equal(r.diagnostico.sinPrecio, 1);
 });
 
-test('destino 2: Amsterdam', async () => {
+test('destino 2: "Ámsterdam" y "Amsterdam" se resuelven igual (y la consulta al proveedor va sin tilde)', async () => {
+  for (const nombre of ['Ámsterdam', 'Amsterdam', 'ámsterdam', 'Ámsterdam, Países Bajos']) {
+    const { f, llamadas } = fakeFetch();
+    const r = await buscarHotelesConEstado({ destino: nombre, ...base }, dep(f));
+    assert.equal(r.estado, 'ok', `${nombre}: ${r.error}`);
+    assert.equal(r.diagnostico.destinoResuelto, 'Amsterdam, North Holland, Netherlands', nombre);
+    const auto = llamadas.find((u) => u.searchParams.get('engine') === 'booking_autocomplete')!;
+    assert.equal(auto.searchParams.get('q'), 'Amsterdam', nombre);
+    const busqueda = llamadas.find((u) => u.searchParams.get('engine') === 'booking')!;
+    assert.equal(busqueda.searchParams.get('dest_id'), '-2140479', nombre);
+    assert.ok(r.hoteles.length > 0, nombre);
+  }
+});
+
+// Alabama va ANTES que Italia: solo el país del destino evita elegir la ciudad equivocada.
+const FLORENCE_ALABAMA_PRIMERO = [
+  sug('Florence', 'Florence, Alabama, United States', '555', 'city', 'us'),
+  sug('Florence', 'Florence, Tuscany, Italy', '-117543', 'city', 'it'),
+];
+
+test('país en el destino ("Florencia, Italia") se usa para resolver la ciudad correcta', async () => {
+  AUTOCOMPLETE.Florence = FLORENCE_ALABAMA_PRIMERO;
+  try {
+    for (const [destino, esperado] of [
+      ['Florencia, Italia', '-117543'],
+      ['Florencia, Italy', '-117543'],
+      ['Florence, United States', '555'],
+      ['Florence, Estados Unidos', '555'],
+    ] as const) {
+      const { f, llamadas } = fakeFetch();
+      const r = await buscarHotelesConEstado({ destino, ...base }, dep(f)); // sin paisCodigo explícito
+      assert.equal(r.estado, 'ok', `${destino}: ${r.error}`);
+      const busqueda = llamadas.find((u) => u.searchParams.get('engine') === 'booking')!;
+      assert.equal(busqueda.searchParams.get('dest_id'), esperado, destino);
+    }
+    // Sin país en el destino, queda la primera coincidencia (comportamiento anterior, ambiguo a propósito).
+    assert.equal(resolverDestinoBooking(FLORENCE_ALABAMA_PRIMERO, 'Florencia')?.destId, '555');
+  } finally {
+    AUTOCOMPLETE.Florence = FLORENCE_ORIGINAL;
+  }
+});
+
+test('el paisCodigo explícito prevalece sobre el país escrito en el destino', async () => {
+  AUTOCOMPLETE.Florence = FLORENCE_ALABAMA_PRIMERO;
+  try {
+    const { f, llamadas } = fakeFetch();
+    const r = await buscarHotelesConEstado({ destino: 'Florencia, Estados Unidos', paisCodigo: 'it', ...base }, dep(f));
+    assert.equal(r.estado, 'ok');
+    assert.equal(llamadas.find((u) => u.searchParams.get('engine') === 'booking')!.searchParams.get('dest_id'), '-117543');
+  } finally {
+    AUTOCOMPLETE.Florence = FLORENCE_ORIGINAL;
+  }
+});
+
+test('si el país del destino no existe en Booking para esa ciudad -> error explícito, no otra ciudad', async () => {
   const { f } = fakeFetch();
-  const r = await buscarHotelesConEstado({ destino: 'Ámsterdam', paisCodigo: 'nl', ...base }, dep(f));
-  // "Ámsterdam" normalizado == "amsterdam" solo si hay alias; si no, debe fallar explícitamente, no devolver vacío
-  assert.ok(r.estado === 'ok' || r.estado === 'error_proveedor');
-  const r2 = await buscarHotelesConEstado({ destino: 'Amsterdam', paisCodigo: 'nl', ...base }, dep(f));
-  assert.equal(r2.estado, 'ok');
-  assert.equal(r2.diagnostico.destinoResuelto, 'Amsterdam, North Holland, Netherlands');
+  const r = await buscarHotelesConEstado({ destino: 'Florencia, Francia', ...base }, dep(f));
+  assert.equal(r.estado, 'error_proveedor');
+  assert.match(r.error!, /"fr"/);
+});
+
+test('si la búsqueda devuelve otro país distinto del pedido -> error explícito', async () => {
+  const { f } = fakeFetch({ cuerpoBusqueda: { search_information: { destination: { country_code: 'us' } }, properties: PROPS } });
+  const r = await buscarHotelesConEstado({ destino: 'Florencia, Italia', ...base }, dep(f));
+  assert.equal(r.estado, 'error_proveedor');
+  assert.match(r.error!, /país/);
+});
+
+test('codigoPaisDesdeDestino', () => {
+  assert.equal(codigoPaisDesdeDestino('Florencia, Italia'), 'it');
+  assert.equal(codigoPaisDesdeDestino('Ámsterdam, Países Bajos'), 'nl');
+  assert.equal(codigoPaisDesdeDestino('Florencia'), undefined);
+  assert.equal(codigoPaisDesdeDestino('Florencia, Narnia'), undefined);
 });
 
 test('no confunde Florence (Alabama) ni el hotel "Florence Hotel"', () => {
