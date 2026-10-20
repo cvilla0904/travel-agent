@@ -154,6 +154,118 @@
       .how-panel { margin-top: 0; }
     }
 
+  
+    /* NUEVO HERO MOGAVEL — composición editorial basada en el boceto aprobado */
+    :root{--navy:#102b4d;--navy2:#193b60;--coral:#e7775f;--ink:#243247;--muted:#617187;--sand:#f8f0e5}
+    body{background:#fffaf4}
+    header{position:absolute;z-index:20;top:0;left:0;right:0;height:72px;background:linear-gradient(180deg,rgba(255,251,245,.96),rgba(255,251,245,.78));border-bottom:1px solid rgba(255,255,255,.45);backdrop-filter:blur(10px)}
+    .wrap{width:min(1240px,calc(100% - 48px))}
+    .brand{font-family:Georgia,"Times New Roman",serif;font-size:24px;font-weight:500;letter-spacing:-.8px}
+    .brand-mark{width:auto;height:auto;background:none;color:var(--coral);font-size:25px;border-radius:0}
+    .nav-links{gap:30px;color:#25364c;font-size:13px}
+    .login{background:var(--navy);color:white;border-color:var(--navy);border-radius:9px;padding:12px 20px}
+    .hero{position:relative;isolation:isolate;width:100%;max-width:none;padding:108px max(24px,calc((100vw - 1240px)/2)) 30px;overflow:visible}
+    .hero:before{content:"";position:absolute;z-index:-2;top:0;bottom:0;left:0;width:100%;background-image:url("https://images.unsplash.com/photo-1530789253388-582c481c54b0?auto=format&fit=crop&w=2200&q=90");background-size:cover;background-position:center 43%;opacity:.98}
+    .hero:after{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(90deg,rgba(255,250,243,.04) 0%,rgba(255,250,243,.12) 38%,rgba(255,250,243,.58) 63%,rgba(255,250,243,.9) 100%),linear-gradient(0deg,rgba(255,250,243,.97) 0%,rgba(255,250,243,0) 24%,rgba(255,250,243,.1) 100%)}
+    .hero-layout{grid-template-columns:minmax(0,1.16fr) minmax(300px,.84fr);gap:28px;align-items:center;max-width:1240px;margin:0 auto}
+    .hero-copy{padding:0;min-width:0}
+    .eyebrow{padding:7px 0;background:transparent;color:#253a53;font-size:10px;letter-spacing:.2em;border-radius:0}
+    .eyebrow i{width:28px;height:2px;border-radius:0;background:var(--coral)}
+    .hero h1{max-width:560px;margin:8px 0 12px;font-size:clamp(38px,4.2vw,58px);line-height:.99;letter-spacing:-1.5px;color:#102b4d;text-shadow:0 1px 12px rgba(255,250,243,.22)}
+    .hero h1 em{color:var(--coral);font-weight:500}
+    .hero-copy>p{max-width:460px;margin:0;color:#20344d;font-size:14px;line-height:1.55;font-weight:500}
+    .planner{margin:22px 0 0;padding:0 18px 16px;border:1px solid rgba(223,225,222,.95);border-radius:15px;background:rgba(255,255,255,.96);box-shadow:0 16px 42px rgba(24,42,62,.16);backdrop-filter:blur(14px)}
+    .search-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:0 -18px 15px;padding:0 8px;border-bottom:1px solid #ece7df}
+    .search-tab{position:relative;display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;padding:15px 4px 13px;border:0;background:transparent;color:#627085;font:600 11px/1.2 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;cursor:pointer}
+    .search-tab span{font-size:14px;color:#48627e}
+    .search-tab.is-active{color:var(--navy)}
+    .search-tab.is-active:after{content:"";position:absolute;bottom:-1px;left:14%;right:14%;height:3px;background:var(--coral);border-radius:4px}
+    .idea-hidden{position:absolute!important;width:1px!important;height:1px!important;min-height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+    .detail-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:0}
+    .detail-grid label{gap:6px;color:#607086;font-size:10px;font-weight:600}
+    .detail-grid label:nth-child(1),.detail-grid label:nth-child(2){grid-column:span 2}
+    .detail-grid input,.detail-grid select{height:40px;min-width:0;padding:9px 10px;border:1px solid #e1e5e8;border-radius:8px;background:#fff;font:500 12px Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#24364b}
+    .detail-grid input:focus,.detail-grid select:focus{outline:2px solid rgba(231,119,95,.22);border-color:#e7775f}
+    .city-suggestions{z-index:80}
+    .preferences{gap:7px;margin-top:13px;color:#596b7d;font-size:10px}
+    .preferences>span{margin-right:2px}
+    .preferences label{gap:4px;padding:6px 8px;border:1px solid #e9e5dd;border-radius:7px;background:#fff;font-size:10px}
+    .preferences input{accent-color:var(--coral);margin:0}
+    .planner-bottom{margin-top:13px;padding-top:12px;border:0;border-top:1px solid #eee9e2;display:flex;gap:10px}
+    .planner-hint{font-size:10px;line-height:1.4;color:#7c8794}
+    .primary{background:var(--navy);border-radius:8px;padding:12px 16px;font-size:12px;white-space:nowrap}
+    .primary:hover{background:#214d77}
+    .how-panel{align-self:center;min-height:0;padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible}
+    .how-panel:before{display:none}
+    .how-badge{padding:7px 12px;background:#ffe6bc;color:#78502b;font-size:9px;letter-spacing:.08em}
+    .how-panel h2{max-width:350px;margin:12px 0 6px;font-size:clamp(23px,2.5vw,31px);line-height:1.05;letter-spacing:-.8px;color:#142e4e}
+    .how-panel>p{max-width:340px;font-size:12px;line-height:1.5;color:#536b83}
+    .illustration-wrap{height:350px;margin-top:10px;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible}
+    .illustration-wrap img{object-fit:contain;object-position:center}
+    .how-decoration{display:none}
+    .benefits{padding:22px 0;background:#fffaf4;border:0}
+    .benefit-row{grid-template-columns:repeat(4,1fr);gap:15px}
+    .benefit{justify-content:flex-start;gap:9px;color:#213750;font-size:11px}
+    .benefit-icon{width:35px;height:35px;flex:0 0 35px;border-radius:50%;background:#fff0dc;color:var(--coral)}
+    section.content{padding:28px 0 60px}
+    .section-head{margin-bottom:18px}
+    .section-head h2{font-size:32px}
+    .destinations{grid-template-columns:repeat(4,1fr);gap:13px}
+    .destination{height:180px;border-radius:12px}
+    .destination-copy{left:14px;bottom:14px}
+    .destination-copy strong{font-size:20px}
+    .destination-copy small{font-size:9px}
+    footer{background:#fffaf4}
+    @media(max-width:980px){
+      .hero{padding-top:100px}
+      .hero-layout{grid-template-columns:minmax(0,1fr) minmax(260px,.78fr);gap:18px}
+      .hero h1{font-size:clamp(36px,4.6vw,48px)}
+      .illustration-wrap{height:290px}
+      .search-tab{font-size:10px}
+      .planner{padding-left:14px;padding-right:14px}
+      .search-tabs{margin-left:-14px;margin-right:-14px}
+      .detail-grid{gap:8px}
+    }
+    @media(max-width:720px){
+      header{height:64px}
+      .wrap{width:calc(100% - 30px)}
+      .nav-links{display:none}
+      .hero{padding:92px 15px 24px}
+      .hero:before{background-position:34% center}
+      .hero:after{background:linear-gradient(180deg,rgba(255,250,243,.78),rgba(255,250,243,.72) 40%,rgba(255,250,243,.96) 100%)}
+      .hero-layout{grid-template-columns:1fr;gap:15px}
+      .hero h1{font-size:43px;max-width:500px}
+      .hero-copy>p{font-size:13px;max-width:430px}
+      .planner{margin-top:17px;padding-bottom:13px}
+      .search-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .search-tab{padding:11px 4px}
+      .detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .detail-grid label:nth-child(n){grid-column:span 1}
+      .detail-grid label:nth-child(1),.detail-grid label:nth-child(2){grid-column:span 1}
+      .preferences{gap:6px}
+      .planner-bottom{align-items:stretch;flex-direction:column}
+      .planner-hint{text-align:center}
+      .primary{width:100%;justify-content:center}
+      .how-panel{display:grid;grid-template-columns:1fr minmax(120px,.7fr);column-gap:12px;align-items:center;padding:4px 5px}
+      .how-badge{grid-column:1/-1;justify-self:start}
+      .how-panel h2{font-size:24px;margin:8px 0 5px}
+      .how-panel>p{font-size:11px}
+      .illustration-wrap{grid-column:2;grid-row:2/span 2;height:180px;margin:0}
+      .benefit-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+      .destinations{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .destination{height:170px}
+      section.content{padding:24px 0 42px}
+    }
+    @media(max-width:420px){
+      .hero h1{font-size:38px}
+      .how-panel{grid-template-columns:1fr}
+      .illustration-wrap{grid-column:1;grid-row:auto;height:210px}
+      .preferences label{padding:5px 6px}
+      .search-tab{font-size:9px}
+      .planner{padding-left:11px;padding-right:11px}
+      .search-tabs{margin-left:-11px;margin-right:-11px}
+    }
+
   </style>
 </head>
 <body>
@@ -169,29 +281,32 @@
       <div class="hero-layout">
         <div class="hero-copy">
           <span class="eyebrow"><i></i> Tu agente de viajes personal</span>
-          <h1>Cuéntame qué viaje tienes en mente.</h1>
-          <p>No se trata solo de llegar a un destino. Creamos contigo un viaje lleno de experiencias, con opciones reales que encajan con tus gustos y tu presupuesto.</p>
+          <h1>Experiencias que<br>empiezan <em>contigo</em></h1>
+          <p>Cuéntanos qué te apetece, comparamos opciones reales y diseñamos un viaje único, paso a paso.</p>
           <div class="planner" id="mis-viajes">
-        <div class="planner-top"><div class="planner-icon" aria-hidden="true">✎</div><textarea id="ideaViaje" aria-label="Describe el viaje que tienes en mente" placeholder="Ej. Quiero ir a Italia en noviembre, somos 2, nos gusta la gastronomía y tenemos un presupuesto de 1.200 €..."></textarea></div>
-        <div class="planner-bottom"><span class="planner-hint">Cuéntamelo con tus palabras; puedes añadir más detalles después.</span><button class="primary" onclick="buscarViaje()">Empezar mi viaje <span aria-hidden="true">→</span></button></div>
-        <details class="trip-details">
-          <summary>Añadir detalles del viaje</summary>
-          <div class="detail-grid">
-            <label>Origen<div class="city-autocomplete"><input id="origen" class="city-input" placeholder="Ciudad o aeropuerto" autocomplete="off" aria-autocomplete="list" aria-expanded="false"><div class="city-suggestions" id="origen-suggestions" role="listbox"></div></div></label>
-            <label>Destino<div class="city-autocomplete"><input id="destino" class="city-input" placeholder="¿A dónde quieres ir?" autocomplete="off" aria-autocomplete="list" aria-expanded="false"><div class="city-suggestions" id="destino-suggestions" role="listbox"></div></div></label>
-            <label>Fecha de ida<input id="ida" type="date"></label>
-            <label>Fecha de vuelta<input id="vuelta" type="date"></label>
-            <label>Viajeros<input id="viajeros" type="number" min="1" value="2"></label>
-            <label>Presupuesto (€)<input id="presupuesto" type="number" min="0" placeholder="Ej. 1500"></label>
-          </div>
-          <div class="preferences"><span>Me interesa:</span>
-            <label><input type="checkbox" value="cultura"> Cultura</label>
-            <label><input type="checkbox" value="gastronomía"> Gastronomía</label>
-            <label><input type="checkbox" value="naturaleza"> Naturaleza</label>
-            <label><input type="checkbox" value="aventura"> Aventura</label>
-          </div>
-        </details>
-          </div>
+        <div class="search-tabs" role="tablist" aria-label="Tipo de viaje">
+          <button type="button" class="search-tab is-active" role="tab" aria-selected="true" data-mode="complete"><span>✈</span> Viaje completo</button>
+          <button type="button" class="search-tab" role="tab" aria-selected="false" data-mode="flights"><span>➤</span> Solo vuelos</button>
+          <button type="button" class="search-tab" role="tab" aria-selected="false" data-mode="hotels"><span>▦</span> Solo hoteles</button>
+          <button type="button" class="search-tab" role="tab" aria-selected="false" data-mode="activities"><span>◇</span> Solo actividades</button>
+        </div>
+        <textarea id="ideaViaje" class="idea-hidden" aria-label="Describe el viaje que tienes en mente" placeholder="Cuéntanos qué experiencia quieres vivir"></textarea>
+        <div class="detail-grid">
+          <label>Origen<div class="city-autocomplete"><input id="origen" class="city-input" placeholder="Ciudad o aeropuerto" autocomplete="off" aria-autocomplete="list" aria-expanded="false"><div class="city-suggestions" id="origen-suggestions" role="listbox"></div></div></label>
+          <label>Destino<div class="city-autocomplete"><input id="destino" class="city-input" placeholder="¿A dónde quieres ir?" autocomplete="off" aria-autocomplete="list" aria-expanded="false"><div class="city-suggestions" id="destino-suggestions" role="listbox"></div></div></label>
+          <label>Fecha de ida<input id="ida" type="date"></label>
+          <label>Fecha de vuelta<input id="vuelta" type="date"></label>
+          <label>Viajeros<select id="viajeros" aria-label="Número de viajeros"><option value="1">1 viajero</option><option value="2" selected>2 viajeros</option><option value="3">3 viajeros</option><option value="4">4 viajeros</option><option value="5">5 viajeros</option><option value="6">6 viajeros</option></select></label>
+          <label>Presupuesto<input id="presupuesto" type="number" min="0" placeholder="€ 1.500"></label>
+        </div>
+        <div class="preferences"><span>Me interesa:</span>
+          <label><input type="checkbox" value="cultura"> Cultura</label>
+          <label><input type="checkbox" value="gastronomía"> Gastronomía</label>
+          <label><input type="checkbox" value="naturaleza"> Naturaleza</label>
+          <label><input type="checkbox" value="aventura"> Aventura</label>
+        </div>
+        <div class="planner-bottom"><span class="planner-hint">Opciones reales, adaptadas a tus gustos y presupuesto.</span><button class="primary" onclick="buscarViaje()">Crear mi viaje <span aria-hidden="true">→</span></button></div>
+      </div>
 
         </div>
         <aside class="how-panel" id="sobre-mogavel" aria-labelledby="como-funciona-panel">
@@ -199,7 +314,7 @@
           <h2 id="como-funciona-panel">De tu primera idea a una experiencia inolvidable.</h2>
           <p>Tú imaginas lo que quieres vivir. Mogavel te ayuda a darle forma, paso a paso.</p>
           <div class="illustration-wrap" aria-label="Ilustración del proceso de Travel Agent">
-            <img src="travel-agent-illustration.jpg" alt="Ilustración del proceso de Travel Agent">
+            <img src="travel-agent-illustration.jpg" alt="Ilustración del proceso de creación de un viaje con Mogavel">
           </div>
           <div class="how-decoration" aria-hidden="true">✈︎</div>
         </aside>
@@ -211,7 +326,7 @@
         <div class="chat-input"><textarea id="chatMessage" placeholder="Ej. Quiero elegir un hotel céntrico y añadir una visita guiada"></textarea><button class="primary send-button" onclick="enviarMensaje()">Enviar <span aria-hidden="true">→</span></button></div>
       </div>
     </section>
-    <div class="benefits"><div class="benefit-row wrap"><div class="benefit"><span class="benefit-icon">⌕</span>Datos reales</div><div class="benefit"><span class="benefit-icon">✦</span>Viajes personalizados</div><div class="benefit"><span class="benefit-icon">♡</span>Presupuesto controlado</div><div class="benefit"><span class="benefit-icon">▣</span>Todo en un solo lugar</div></div></div>
+    <div class="benefits"><div class="benefit-row wrap"><div class="benefit"><span class="benefit-icon">⌖</span><span><strong>Opciones reales</strong><br><small>Alternativas actualizadas para tu viaje.</small></span></div><div class="benefit"><span class="benefit-icon">☷</span><span><strong>A tu medida</strong><br><small>Tú decides el itinerario y el presupuesto.</small></span></div><div class="benefit"><span class="benefit-icon">♢</span><span><strong>Transparente</strong><br><small>Te mostramos la información de forma clara.</small></span></div><div class="benefit"><span class="benefit-icon">♡</span><span><strong>Viajes que se viven</strong><br><small>Más que reservas, experiencias que recuerdas.</small></span></div></div></div>
     <section class="content wrap" id="inspiracion">
       <div class="section-head"><h2>¿Qué te gustaría vivir?</h2><p>Ideas para inspirar tu próximo viaje, no itinerarios cerrados.</p></div>
       <div class="destinations">
@@ -224,6 +339,25 @@
   </main>
   <footer><div class="footer-inner wrap"><span class="footer-brand">✦ Mogavel</span><span>Viajes pensados para ti.</span><nav class="footer-links" aria-label="Enlaces legales"><a href="#como-funciona">Cómo funciona</a><a href="mailto:hola@mogavel.com">Contacto</a><a href="#privacidad">Privacidad</a><a href="#cookies">Cookies</a><a href="#terminos">Términos y condiciones</a></nav></div></footer>
   <script>
+    let modoBusqueda = 'complete';
+    document.querySelectorAll('.search-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        modoBusqueda = tab.dataset.mode || 'complete';
+        document.querySelectorAll('.search-tab').forEach(item => {
+          const activo = item === tab;
+          item.classList.toggle('is-active', activo);
+          item.setAttribute('aria-selected', activo ? 'true' : 'false');
+        });
+        const origenLabel = document.querySelector('label:has(#origen)');
+        const fechasIda = document.querySelector('label:has(#ida)');
+        const fechasVuelta = document.querySelector('label:has(#vuelta)');
+        if (origenLabel) origenLabel.style.display = modoBusqueda === 'hotels' || modoBusqueda === 'activities' ? 'none' : '';
+        if (fechasIda) fechasIda.style.display = modoBusqueda === 'hotels' ? 'none' : '';
+        if (fechasVuelta) fechasVuelta.style.display = modoBusqueda === 'activities' ? 'none' : '';
+        document.querySelector('.planner-bottom .primary').innerHTML = (modoBusqueda === 'complete' ? 'Crear mi viaje' : modoBusqueda === 'flights' ? 'Buscar vuelos' : modoBusqueda === 'hotels' ? 'Buscar hoteles' : 'Descubrir actividades') + ' <span aria-hidden="true">→</span>';
+      });
+    });
+
     /* Cada carga de la página empieza una sesión nueva.
        Las conversaciones posteriores dentro de esta página
        mantienen esta misma sesión. */
