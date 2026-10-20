@@ -88,7 +88,40 @@
       .illustration-wrap{grid-column:1;grid-row:auto;height:230px;margin-top:10px}
       .how-panel h2{font-size:23px}
     }
-\n  </style>
+\n  
+    /* Mogavel: ajuste del último boceto editorial (compacto y centrado en experiencias) */
+    :root { --cream: #f7f4ee; --coral: #e98270; }
+    body { background: #f8f7f5; }
+    .hero-layout { grid-template-columns: minmax(0, 1.12fr) minmax(285px, .78fr); gap: 28px; align-items: start; }
+    .hero-copy { padding-top: 2px; }
+    .eyebrow { background: #f6e9df; color: #8d5948; }
+    .eyebrow i { background: var(--coral); }
+    .hero h1 { max-width: 610px; margin: 14px 0 10px; font-size: clamp(38px, 4.4vw, 52px); line-height: 1.08; letter-spacing: -1.2px; }
+    .hero>p { max-width: 620px; font-size: 15px; line-height: 1.55; }
+    .planner { margin-top: 22px; padding: 20px; border-radius: 20px; }
+    .planner textarea { min-height: 76px; font-size: 15px; }
+    .planner-bottom { padding-top: 12px; }
+    .primary { padding: 12px 17px; }
+    .trip-details { margin-top: 12px; padding-top: 11px; }
+    .detail-grid { gap: 10px; margin-top: 12px; }
+    .detail-grid input { padding: 10px; }
+    .preferences { margin-top: 12px; }
+    .how-panel { background: linear-gradient(150deg, #fffaf3 0%, #eef5f4 100%); border-color: #e8e0d5; }
+    .how-badge { background: #f8d9a0; color: #79502b; }
+    .how-panel h2 { font-size: clamp(24px, 2.2vw, 30px); line-height: 1.12; }
+    .illustration-wrap { max-width: 100%; }
+    @media (min-width: 1100px) {
+      .hero-layout { grid-template-columns: minmax(0, 1.15fr) minmax(300px, .72fr); }
+      .planner { padding: 20px 22px; }
+    }
+    @media (max-width: 760px) {
+      .hero-layout { grid-template-columns: 1fr; gap: 22px; }
+      .hero h1 { font-size: clamp(36px, 9vw, 46px); }
+      .planner { padding: 16px; margin-top: 18px; }
+      .how-panel { margin-top: 0; }
+    }
+
+  </style>
 </head>
 <body>
   <header>
@@ -129,7 +162,7 @@
 
         </div>
         <aside class="how-panel" id="sobre-mogavel" aria-labelledby="como-funciona-panel">
-          <span class="how-badge">Así funciona Travel Agent</span>
+          <span class="how-badge">Así funciona Mogavel</span>
           <h2 id="como-funciona-panel">De tu primera idea a una experiencia inolvidable.</h2>
           <p>Tú imaginas lo que quieres vivir. Mogavel te ayuda a darle forma, paso a paso.</p>
           <div class="illustration-wrap" aria-label="Ilustración del proceso de Travel Agent">
