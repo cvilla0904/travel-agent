@@ -266,24 +266,46 @@
       .search-tabs{margin-left:-11px;margin-right:-11px}
     }
 
+  
+    /* Rediseño editorial de Mogavel: portada y páginas de contenido */
+    header{position:absolute;z-index:20;top:0;left:0;right:0;height:78px;background:rgba(255,252,247,.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.35)}
+    .brand-mark{background:transparent;color:#f07854;border-radius:0;font-size:30px;width:30px;height:30px}
+    .login{background:var(--navy);border-color:var(--navy);color:#fff;border-radius:11px;padding:13px 20px}
+    .hero-redesign{position:relative;isolation:isolate;width:100%;max-width:none;margin:0;padding:122px 0 48px;min-height:650px;overflow:hidden;background:#e9e3d8}
+    .hero-photo{position:absolute;z-index:-2;inset:0;background-image:linear-gradient(90deg,rgba(255,250,243,.97) 0%,rgba(255,250,243,.87) 35%,rgba(255,250,243,.28) 62%,rgba(255,250,243,.02) 100%),url('https://images.unsplash.com/photo-1530789253388-582c481c54b0?auto=format&fit=crop&w=2200&q=90');background-size:cover;background-position:center 53%;}
+    .hero-redesign:after{content:"";position:absolute;z-index:-1;inset:auto 0 0;height:115px;background:linear-gradient(transparent,rgba(255,250,243,.75));pointer-events:none}
+    .hero-inner{position:relative;z-index:1}.hero-copy{max-width:740px;padding-top:4px}.hero-redesign .eyebrow{background:transparent;color:var(--navy);padding:0;border-radius:0;letter-spacing:.15em;font-size:11px}.hero-redesign .eyebrow i{width:28px;height:2px;border-radius:0;background:#f07854}.hero-redesign h1{max-width:650px;font-size:clamp(46px,5vw,66px);margin:19px 0 13px;line-height:.99;letter-spacing:-1.8px}.hero-redesign h1 em{color:#f07854;font-weight:500}.hero-redesign .hero-copy>p{max-width:530px;color:#203b59;font-size:16px;line-height:1.55}
+    .hero-redesign .planner{max-width:720px;margin-top:24px;padding:0;border:1px solid rgba(255,255,255,.9);border-radius:17px;background:rgba(255,255,255,.96);box-shadow:0 22px 55px rgba(28,45,61,.17);overflow:visible}
+    .hero-redesign .search-tabs{border-radius:17px 17px 0 0;overflow:hidden}.hero-redesign .detail-grid{padding:0 18px}.hero-redesign .preferences{padding:0 18px}.hero-redesign .planner-bottom{margin:14px 18px 0;padding:13px 0 17px}.hero-redesign .search-tab{font-size:12px}.hero-redesign .detail-grid label{font-size:11px}.hero-redesign .preferences{font-size:12px}.hero-redesign .primary{border-radius:10px}
+    .section-kicker{display:block;color:#e87854;font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px}
+    .content{padding:84px 0!important}.section-head{align-items:end}.section-head h2,.how-page-copy h2,.about-copy h2,.profile-card h2{font-family:Georgia,'Times New Roman',serif;font-size:clamp(32px,4vw,46px);line-height:1.08;font-weight:500;letter-spacing:-.8px;color:var(--navy);margin:0}.section-head p{max-width:360px;line-height:1.65}
+    .journey-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.journey-card{position:relative;isolation:isolate;display:flex;align-items:end;min-height:470px;border-radius:22px;overflow:hidden;background:#c6d3d6;box-shadow:0 14px 36px rgba(20,43,72,.12)}.journey-card>img{position:absolute;z-index:-2;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s}.journey-card:hover>img{transform:scale(1.045)}.journey-overlay{position:absolute;z-index:-1;inset:0;background:linear-gradient(180deg,rgba(8,22,38,.02) 15%,rgba(8,22,38,.28) 42%,rgba(8,22,38,.88) 100%)}.journey-content{padding:25px;color:#fff}.journey-meta{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.14em;margin-bottom:13px;color:#ffe0b5}.journey-content h3{font:500 28px/1.1 Georgia,'Times New Roman',serif;margin:0 0 12px;letter-spacing:-.3px}.journey-content p{font-size:13px;line-height:1.65;color:rgba(255,255,255,.88);margin:0 0 19px}.journey-cta{display:inline-flex;align-items:center;gap:14px;padding:11px 14px;border:1px solid rgba(255,255,255,.6);border-radius:10px;background:rgba(255,255,255,.12);color:#fff;font:600 12px inherit;cursor:pointer;backdrop-filter:blur(8px)}.journey-cta:hover{background:rgba(255,255,255,.23)}
+    .how-section{padding:92px 0;background:#f0f5f5;border-top:1px solid #e3ebeb;border-bottom:1px solid #e3ebeb}.how-page-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center}.how-page-copy h2{margin-bottom:18px}.how-page-copy .lead{font-size:16px;line-height:1.75;color:#617286;margin:0 0 30px}.how-steps{display:grid;gap:23px}.how-step{display:grid;grid-template-columns:42px 1fr;gap:15px}.how-step>span{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:#fff;color:#e87854;font-size:12px;font-weight:800;box-shadow:0 5px 15px rgba(20,43,72,.07)}.how-step h3{margin:1px 0 6px;color:var(--navy);font-size:16px}.how-step p{margin:0;color:#68798b;font-size:13px;line-height:1.7}.inline-primary{display:inline-flex;margin-top:28px}.how-illustration{margin:0;padding:16px;border:1px solid #e2ecec;border-radius:25px;background:#fff;box-shadow:var(--shadow)}.how-illustration img{display:block;width:100%;height:auto;max-height:680px;object-fit:contain;border-radius:15px}.how-illustration figcaption{padding:12px 7px 3px;color:#718093;font-size:12px;text-align:center}
+    .about-section{padding:95px 0;background:#fff}.about-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:70px;align-items:center}.about-image{position:relative;min-height:560px;border-radius:24px;overflow:hidden;background:#dce6e5}.about-image img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.about-image span{position:absolute;left:24px;right:24px;bottom:24px;padding:18px 20px;border-radius:15px;background:rgba(255,255,255,.9);color:var(--navy);font:500 24px/1.15 Georgia,'Times New Roman',serif;backdrop-filter:blur(8px)}.about-copy h2{margin-bottom:22px}.about-copy p{color:#617286;font-size:14px;line-height:1.85;margin:0 0 15px}.about-signature{font:italic 19px Georgia,'Times New Roman',serif!important;color:#e87854!important;margin-top:25px!important}
+    .profile-section{padding:72px 0;background:#f8f5ef}.profile-card{display:grid;grid-template-columns:60px 1fr auto;gap:24px;align-items:center;padding:36px;border:1px solid #eee5d9;border-radius:23px;background:#fff;box-shadow:0 14px 40px rgba(20,43,72,.06)}.profile-mark{display:grid;place-items:center;width:56px;height:56px;border-radius:17px;background:#fff0e4;color:#f07854;font-size:30px}.profile-card h2{font-size:32px;margin-bottom:10px}.profile-card p{max-width:680px;margin:0;color:#68798b;font-size:13px;line-height:1.7}.profile-cta{white-space:nowrap}
+    footer{background:#fff}.footer-links{display:flex;gap:18px;flex-wrap:wrap}.footer-links a:hover{color:var(--navy)}
+    @media(max-width:900px){.journey-grid{grid-template-columns:1fr}.journey-card{min-height:380px}.how-page-grid,.about-grid{grid-template-columns:1fr;gap:38px}.how-illustration{max-width:650px;margin:auto}.about-image{min-height:390px}.profile-card{grid-template-columns:54px 1fr}.profile-cta{grid-column:2;justify-self:start}.hero-redesign{padding-top:112px}.hero-photo{background-position:60% center}}
+    @media(max-width:600px){header{height:66px}.hero-redesign{padding:98px 0 28px;min-height:0}.hero-photo{background-image:linear-gradient(90deg,rgba(255,250,243,.94),rgba(255,250,243,.72)),url('https://images.unsplash.com/photo-1530789253388-582c481c54b0?auto=format&fit=crop&w=1200&q=85');background-position:62% center}.hero-redesign h1{font-size:43px}.hero-redesign .hero-copy>p{font-size:14px}.hero-redesign .planner{margin-top:20px}.hero-redesign .detail-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0 12px}.hero-redesign .preferences{padding:0 12px}.hero-redesign .planner-bottom{margin:12px 12px 0;align-items:stretch;flex-direction:column}.hero-redesign .planner-hint{text-align:left}.hero-redesign .search-tab{padding:12px 5px;font-size:10px;gap:4px}.hero-redesign .search-tab span{display:none}.content{padding:58px 0!important}.section-head h2,.how-page-copy h2,.about-copy h2{font-size:34px}.journey-card{min-height:430px}.how-section,.about-section{padding:65px 0}.about-image{min-height:340px}.profile-section{padding:45px 0}.profile-card{grid-template-columns:1fr;padding:24px;gap:17px}.profile-card h2{font-size:28px}.profile-cta{grid-column:1;justify-self:stretch}.footer-inner{align-items:flex-start}.footer-links{gap:12px}.hero-redesign .planner .detail-grid label{min-width:0}.hero-redesign .detail-grid input,.hero-redesign .detail-grid select{min-width:0;width:100%}}
+
   </style>
 </head>
 <body>
   <header>
     <nav class="nav wrap" aria-label="Navegación principal">
       <a class="brand" href="#inicio"><span class="brand-mark" aria-hidden="true">✦</span>Mogavel</a>
-      <div class="nav-links"><a href="#inicio">Inicio</a><a href="#como-funciona">Cómo funciona</a><a href="#mis-viajes">Planifica tu viaje</a><a href="#sobre-mogavel">Sobre Mogavel</a></div>
-      <a class="login" href="#mis-viajes">Crear viaje</a>
+      <div class="nav-links"><a href="#inicio">Inicio</a><a href="#como-funciona">Cómo funciona</a><a href="#planifica-tu-viaje">Planifica tu viaje</a><a href="#sobre-mogavel">Sobre Mogavel</a></div>
+      <a class="login" href="#crear-cuenta">Crear cuenta</a>
     </nav>
   </header>
   <main>
-    <section class="hero wrap" id="inicio">
-      <div class="hero-layout">
-        <div class="hero-copy">
-          <span class="eyebrow"><i></i> Tu agente de viajes personal</span>
-          <h1>Experiencias que<br>empiezan <em>contigo</em></h1>
-          <p>Cuéntanos qué te apetece, comparamos opciones reales y diseñamos un viaje único, paso a paso.</p>
-          <div class="planner" id="mis-viajes">
+    <section class="hero hero-redesign" id="inicio">
+  <div class="hero-photo" aria-hidden="true"></div>
+  <div class="hero-inner wrap">
+    <div class="hero-copy">
+      <span class="eyebrow"><i></i> Tu agente de viajes personal</span>
+      <h1>Experiencias que<br>empiezan <em>contigo</em></h1>
+      <p>Cuéntanos qué te apetece, comparamos opciones reales y diseñamos un viaje único, paso a paso.</p>
+      <div class="planner" id="mis-viajes">
         <div class="search-tabs" role="tablist" aria-label="Tipo de viaje">
           <button type="button" class="search-tab is-active" role="tab" aria-selected="true" data-mode="complete"><span>✈</span> Viaje completo</button>
           <button type="button" class="search-tab" role="tab" aria-selected="false" data-mode="flights"><span>➤</span> Solo vuelos</button>
@@ -307,19 +329,10 @@
         </div>
         <div class="planner-bottom"><span class="planner-hint">Opciones reales, adaptadas a tus gustos y presupuesto.</span><button class="primary" onclick="buscarViaje()">Crear mi viaje <span aria-hidden="true">→</span></button></div>
       </div>
-
-        </div>
-        <aside class="how-panel" id="sobre-mogavel" aria-labelledby="como-funciona-panel">
-          <span class="how-badge">Así funciona Mogavel</span>
-          <h2 id="como-funciona-panel">De tu primera idea a una experiencia inolvidable.</h2>
-          <p>Tú imaginas lo que quieres vivir. Mogavel te ayuda a darle forma, paso a paso.</p>
-          <div class="illustration-wrap" aria-label="Ilustración del proceso de Travel Agent">
-            <img src="travel-agent-illustration.jpg" alt="Ilustración del proceso de creación de un viaje con Mogavel">
-          </div>
-          <div class="how-decoration" aria-hidden="true">✈︎</div>
-        </aside>
-      </div>
-      <div id="results" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+<div id="results" aria-live="polite"></div>
       <div id="chatBox" class="chat-box">
         <h2>Sigamos preparando tu viaje</h2>
         <p>Pide cambios, compara opciones o cuéntame qué te gustaría añadir. Tu agente te ayudará a darle forma.</p>
@@ -327,18 +340,64 @@
       </div>
     </section>
     <div class="benefits"><div class="benefit-row wrap"><div class="benefit"><span class="benefit-icon">⌖</span><span><strong>Opciones reales</strong><br><small>Alternativas actualizadas para tu viaje.</small></span></div><div class="benefit"><span class="benefit-icon">☷</span><span><strong>A tu medida</strong><br><small>Tú decides el itinerario y el presupuesto.</small></span></div><div class="benefit"><span class="benefit-icon">♢</span><span><strong>Transparente</strong><br><small>Te mostramos la información de forma clara.</small></span></div><div class="benefit"><span class="benefit-icon">♡</span><span><strong>Viajes que se viven</strong><br><small>Más que reservas, experiencias que recuerdas.</small></span></div></div></div>
-    <section class="content wrap" id="inspiracion">
-      <div class="section-head"><h2>¿Qué te gustaría vivir?</h2><p>Ideas para inspirar tu próximo viaje, no itinerarios cerrados.</p></div>
-      <div class="destinations">
-        <a class="destination" href="#inicio" onclick="elegirDestino(event,'Roma')"><img src="https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=85" alt="Calles y monumentos de Roma" loading="lazy"><span class="destination-copy"><small>Historia, arte y sabor</small><strong>Roma</strong></span></a>
-        <a class="destination" href="#inicio" onclick="elegirDestino(event,'Japón')"><img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=85" alt="Paisaje tradicional de Japón" loading="lazy"><span class="destination-copy"><small>Tradición y asombro</small><strong>Japón</strong></span></a>
-        <a class="destination" href="#inicio" onclick="elegirDestino(event,'Costa Amalfitana')"><img src="https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?auto=format&fit=crop&w=800&q=85" alt="Pueblo junto al mar en la Costa Amalfitana" loading="lazy"><span class="destination-copy"><small>Mar y dolce vita</small><strong>Costa Amalfitana</strong></span></a>
-        <a class="destination" href="#inicio" onclick="elegirDestino(event,'los Alpes')"><img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=85" alt="Montañas nevadas de los Alpes" loading="lazy"><span class="destination-copy"><small>Aire puro y montaña</small><strong>Alpes</strong></span></a>
+    <section class="content wrap" id="planifica-tu-viaje">
+  <div class="section-head"><div><span class="section-kicker">Encuentra tu próxima historia</span><h2>Viajes que empiezan con una idea</h2></div><p>Rutas inspiradoras que puedes adaptar a tus fechas, ritmo y presupuesto.</p></div>
+  <div class="journey-grid">
+    <article class="journey-card journey-tuscany">
+      <img src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=1400&q=85" alt="Paisaje de pueblos y colinas de la Toscana" loading="lazy">
+      <div class="journey-overlay"></div><div class="journey-content"><span class="journey-meta">7 DÍAS · ITALIA</span><h3>La Toscana, entre pueblos medievales y paisajes de postal</h3><p>De Pisa y Siena a San Gimignano, Volterra y Monteriggioni, para terminar entre el arte y la gastronomía de Florencia.</p><button class="journey-cta" onclick="prepararItinerario('Toscana, Italia','7 días','Quiero un recorrido de 7 días por la Toscana visitando Pisa, Siena, San Gimignano, Volterra, Monteriggioni y Florencia. Organiza las etapas, los desplazamientos y un presupuesto orientativo.')">Personalizar este viaje <span>→</span></button></div>
+    </article>
+    <article class="journey-card journey-turkey">
+      <img src="https://images.unsplash.com/photo-1641128324972-af3212f0f7bd?auto=format&fit=crop&w=1400&q=85" alt="Globos aerostáticos sobre Capadocia en Turquía" loading="lazy">
+      <div class="journey-overlay"></div><div class="journey-content"><span class="journey-meta">10 DÍAS · TURQUÍA</span><h3>Turquía, entre culturas, paisajes y maravillas naturales</h3><p>Estambul, los valles de Capadocia, Pamukkale e Hierápolis, la antigua Éfeso y el Mediterráneo de Antalya.</p><button class="journey-cta" onclick="prepararItinerario('Turquía','10 días','Quiero un viaje de 10 días por Turquía que incluya Estambul, Capadocia, Pamukkale e Hierápolis, Éfeso y Antalya. Prioriza una ruta realista con desplazamientos y presupuesto orientativo.')">Personalizar este viaje <span>→</span></button></div>
+    </article>
+    <article class="journey-card journey-vienna">
+      <img src="https://images.unsplash.com/photo-1516550893923-42d28e5677af?auto=format&fit=crop&w=1400&q=85" alt="Arquitectura histórica de Viena" loading="lazy">
+      <div class="journey-overlay"></div><div class="journey-content"><span class="journey-meta">3 DÍAS · AUSTRIA</span><h3>Viena en tres días, historia imperial y planes a tu medida</h3><p>Palacios, museos, cafés históricos y paseos por la ciudad, con alternativas culturales o activas según tus gustos.</p><button class="journey-cta" onclick="prepararItinerario('Viena, Austria','3 días','Diseña una escapada de 3 días a Viena con una combinación de cultura, gastronomía, lugares imprescindibles y alguna alternativa activa, ajustada al tiempo disponible.')">Personalizar este viaje <span>→</span></button></div>
+    </article>
+  </div>
+</section>
+<section class="how-section" id="como-funciona">
+  <div class="wrap how-page-grid">
+    <div class="how-page-copy"><span class="section-kicker">Tu idea, paso a paso</span><h2>¿Cómo funciona Mogavel?</h2><p class="lead">Planificar un viaje no debería convertirse en otro trabajo. Cuéntanos qué te apetece y te ayudaremos a convertirlo en un plan claro, flexible y pensado para ti.</p>
+      <div class="how-steps">
+        <article class="how-step"><span>01</span><div><h3>Cuéntanos qué quieres vivir</h3><p>Indica el destino si ya lo tienes, las fechas, quién viaja, tu presupuesto y los intereses que más te motivan. Si aún no sabes adónde ir, también puedes empezar por una idea.</p></div></article>
+        <article class="how-step"><span>02</span><div><h3>Exploramos opciones</h3><p>Usamos tus preferencias para orientar la búsqueda y ayudarte a comparar alternativas disponibles en los servicios conectados. La información depende de las fuentes y los datos que podamos consultar.</p></div></article>
+        <article class="how-step"><span>03</span><div><h3>Organizamos una propuesta</h3><p>Te ayudamos a estructurar el itinerario, ordenar las etapas y valorar actividades y desplazamientos para que el viaje encaje mejor con el tiempo y el dinero que quieres dedicarle.</p></div></article>
+        <article class="how-step"><span>04</span><div><h3>Revísalo, ajústalo y guárdalo</h3><p>Utiliza la propuesta como punto de partida, pide cambios y, cuando esté disponible el perfil personal, guarda tus planes para recuperarlos más adelante.</p></div></article>
       </div>
-    </section>
+      <a class="primary inline-primary" href="#inicio">Empezar a planificar <span>→</span></a>
+    </div>
+    <figure class="how-illustration"><img src="travel-agent-illustration.jpg" alt="Ilustración de los pasos para planificar y organizar un viaje con Mogavel" loading="lazy"><figcaption>De la primera idea a un viaje que encaja contigo.</figcaption></figure>
+  </div>
+</section>
+<section class="about-section" id="sobre-mogavel">
+  <div class="wrap about-grid">
+    <div class="about-image"><img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=85" alt="Lago alpino rodeado de montañas, un paisaje que invita a descubrir nuevos lugares" loading="lazy"><span>Tu próxima aventura empieza con una idea.</span></div>
+    <div class="about-copy"><span class="section-kicker">Viajar a tu manera</span><h2>Mucho más que elegir un destino.</h2>
+      <p>En Mogavel creemos que los mejores viajes comienzan con una idea: un lugar que llevas tiempo queriendo descubrir, una experiencia que te gustaría vivir o unos días libres que quieres aprovechar al máximo.</p>
+      <p>Convertir esa idea en un viaje real puede llevar tiempo. Hay que elegir destinos, organizar etapas, ajustar fechas, cuidar el presupuesto y encontrar experiencias que encajen contigo. <strong>Mogavel nace para hacer ese proceso más sencillo.</strong></p>
+      <p>Utilizamos la inteligencia artificial como herramienta para ayudarte a explorar posibilidades, estructurar itinerarios y orientar las búsquedas según tus preferencias. Queremos que puedas pasar de una idea inicial a un plan claro y flexible, sin imponerte una única forma de viajar.</p>
+      <p>Algunas personas buscan cultura y gastronomía; otras prefieren naturaleza, aventura o descubrir lugares sin prisas. Nuestro objetivo es ayudarte a construir un viaje que tenga sentido para ti, con transparencia sobre la información disponible y las decisiones que aún quedan por tomar.</p>
+      <p class="about-signature">Mogavel · Tu próxima aventura empieza con una idea.</p>
+    </div>
+  </div>
+</section>
+<section class="profile-section" id="crear-cuenta">
+  <div class="wrap profile-card"><div class="profile-mark">✦</div><div><span class="section-kicker">Tu espacio personal</span><h2>Tus ideas de viaje, en un mismo lugar.</h2><p>Estamos preparando un espacio para que puedas guardar itinerarios, recuperar tus búsquedas y continuar organizando tus próximos viajes. El registro y el almacenamiento de viajes requieren completar la funcionalidad de cuenta; este botón no simula un registro que todavía no esté conectado.</p></div><a class="primary profile-cta" href="mailto:hola@mogavel.com?subject=Quiero%20crear%20mi%20perfil%20en%20Mogavel">Quiero crear mi perfil <span>→</span></a></div>
+</section>
   </main>
-  <footer><div class="footer-inner wrap"><span class="footer-brand">✦ Mogavel</span><span>Viajes pensados para ti.</span><nav class="footer-links" aria-label="Enlaces legales"><a href="#como-funciona">Cómo funciona</a><a href="mailto:hola@mogavel.com">Contacto</a><a href="#privacidad">Privacidad</a><a href="#cookies">Cookies</a><a href="#terminos">Términos y condiciones</a></nav></div></footer>
+  <footer><div class="footer-inner wrap"><span class="footer-brand">✦ Mogavel</span><span>Viajes pensados para ti.</span><nav class="footer-links" aria-label="Enlaces legales"><a href="#como-funciona">Cómo funciona</a><a href="#planifica-tu-viaje">Planifica tu viaje</a><a href="#sobre-mogavel">Sobre Mogavel</a><a href="mailto:hola@mogavel.com">Contacto</a><a href="#privacidad">Privacidad</a><a href="#cookies">Cookies</a><a href="#terminos">Términos y condiciones</a></nav></div></footer>
   <script>
+    function prepararItinerario(destino, duracion, idea) {
+      const dest = document.getElementById('destino');
+      const ideaEl = document.getElementById('ideaViaje');
+      if (dest) dest.value = destino;
+      if (ideaEl) ideaEl.value = idea + ' Duración orientativa: ' + duracion + '.';
+      document.getElementById('inicio')?.scrollIntoView({behavior:'smooth', block:'start'});
+      window.setTimeout(() => { if (ideaEl) ideaEl.focus({preventScroll:true}); }, 450);
+    }
+
     let modoBusqueda = 'complete';
     document.querySelectorAll('.search-tab').forEach(tab => {
       tab.addEventListener('click', () => {
