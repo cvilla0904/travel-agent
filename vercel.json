@@ -4,18 +4,18 @@
     { "src": "api/chat.ts", "use": "@vercel/node" },
     { "src": "index.html", "use": "@vercel/static" },
     { "src": "toscana.html", "use": "@vercel/static" },
-    { "src": "turquia.html", "use": "@vercel/static" },
     { "src": "viena.html", "use": "@vercel/static" },
     { "src": "sobre-mogavel.html", "use": "@vercel/static" },
+    { "src": "jordania.html", "use": "@vercel/static" },
     { "src": "travel-agent-illustration.jpg", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/api/chat", "dest": "/api/chat.ts" },
     { "src": "/travel-agent-illustration.jpg", "dest": "/travel-agent-illustration.jpg" },
     { "src": "/toscana.html", "dest": "/toscana.html" },
-    { "src": "/turquia.html", "dest": "/turquia.html" },
     { "src": "/viena.html", "dest": "/viena.html" },
     { "src": "/sobre-mogavel.html", "dest": "/sobre-mogavel.html" },
+    { "src": "/jordania.html", "dest": "/jordania.html" },
     { "src": "/", "dest": "/index.html" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
