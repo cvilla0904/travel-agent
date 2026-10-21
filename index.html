@@ -288,6 +288,17 @@
     @media(max-width:600px){header{height:66px}.hero-redesign{padding:98px 0 28px;min-height:0}.hero-photo{background-image:linear-gradient(90deg,rgba(255,250,243,.94),rgba(255,250,243,.72)),url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=85');background-position:62% center}.hero-redesign h1{font-size:43px}.hero-redesign .hero-copy>p{font-size:14px}.hero-redesign .planner{margin-top:20px}.hero-redesign .detail-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0 12px}.hero-redesign .preferences{padding:0 12px}.hero-redesign .planner-bottom{margin:12px 12px 0;align-items:stretch;flex-direction:column}.hero-redesign .planner-hint{text-align:left}.hero-redesign .search-tab{padding:12px 5px;font-size:10px;gap:4px}.hero-redesign .search-tab span{display:none}.content{padding:58px 0!important}.section-head h2,.how-page-copy h2,.about-copy h2{font-size:34px}.journey-card{min-height:430px}.how-section,.about-section{padding:65px 0}.about-image{min-height:340px}.profile-section{padding:45px 0}.profile-card{grid-template-columns:1fr;padding:24px;gap:17px}.profile-card h2{font-size:28px}.profile-cta{grid-column:1;justify-self:stretch}.footer-inner{align-items:flex-start}.footer-links{gap:12px}.hero-redesign .planner .detail-grid label{min-width:0}.hero-redesign .detail-grid input,.hero-redesign .detail-grid select{min-width:0;width:100%}}
 
   </style>
+  <link rel="preload" as="image" href="https://raw.githubusercontent.com/cvilla0904/travel-agent/feat/mogavel-frontend-integration/Amanecer%20entre%20globos%20en%20Capadocia%281%29.png" fetchpriority="high">
+
+  <!-- Evita que aparezca la antigua imagen mientras carga la foto definitiva del hero. -->
+  <style>
+    .hero-redesign:before { background-image: none !important; }
+    .hero-redesign .hero-photo {
+      background-image: linear-gradient(90deg,rgba(255,250,243,.97) 0%,rgba(255,250,243,.87) 35%,rgba(255,250,243,.28) 62%,rgba(255,250,243,.02) 100%),url("https://raw.githubusercontent.com/cvilla0904/travel-agent/feat/mogavel-frontend-integration/Amanecer%20entre%20globos%20en%20Capadocia%281%29.png") !important;
+      background-size: cover;
+      background-position: center 53%;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -348,7 +359,7 @@
       <div class="journey-overlay"></div><div class="journey-content"><span class="journey-meta">10 DÍAS · ITALIA</span><h3>La Toscana, entre pueblos medievales y paisajes de postal</h3><p>De Pisa y Siena a San Gimignano, Volterra y Monteriggioni, para terminar entre el arte y la gastronomía de Florencia.</p><a class="journey-cta" href="/toscana.html">Descúbrelo al detalle <span>→</span></a></div>
     </article>
     <article class="journey-card journey-jordan">
-      <img src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1400&q=85" alt="Petra, ciudad histórica excavada en la roca de Jordania" loading="lazy">
+      <img src="https://images.unsplash.com/photo-1551171128-c5b124a4174c?auto=format&fit=crop&fm=jpg&q=85&w=1800" alt="El Tesoro de Petra, excavado en la roca rosada de Jordania" loading="eager" fetchpriority="high">
       <div class="journey-overlay"></div><div class="journey-content"><span class="journey-meta">7 DÍAS · JORDANIA</span><h3>Jordania, entre maravillas antiguas y desiertos infinitos</h3><p>Descubre Petra, duerme bajo las estrellas en Wadi Rum y relájate junto al mar Muerto en una ruta de historia y paisajes inolvidables.</p><a class="journey-cta" href="/jordania.html">Descúbrelo al detalle <span>→</span></a></div>
     </article>
     <article class="journey-card journey-vienna">
