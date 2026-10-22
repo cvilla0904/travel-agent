@@ -50,6 +50,11 @@ export const hotelOutputSchema = z.object({
   adultos: z.number(),
   estado: estadoHotelesSchema,
   error: z.string().nullable(),
+  codigoError: z.string().nullable(),
+  httpStatus: z.number().nullable(),
+  retryAfter: z.string().nullable(),
+  detalleProveedor: z.string().nullable(),
+  etapaError: z.string().nullable(),
   diagnostico: diagnosticoHotelesSchema,
   hoteles: z.array(hotelSchema),
 });
