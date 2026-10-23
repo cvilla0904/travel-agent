@@ -606,8 +606,14 @@ const hotelAgent = new Agent({
     La herramienta devuelve "estado":
     - "ok": hay alojamientos; devuélvelos todos (hasta 10) tal cual.
     - "sin_resultados": el proveedor respondió sin alojamientos para esas fechas; indícalo en "error" como null y deja "hoteles" vacío.
-    - "error_proveedor" o "error_interno": la búsqueda FALLÓ. Copia "estado" y "error" tal cual y deja "hoteles" vacío. NUNCA lo presentes como que el destino no tiene alojamientos.
+    - "error_proveedor" o "error_interno": la búsqueda FALLÓ. Copia "estado", "error", "codigoError", "httpStatus", "retryAfter", "detalleProveedor" y "etapaError" tal cual y deja "hoteles" vacío. NUNCA lo presentes como que el destino no tiene alojamientos.
     Copia también "diagnostico".
+
+    REGLAS PARA EXPLICAR UN ERROR DEL PROVEEDOR:
+    - Comunica únicamente lo que respalda la respuesta de SearchAPI: el texto de "error", "detalleProveedor", "httpStatus" y "retryAfter".
+    - Según "codigoError": "limite_uso" = el proveedor indica cuota o créditos agotados (cita su detalle); "limite_peticiones" = el proveedor indica un límite de frecuencia de peticiones; "rechazo_sin_causa" = el proveedor rechazó la petición y NO se conoce el motivo; "autenticacion" = el proveedor respondió 401/403.
+    - Si el motivo no está confirmado, dilo claramente. NO deduzcas ni inventes causas ni plazos de recuperación: no digas "límite mensual", "cuota agotada", "créditos agotados" ni "clave inválida", ni cuándo se restablecerá el servicio, salvo que figuren en la respuesta del proveedor. Una hipótesis nunca se presenta como un hecho.
+    - No muestres claves ni datos de configuración.
 
     Si precioDisponible es false (precioTotal y precioPorNoche son 0), el proveedor no dio precio: NO lo presentes como 0 €, gratis ni como precio real. Indica "Precio no disponible; consultar proveedor". Si precioCalculado es true, el importe se ha derivado dividiendo/multiplicando por las noches: no lo presentes como dato literal del proveedor.
     Respeta valoracionEscala (la valoración de Booking suele ser sobre 10); no conviertas ni inventes escalas.
@@ -1172,6 +1178,15 @@ const buscarRecursosMultidestino = tool({
           alojamientos: errorAlojamientos,
           actividades: errorActividadesProveedor,
         },
+        diagnosticoErrorAlojamientos: errorAlojamientos
+          ? {
+              codigoError: hotelResult.codigoError,
+              httpStatus: hotelResult.httpStatus,
+              retryAfter: hotelResult.retryAfter,
+              detalleProveedor: hotelResult.detalleProveedor,
+              etapaError: hotelResult.etapaError,
+            }
+          : null,
       });
     }
 
@@ -1772,6 +1787,11 @@ export const travelAgent = new Agent({
     Si hotel_agent devuelve estado "error_proveedor" o "error_interno", di
     claramente que la búsqueda de alojamiento falló, con el motivo del campo
     error, y NO digas que no hay alojamientos ni inventes opciones.
+    Explica la causa solo si la respalda la respuesta del proveedor (campos
+    codigoError, httpStatus, retryAfter y detalleProveedor). Si el motivo no
+    está confirmado (codigoError "rechazo_sin_causa"), dilo claramente y NO
+    lo atribuyas a una cuota mensual agotada ni a ninguna otra causa
+    hipotética; una hipótesis nunca se presenta como un hecho.
 
     El usuario es quien decide qué vuelo y qué alojamiento quiere.
     Tu función es mostrar todas las opciones con información comparable,
@@ -1816,7 +1836,11 @@ export const travelAgent = new Agent({
     Si la herramienta devuelve un error en "errores.alojamientos",
     no digas "No se encontraron alojamientos". Indica que el proveedor
     de alojamientos no pudo completar la consulta y conserva el motivo
-    técnico de forma comprensible.
+    técnico de forma comprensible, apoyándote solo en "errores.alojamientos"
+    y en "diagnosticoErrorAlojamientos" (codigoError, httpStatus, retryAfter,
+    detalleProveedor). NO deduzcas ni inventes la causa: no digas "límite
+    mensual", "cuota agotada" ni "créditos agotados" salvo que el proveedor
+    lo indique en esos campos. Si el motivo no está confirmado, dilo así.
 
     Si la herramienta devuelve un error en "errores.actividades",
     no digas "No se encontraron actividades". Indica que el proveedor

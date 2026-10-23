@@ -31,17 +31,34 @@ export type CodigoErrorHoteles =
   | 'autenticacion'
   | 'limite_uso'
   | 'limite_peticiones'
+  | 'rechazo_sin_causa'
   | 'destino_no_verificado'
   | 'respuesta_invalida'
   | 'api';
 
+/** Datos objetivos de la respuesta del proveedor (ya sin secretos). */
+export interface DetalleErrorProveedor {
+  httpStatus: number | null;
+  retryAfter: string | null;
+  detalleProveedor: string | null;
+  etapa: string | null;
+}
+
 export class HotelesProveedorError extends Error {
   readonly codigo: CodigoErrorHoteles;
+  readonly httpStatus: number | null;
+  readonly retryAfter: string | null;
+  readonly detalleProveedor: string | null;
+  readonly etapa: string | null;
 
-  constructor(codigo: CodigoErrorHoteles, mensaje: string) {
+  constructor(codigo: CodigoErrorHoteles, mensaje: string, detalle: Partial<DetalleErrorProveedor> = {}) {
     super(mensaje);
     this.name = 'HotelesProveedorError';
     this.codigo = codigo;
+    this.httpStatus = detalle.httpStatus ?? null;
+    this.retryAfter = detalle.retryAfter ?? null;
+    this.detalleProveedor = detalle.detalleProveedor ?? null;
+    this.etapa = detalle.etapa ?? null;
   }
 }
 
@@ -100,6 +117,12 @@ export interface ResultadoHoteles {
 export interface ResultadoHotelesConEstado extends ResultadoHoteles {
   estado: EstadoHoteles;
   error: string | null;
+  /** Clasificación del fallo (ver CodigoErrorHoteles) o 'error_interno'; null si no hubo fallo. */
+  codigoError: string | null;
+  httpStatus: number | null;
+  retryAfter: string | null;
+  detalleProveedor: string | null;
+  etapaError: string | null;
 }
 
 export interface DependenciasSearchApi {
@@ -315,18 +338,98 @@ export function normalizarPropiedades(
    LLAMADAS HTTP
    ========================================================= */
 
-function clasificarError(estado: number | null, mensaje: string): CodigoErrorHoteles {
+// Evidencia explícita en el texto del proveedor. Mencionar "créditos" o
+// "mensual" NO basta: hace falta una expresión de agotamiento ("exhausted",
+// "insufficient credits", "out of credits", "no credits left"...). Un 429 sin
+// evidencia suficiente, o con evidencias contradictorias, queda neutral.
+const MODIFICADORES = '(?:(?:your|the|of|any|all|monthly|free|search|api|available|remaining)\\s+)*';
+const PATRONES_CUOTA_AGOTADA: RegExp[] = [
+  new RegExp(`\\b(?:exhausted|depleted|exceeded|used up|reached|ran out of|run out of|out of|insufficient|not enough|no more|no remaining)\\s+${MODIFICADORES}(?:quota|credits?|searches)\\b`, 'i'),
+  /\b(?:quota|credits?|searches)\s+(?:(?:has|have|is|are|was|were|been)\s+)*(?:exhausted|depleted|exceeded|used up|reached)\b/i,
+  /\b(?:monthly|plan)\s+(?:limit|quota)\s+(?:(?:has|have|is|was)\s+)*(?:been\s+)?(?:reached|exceeded)\b/i,
+  /\b(?:no|zero|0)\s+(?:credits?|searches)\s+(?:left|remaining|available)\b/i,
+  /\b(?:quota|credits?)[_-](?:exceeded|exhausted|depleted)\b|\binsufficient[_-]credits?\b/i,
+];
+const NEGACION_AGOTAMIENTO = /\b(?:not|never|n't)\b(?:\s+\w+){0,2}\s+(?:exhausted|depleted|exceeded|reached)\b/i;
+const MENCION_CUOTA = /quota|credits?\b|monthly/i;
+const EVIDENCIA_FRECUENCIA = /rate[\s_-]?limit|too many requests|requests? per (?:second|minute|hour)|per[\s-](?:second|minute|hour)|hourly (?:request |rate )?limit|throttl|slow down|concurrent/i;
+const EVIDENCIA_AUTENTICACION = /api[_ ]?key|unauthori[sz]ed|invalid token|authentication/i;
+
+export function clasificarError(estado: number | null, detalle: string): CodigoErrorHoteles {
+  const cuotaAgotada =
+    PATRONES_CUOTA_AGOTADA.some((patron) => patron.test(detalle)) && !NEGACION_AGOTAMIENTO.test(detalle);
+  const frecuencia = EVIDENCIA_FRECUENCIA.test(detalle);
+  const mencionaCuota = MENCION_CUOTA.test(detalle);
   if (estado === 401 || estado === 403) return 'autenticacion';
-  if (estado === 402) return 'limite_uso';
-  if (estado === 429) return 'limite_peticiones';
-  if (/credit|quota|limit|exhaust|insufficient|plan/i.test(mensaje)) return 'limite_uso';
-  if (/api[_ ]?key|unauthori[sz]ed|invalid token/i.test(mensaje)) return 'autenticacion';
+  if (estado === 429 || estado === 402) {
+    if (cuotaAgotada && !frecuencia) return 'limite_uso';
+    if (frecuencia && !mencionaCuota) return 'limite_peticiones';
+    return 'rechazo_sin_causa';
+  }
+  if (cuotaAgotada && !frecuencia) return 'limite_uso';
+  if (EVIDENCIA_AUTENTICACION.test(detalle)) return 'autenticacion';
   return 'api';
 }
 
+/** Quita claves, tokens y cabeceras de autorización de un texto del proveedor. */
+export function limpiarSecretos(texto: string, clave?: string): string {
+  let limpio = String(texto ?? '');
+  if (clave && clave.length >= 6) limpio = limpio.split(clave).join('[REDACTED]');
+  return limpio
+    .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi, 'Bearer [REDACTED]')
+    .replace(/((?:api[_-]?key|access[_-]?token|token|authorization|secret)["']?\s*[:=]\s*["']?)[A-Za-z0-9._~+/=-]{6,}/gi, '$1[REDACTED]')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/** Valor de Retry-After tal cual lo envía el proveedor (segundos o fecha), sanitizado. */
+function leerRetryAfter(respuesta: Response): string | null {
+  const bruto = respuesta.headers?.get?.('retry-after');
+  if (!bruto) return null;
+  const limpio = bruto.replace(/[^\x20-\x7E]/g, '').trim().slice(0, 64);
+  return limpio || null;
+}
+
+function textoRetryAfter(retryAfter: string | null): string {
+  if (!retryAfter) return '';
+  return /^\d+$/.test(retryAfter) ? ` Retry-After: ${retryAfter} s.` : ` Retry-After: ${retryAfter}.`;
+}
+
+/**
+ * Mensaje para el usuario/agente. Solo afirma una causa cuando la respuesta del
+ * proveedor aporta evidencia (se cita su texto); si no, es neutral.
+ */
+export function construirMensajeError(
+  codigo: CodigoErrorHoteles,
+  d: { etapa: string; httpStatus: number; detalle: string; retryAfter: string | null },
+): string {
+  const cita = d.detalle ? ` «${d.detalle}»` : '';
+  const espera = textoRetryAfter(d.retryAfter);
+  switch (codigo) {
+    case 'limite_uso':
+      return `SearchAPI indica que la cuota o los créditos están agotados (HTTP ${d.httpStatus}, ${d.etapa}):${cita}.${espera}`;
+    case 'limite_peticiones':
+      return `SearchAPI indica un límite de frecuencia de peticiones (HTTP ${d.httpStatus}, ${d.etapa}):${cita}.${espera}`;
+    case 'rechazo_sin_causa': {
+      const rechazo = d.httpStatus === 429 ? 'ha rechazado temporalmente la petición' : 'ha rechazado la petición';
+      return (
+        `SearchAPI ${rechazo} con HTTP ${d.httpStatus} (${d.etapa}); no se ha podido confirmar el motivo.` +
+        (d.detalle ? ` Detalle del proveedor, sin información concluyente:${cita}.` : '') +
+        espera
+      );
+    }
+    default:
+      return `SearchAPI (${d.etapa}) respondió HTTP ${d.httpStatus}${d.detalle ? `: ${d.detalle}` : ''}.${espera}`;
+  }
+}
+
 function mensajeDeCuerpo(cuerpo: unknown): string {
-  const c = cuerpo as { error?: unknown; message?: unknown } | null;
-  const bruto = typeof c?.error === 'string' ? c.error : typeof c?.message === 'string' ? c.message : '';
+  const c = cuerpo as { error?: unknown; message?: unknown; detail?: unknown } | null;
+  const bruto =
+    typeof c?.error === 'string' ? c.error
+    : typeof c?.message === 'string' ? c.message
+    : typeof c?.detail === 'string' ? c.detail
+    : '';
   return bruto.replace(/\s+/g, ' ').trim().slice(0, 300);
 }
 
@@ -349,6 +452,7 @@ async function llamar(
       agotado
         ? `SearchAPI (${etapa}) no respondió en ${ESPERA_MAXIMA_MS / 1000} s.`
         : `No se pudo contactar con SearchAPI (${etapa}).`,
+      { etapa },
     );
   }
 
@@ -361,10 +465,13 @@ async function llamar(
   }
 
   if (!respuesta.ok) {
-    const detalle = mensajeDeCuerpo(cuerpo) || textoRespuesta.replace(/\s+/g, ' ').trim().slice(0, 200);
+    const detalle = limpiarSecretos(mensajeDeCuerpo(cuerpo) || textoRespuesta.slice(0, 200), clave).slice(0, 300);
+    const retryAfter = leerRetryAfter(respuesta);
+    const codigo = clasificarError(respuesta.status, detalle);
     throw new HotelesProveedorError(
-      clasificarError(respuesta.status, detalle),
-      `SearchAPI (${etapa}) respondió HTTP ${respuesta.status}${detalle ? `: ${detalle}` : ''}.`,
+      codigo,
+      construirMensajeError(codigo, { etapa, httpStatus: respuesta.status, detalle, retryAfter }),
+      { httpStatus: respuesta.status, retryAfter, detalleProveedor: detalle || null, etapa },
     );
   }
 
@@ -373,13 +480,19 @@ async function llamar(
   }
 
   // Un HTTP 200 con campo "error" es un fallo, no una búsqueda sin resultados.
-  const detalleError = mensajeDeCuerpo(cuerpo);
+  const detalleError = limpiarSecretos(mensajeDeCuerpo(cuerpo), clave).slice(0, 300);
   const estadoMeta = (cuerpo as { search_metadata?: { status?: unknown } }).search_metadata?.status;
   if (detalleError || estadoMeta === 'Error') {
-    throw new HotelesProveedorError(
-      clasificarError(null, detalleError),
-      `SearchAPI (${etapa}) devolvió un error: ${detalleError || 'estado Error sin detalle'}.`,
-    );
+    const codigo = clasificarError(null, detalleError);
+    const mensaje =
+      codigo === 'limite_uso'
+        ? construirMensajeError(codigo, { etapa, httpStatus: 200, detalle: detalleError, retryAfter: null })
+        : `SearchAPI (${etapa}) devolvió un error: ${detalleError || 'estado Error sin detalle'}.`;
+    throw new HotelesProveedorError(codigo, mensaje, {
+      httpStatus: 200,
+      detalleProveedor: detalleError || null,
+      etapa,
+    });
   }
   return cuerpo as Record<string, unknown>;
 }
@@ -530,6 +643,11 @@ export async function buscarHotelesConEstado(
     proveedor: 'SearchAPI / Booking.com',
     estado,
     error,
+    codigoError: null,
+    httpStatus: null,
+    retryAfter: null,
+    detalleProveedor: null,
+    etapaError: null,
     diagnostico: { destinoResuelto: '', propiedadesProveedor: 0, devueltos: 0, conPrecio: 0, sinPrecio: 0, conEnlace: 0 },
     hoteles: [],
   });
@@ -540,16 +658,36 @@ export async function buscarHotelesConEstado(
       ...resultado,
       estado: resultado.hoteles.length > 0 ? 'ok' : 'sin_resultados',
       error: null,
+      codigoError: null,
+      httpStatus: null,
+      retryAfter: null,
+      detalleProveedor: null,
+      etapaError: null,
     };
   } catch (error) {
     if (error instanceof HotelesProveedorError) {
-      registrar('error_proveedor', { codigo: error.codigo, mensaje: error.message, destino: params.destino });
-      return vacio('error_proveedor', error.message);
+      registrar('error_proveedor', {
+        codigo: error.codigo,
+        httpStatus: error.httpStatus,
+        retryAfter: error.retryAfter,
+        etapa: error.etapa,
+        detalleProveedor: error.detalleProveedor,
+        mensaje: error.message,
+        destino: params.destino,
+      });
+      return {
+        ...vacio('error_proveedor', error.message),
+        codigoError: error.codigo,
+        httpStatus: error.httpStatus,
+        retryAfter: error.retryAfter,
+        detalleProveedor: error.detalleProveedor,
+        etapaError: error.etapa,
+      };
     }
     registrar('error_interno', {
       mensaje: error instanceof Error ? error.message : String(error),
       destino: params.destino,
     });
-    return vacio('error_interno', MENSAJE_ERROR_INTERNO);
+    return { ...vacio('error_interno', MENSAJE_ERROR_INTERNO), codigoError: 'error_interno' };
   }
 }
