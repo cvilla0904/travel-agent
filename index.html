@@ -180,6 +180,7 @@
     .search-tab span{font-size:14px;color:#48627e}
     .search-tab.is-active{color:var(--navy)}
     .search-tab.is-active:after{content:"";position:absolute;bottom:-1px;left:14%;right:14%;height:3px;background:var(--coral);border-radius:4px}
+    .planner textarea.idea-field{min-height:84px;margin:0 0 14px;padding:13px 15px;border:1px solid #e1e6eb;border-radius:14px;background:#fbfcfd;font-size:15px}.planner textarea.idea-field:focus{border-color:#9eb1c5;background:#fff}
     .idea-hidden{position:absolute!important;width:1px!important;height:1px!important;min-height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
     .detail-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:0}
     .detail-grid label{gap:6px;color:#607086;font-size:10px;font-weight:600}
@@ -323,7 +324,7 @@
           <button type="button" class="search-tab" role="tab" aria-selected="false" data-mode="hotels"><span>▦</span> Solo hoteles</button>
           <button type="button" class="search-tab" role="tab" aria-selected="false" data-mode="activities"><span>◇</span> Solo actividades</button>
         </div>
-        <textarea id="ideaViaje" class="idea-hidden" aria-label="Describe el viaje que tienes en mente" placeholder="Cuéntanos qué experiencia quieres vivir"></textarea>
+        <textarea id="ideaViaje" class="idea-field" aria-label="Describe el viaje que tienes en mente" placeholder="Cuéntanos qué experiencia quieres vivir: destino, ritmo, gastronomía, naturaleza, intereses…"></textarea>
         <div class="detail-grid">
           <label>Origen<div class="city-autocomplete"><input id="origen" class="city-input" placeholder="Ciudad o aeropuerto" autocomplete="off" aria-autocomplete="list" aria-expanded="false"><div class="city-suggestions" id="origen-suggestions" role="listbox"></div></div></label>
           <label>Destino<div class="city-autocomplete"><input id="destino" class="city-input" placeholder="¿A dónde quieres ir?" autocomplete="off" aria-autocomplete="list" aria-expanded="false"><div class="city-suggestions" id="destino-suggestions" role="listbox"></div></div></label>
@@ -550,69 +551,233 @@
       document.getElementById('inicio').scrollIntoView({ behavior: 'smooth' });
     }
 
-    /* Primera búsqueda. */
-    async function buscarViaje() {
-      // Una nueva búsqueda siempre empieza desde cero, incluso
-      // si usa exactamente los mismos datos que una búsqueda anterior.
-      iniciarNuevaBusqueda();
+    /* === COMPOSICION_PETICION:INICIO === */
+    /* Combina el formulario estructurado y el texto libre en UNA sola petición.
+       Funciones puras (sin DOM): se prueban en test/formulario.test.ts.
+       - Solo formulario  -> misma frase que antes.
+       - Solo texto libre -> el texto tal cual (el agente lo interpreta como hasta ahora).
+       - Ambos            -> datos del formulario + "Preferencias e instrucciones adicionales".
+       - Contradicción en datos esenciales (destino, origen, fechas, viajeros)
+         -> no se busca: se pide aclaración. */
+    const PT_MESES = {enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,setiembre:9,octubre:10,noviembre:11,diciembre:12};
+    const PT_MES_RE = '(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)';
+    const PT_NUMEROS = {un:1,una:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10};
 
-      const idea =
-        document.getElementById('ideaViaje').value.trim();
+    function ptNormalizar(valor) {
+      return String(valor == null ? '' : valor).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+    }
+    function ptEscaparRegex(valor) { return String(valor).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
-      const origen =
-        document.getElementById('origen')?.value || '';
-
-      const destino =
-        document.getElementById('destino')?.value || '';
-
-      const ida =
-        document.getElementById('ida')?.value || '';
-
-      const vuelta =
-        document.getElementById('vuelta')?.value || '';
-
-      const viajeros =
-        document.getElementById('viajeros')?.value || '';
-
-      const presupuesto =
-        document.getElementById('presupuesto')?.value || '';
-
-      const preferencias =
-        Array.from(
-          document.querySelectorAll(
-            '.preferences input:checked'
-          )
-        ).map(input => input.value);
-
-      const partes = [];
-      if (idea) {
-        // Si el usuario escribe una petición libre, no mezclarla con campos
-        // estructurados que pueden conservar datos de un viaje anterior.
-        // Para usar el formulario de detalles, deja vacía la petición libre.
-        partes.push(idea);
-      } else {
-        if (origen || destino) partes.push(`Quiero viajar${origen ? ` de ${origen}` : ''}${destino ? ` a ${destino}` : ''}`);
-        if (ida || vuelta) partes.push(`del ${ida} al ${vuelta}`);
-        if (viajeros) partes.push(`para ${viajeros} personas`);
-
-        if (presupuesto) {
-          partes.push(
-            `con un presupuesto total de ${presupuesto} euros`
-          );
-        }
-
-        if (preferencias.length) {
-          partes.push(
-            `y me interesan actividades relacionadas con ${preferencias.join(', ')}`
-          );
+    function ptNombresCiudad(ciudad) {
+      const codigo = ptNormalizar(ciudad.codigo);
+      return [ciudad.ciudad].concat(ciudad.aliases || []).map(ptNormalizar)
+        .filter((nombre, i, todos) => nombre.length >= 3 && nombre !== codigo && todos.indexOf(nombre) === i);
+    }
+    function ptClaveCiudad(nombre, ciudades) {
+      const base = ptNormalizar(String(nombre).split(',')[0].replace(/\(.*?\)/g, '')).replace(/^aeropuerto (?:internacional )?(?:de )?/, '');
+      for (const ciudad of ciudades) {
+        if (ptNombresCiudad(ciudad).indexOf(base) !== -1) return ptNormalizar(ciudad.ciudad);
+      }
+      return base;
+    }
+    /* Ciudades del catálogo citadas en el texto; marca las que van tras "desde/saliendo de" (origen). */
+    function ptCiudadesEnTexto(textoNormalizado, ciudades) {
+      const encontradas = [];
+      for (const ciudad of ciudades) {
+        for (const nombre of ptNombresCiudad(ciudad)) {
+          const re = new RegExp('(^|[^a-z0-9])' + ptEscaparRegex(nombre) + '(?![a-z0-9])', 'g');
+          let m;
+          while ((m = re.exec(textoNormalizado)) !== null) {
+            const inicio = m.index + m[1].length;
+            const antes = textoNormalizado.slice(Math.max(0, inicio - 24), inicio);
+            encontradas.push({
+              clave: ptNormalizar(ciudad.ciudad),
+              nombre: ciudad.ciudad,
+              esOrigen: /(?:desde|saliendo de|salgo de|salimos de|parto de|partimos de)\s*$/.test(antes)
+            });
+          }
         }
       }
+      return encontradas;
+    }
 
-      const message =
-        partes.join(' ') || 'Ayúdame a planear un viaje';
+    function ptFechasEnTexto(texto) {
+      let resto = texto;
+      const fechas = [];
+      const rangos = [];
+      const meses = [];
+      const anio = valor => valor ? (String(valor).length === 2 ? 2000 + Number(valor) : Number(valor)) : null;
+      const tomar = (re, fn) => { resto = resto.replace(re, function () { fn(Array.prototype.slice.call(arguments)); return ' '; }); };
+      tomar(/\b(\d{4})-(\d{2})-(\d{2})\b/g, m => fechas.push({dia: +m[3], mes: +m[2], anio: +m[1]}));
+      tomar(new RegExp('\\b(?:del\\s+)?(\\d{1,2})\\s+al\\s+(\\d{1,2})\\s+de\\s+' + PT_MES_RE + '(?:\\s+(?:de|del)\\s+(\\d{4}))?', 'g'), m => {
+        const mes = PT_MESES[m[3]];
+        const a = anio(m[4]);
+        rangos.push([{dia: +m[1], mes, anio: a}, {dia: +m[2], mes, anio: a}]);
+      });
+      tomar(new RegExp('\\b(\\d{1,2})\\s+de\\s+' + PT_MES_RE + '(?:\\s+(?:de|del)\\s+(\\d{4}))?', 'g'), m => fechas.push({dia: +m[1], mes: PT_MESES[m[2]], anio: anio(m[3])}));
+      tomar(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/g, m => { if (+m[2] >= 1 && +m[2] <= 12 && +m[1] >= 1 && +m[1] <= 31) fechas.push({dia: +m[1], mes: +m[2], anio: anio(m[3])}); });
+      tomar(/\b(\d{1,2})-(\d{1,2})-(\d{4})\b/g, m => { if (+m[2] >= 1 && +m[2] <= 12 && +m[1] >= 1 && +m[1] <= 31) fechas.push({dia: +m[1], mes: +m[2], anio: +m[3]}); });
+      tomar(new RegExp('\\b(?:en|durante|para|a finales de|a principios de|a mediados de|finales de|principios de|mediados de)\\s+' + PT_MES_RE + '\\b', 'g'), m => meses.push(PT_MESES[m[1]]));
+      return {fechas, rangos, meses};
+    }
+    function ptIsoAPartes(iso) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+      return m ? {anio: +m[1], mes: +m[2], dia: +m[3]} : null;
+    }
+    function ptIgualFecha(texto, iso) {
+      const f = ptIsoAPartes(iso);
+      return !!f && texto.mes === f.mes && texto.dia === f.dia && (texto.anio === null || texto.anio === f.anio);
+    }
+    function ptValor(partes, anioPorDefecto) { return Date.UTC(partes.anio == null ? anioPorDefecto : partes.anio, partes.mes - 1, partes.dia); }
+
+    function ptViajerosEnTexto(texto) {
+      const palabras = Object.keys(PT_NUMEROS).join('|');
+      const re = new RegExp('\\b(?:somos\\s+(\\d{1,2}|' + palabras + ')\\b|(\\d{1,2}|' + palabras + ')\\s+(?:personas|viajeros|adultos|pasajeros|pax)\\b)');
+      const m = re.exec(texto);
+      if (!m) return null;
+      const bruto = m[1] || m[2];
+      return /^\d+$/.test(bruto) ? Number(bruto) : PT_NUMEROS[bruto];
+    }
+
+    function ptContradicciones(f, ciudades) {
+      const texto = ptNormalizar(f.idea);
+      const out = [];
+      const menciones = ptCiudadesEnTexto(texto, ciudades);
+      const claveOrigen = f.origen ? ptClaveCiudad(f.origen, ciudades) : '';
+      const claveDestino = f.destino ? ptClaveCiudad(f.destino, ciudades) : '';
+
+      if (f.destino) {
+        const otras = menciones.filter(c => !c.esOrigen && c.clave !== claveDestino && c.clave !== claveOrigen);
+        const cita = menciones.some(c => c.clave === claveDestino);
+        if (otras.length && !cita) out.push({campo: 'destino', formulario: f.destino, texto: otras[0].nombre});
+      }
+      if (f.origen) {
+        const deSalida = menciones.filter(c => c.esOrigen);
+        if (deSalida.length && !deSalida.some(c => c.clave === claveOrigen)) out.push({campo: 'origen', formulario: f.origen, texto: deSalida[0].nombre});
+      }
+
+      const ida = ptIsoAPartes(f.ida);
+      const vuelta = ptIsoAPartes(f.vuelta);
+      if (ida || vuelta) {
+        const anioBase = (ida || vuelta).anio;
+        const enTexto = ptFechasEnTexto(texto);
+        const etiqueta = t => String(t.dia).padStart(2, '0') + '/' + String(t.mes).padStart(2, '0') + (t.anio ? '/' + t.anio : '');
+        const formularioFechas = [f.ida, f.vuelta].filter(Boolean).join(' → ');
+        let conflicto = null;
+        enTexto.rangos.forEach(r => {
+          if (conflicto) return;
+          const encaja = (!f.ida || ptIgualFecha(r[0], f.ida)) && (!f.vuelta || ptIgualFecha(r[1], f.vuelta)) && (!!f.ida || !!f.vuelta);
+          if (!encaja) conflicto = etiqueta(r[0]) + ' → ' + etiqueta(r[1]);
+        });
+        enTexto.fechas.forEach(d => {
+          if (conflicto) return;
+          let dentro;
+          if (ida && vuelta) { const v = ptValor(d, anioBase); dentro = v >= ptValor(ida, anioBase) && v <= ptValor(vuelta, anioBase); }
+          else dentro = ptIgualFecha(d, f.ida || f.vuelta);
+          if (!dentro) conflicto = etiqueta(d);
+        });
+        enTexto.meses.forEach(mes => {
+          if (conflicto) return;
+          const mesesFormulario = [ida, vuelta].filter(Boolean).map(p => p.mes);
+          if (mesesFormulario.indexOf(mes) === -1) conflicto = 'mes ' + mes;
+        });
+        if (conflicto) out.push({campo: 'fechas', formulario: formularioFechas, texto: conflicto});
+      }
+
+      const viajerosTexto = ptViajerosEnTexto(texto);
+      if (f.viajerosTocado && viajerosTexto !== null && viajerosTexto !== Number(f.viajeros)) {
+        out.push({campo: 'viajeros', formulario: String(f.viajeros), texto: String(viajerosTexto)});
+      }
+      return out;
+    }
+
+    function ptFraseFormulario(f, incluirViajeros) {
+      const partes = [];
+      if (f.origen || f.destino) partes.push('Quiero viajar' + (f.origen ? ' de ' + f.origen : '') + (f.destino ? ' a ' + f.destino : ''));
+      if (f.ida && f.vuelta) partes.push('del ' + f.ida + ' al ' + f.vuelta);
+      else if (f.ida) partes.push('con fecha de ida ' + f.ida);
+      else if (f.vuelta) partes.push('con fecha de vuelta ' + f.vuelta);
+      if (f.viajeros && incluirViajeros) partes.push('para ' + f.viajeros + ' personas');
+      if (f.presupuesto) partes.push('con un presupuesto total de ' + f.presupuesto + ' euros');
+      if (f.preferencias.length) partes.push('y me interesan actividades relacionadas con ' + f.preferencias.join(', '));
+      return partes.join(' ');
+    }
+
+    function componerPeticionViaje(entrada, ciudades) {
+      const catalogo = ciudades || [];
+      const limpio = valor => String(valor == null ? '' : valor).trim();
+      const f = {
+        idea: limpio(entrada.idea), origen: limpio(entrada.origen), destino: limpio(entrada.destino),
+        ida: limpio(entrada.ida), vuelta: limpio(entrada.vuelta), viajeros: limpio(entrada.viajeros),
+        presupuesto: limpio(entrada.presupuesto),
+        preferencias: Array.isArray(entrada.preferencias) ? entrada.preferencias.map(limpio).filter(Boolean) : [],
+        viajerosTocado: !!entrada.viajerosTocado
+      };
+      /* "viajeros" trae un valor por defecto: solo cuenta como dato del usuario si lo ha cambiado. */
+      const hayFormulario = !!(f.origen || f.destino || f.ida || f.vuelta || f.presupuesto || f.preferencias.length || f.viajerosTocado);
+
+      if (!f.idea && !hayFormulario) return {estado: 'ok', fuente: 'vacio', mensaje: 'Ayúdame a planear un viaje', aclaraciones: []};
+      if (f.idea && !hayFormulario) return {estado: 'ok', fuente: 'texto', mensaje: f.idea, aclaraciones: []};
+      if (!f.idea) return {estado: 'ok', fuente: 'formulario', mensaje: ptFraseFormulario(f, true), aclaraciones: []};
+
+      const aclaraciones = ptContradicciones(f, catalogo);
+      if (aclaraciones.length) return {estado: 'aclaracion', fuente: 'mixto', mensaje: '', aclaraciones};
+
+      /* Si el usuario no ha tocado "viajeros" y el texto indica un número, manda el texto. */
+      const incluirViajeros = f.viajerosTocado || ptViajerosEnTexto(ptNormalizar(f.idea)) === null;
+      return {
+        estado: 'ok', fuente: 'mixto', aclaraciones: [],
+        mensaje: ptFraseFormulario(f, incluirViajeros) +
+          ' Preferencias e instrucciones adicionales del usuario (complementan los datos del formulario): ' + f.idea
+      };
+    }
+
+    function textoAclaracionViaje(aclaraciones) {
+      const nombres = {destino: 'Destino', origen: 'Origen', fechas: 'Fechas', viajeros: 'Viajeros'};
+      return 'He encontrado datos distintos entre el formulario y tu texto, y prefiero no elegir por ti:\n' +
+        aclaraciones.map(a => '• ' + (nombres[a.campo] || a.campo) + ': formulario «' + a.formulario + '» / texto «' + a.texto + '»').join('\n') +
+        '\nCorrige el formulario o el texto para que coincidan y vuelve a pulsar el botón de búsqueda.';
+    }
+    /* === COMPOSICION_PETICION:FIN === */
+
+    /* Primera búsqueda. */
+    let busquedaEnCurso = false;
+    let viajerosTocado = false;
+    document.getElementById('viajeros')?.addEventListener('change', () => { viajerosTocado = true; });
+
+    async function buscarViaje() {
+      // Evita lanzar dos búsquedas a la vez (doble clic): cada una consume créditos.
+      if (busquedaEnCurso) return;
+
+      const peticion = componerPeticionViaje({
+        idea: document.getElementById('ideaViaje').value,
+        origen: document.getElementById('origen')?.value,
+        destino: document.getElementById('destino')?.value,
+        ida: document.getElementById('ida')?.value,
+        vuelta: document.getElementById('vuelta')?.value,
+        viajeros: document.getElementById('viajeros')?.value,
+        presupuesto: document.getElementById('presupuesto')?.value,
+        preferencias: Array.from(document.querySelectorAll('.preferences input:checked')).map(input => input.value),
+        viajerosTocado
+      }, ciudadesMogavel);
 
       const results =
         document.getElementById('results');
+
+      // Contradicción en datos esenciales: se pide aclaración y NO se busca.
+      if (peticion.estado === 'aclaracion') {
+        results.style.display = 'block';
+        results.textContent = textoAclaracionViaje(peticion.aclaraciones);
+        results.style.whiteSpace = 'pre-line';
+        return;
+      }
+      results.style.whiteSpace = '';
+
+      // Una nueva búsqueda siempre empieza desde cero, incluso
+      // si usa exactamente los mismos datos que una búsqueda anterior.
+      iniciarNuevaBusqueda();
+      const message = peticion.mensaje;
+      busquedaEnCurso = true;
 
       results.style.display = 'block';
       results.innerHTML =
@@ -630,6 +795,8 @@
         results.textContent =
           'Ha ocurrido un error: ' +
           error.message;
+      } finally {
+        busquedaEnCurso = false;
       }
     }
 

@@ -1484,6 +1484,14 @@ export const travelAgent = new Agent({
     Si falta alguno de esos datos,
     pregunta únicamente por el dato que falta.
 
+    Si el mensaje incluye "Preferencias e instrucciones adicionales del
+    usuario", los datos esenciales (origen, destino, fechas y viajeros) son
+    los del formulario y esa parte solo los complementa con preferencias,
+    intereses o ritmo del viaje: tenlas en cuenta, no las ignores. Si ese
+    texto contradice un dato esencial del formulario, NO elijas uno por tu
+    cuenta ni busques: pregunta al usuario cuál quiere usar. Haz una única
+    búsqueda coherente, sin repetir llamadas.
+
     NO necesitas presupuesto para buscar vuelos.
 
     NO necesitas preferencias para buscar vuelos.
