@@ -1079,14 +1079,20 @@
           const cards = group.activities.map(activity => {
             const linkedTitle = activity.text.match(/^\[\*\*(.+?)\*\*\]\((https?:\/\/[^)]+)\)/);
             const markdownTitle = activity.text.match(/^\[(.+?)\]\((https?:\/\/[^)]+)\)/);
-            const name = (linkedTitle ? linkedTitle[1] : markdownTitle ? markdownTitle[1].replace(/\*\*/g, '') : activity.text)
-              .replace(/\*\*/g, '').trim();
-            const detail = activity.text
-              .replace(/^\[[^\]]+\]\(https?:\/\/[^)]+\)\s*/, '')
-              .replace(/Ver actividad\s*↗?/gi, '')
-              .replace(/^\s*[—–-]\s*/, '')
-              .replace(/\*\*/g, '').trim();
             const link = activity.link || (linkedTitle ? { url: linkedTitle[2] } : markdownTitle ? { url: markdownTitle[2] } : null);
+            // Remove the booking CTA/link before parsing the activity label and metadata.
+            const cleanText = activity.text
+              .replace(/\[Ver actividad(?:\s*↗)?\]\(https?:\/\/[^)]+\)/gi, '')
+              .replace(/Ver actividad\s*↗?/gi, '')
+              .replace(/\*\*/g, '')
+              .replace(/\s+/g, ' ')
+              .trim();
+            const labelText = linkedTitle ? linkedTitle[1] : markdownTitle ? markdownTitle[1].replace(/\*\*/g, '') : cleanText;
+            const parts = labelText.split(/\s+[—–]\s+/, 2);
+            const name = (linkedTitle || markdownTitle ? labelText : parts[0]).trim();
+            const detail = (linkedTitle || markdownTitle
+              ? cleanText.replace(labelText, '').replace(/^\s*[—–-]\s*/, '')
+              : (parts[1] || '')).trim();
 
             return '<article class="activity-card' + (group.adventure ? ' adventure' : '') + '">' +
               '<div class="activity-main"><div class="activity-name">' + escapeHtml(name) + '</div><div class="activity-detail">' + escapeHtml(detail) + '</div></div>' +
