@@ -45,7 +45,7 @@ async function ejecutarActor(searchQueries: string[]) {
     searchQueries: consultas,
     platforms: PLATFORMS,
     currency: 'EUR',
-    language: 'en',
+    language: 'es',
     includeActivityDetails: true,
     maxResults: Math.max(10, consultas.length * MAX_RESULTS_PER_QUERY),
     maxResultsPerQuery: MAX_RESULTS_PER_QUERY,
