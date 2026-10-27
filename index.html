@@ -1079,14 +1079,23 @@
           const cards = group.activities.map(activity => {
             const linkedTitle = activity.text.match(/^\[\*\*(.+?)\*\*\]\((https?:\/\/[^)]+)\)/);
             const markdownTitle = activity.text.match(/^\[(.+?)\]\((https?:\/\/[^)]+)\)/);
-            const name = (linkedTitle ? linkedTitle[1] : markdownTitle ? markdownTitle[1].replace(/\*\*/g, '') : activity.text)
-              .replace(/\*\*/g, '').trim();
-            const detail = activity.text
-              .replace(/^\[[^\]]+\]\(https?:\/\/[^)]+\)\s*/, '')
+            const ctaLink = activity.text.match(/\[Ver actividad(?:\s*↗)?\]\((https?:\/\/[^)]+)\)/i);
+            const link = activity.link || (ctaLink ? { url: ctaLink[1] } : linkedTitle ? { url: linkedTitle[2] } : markdownTitle ? { url: markdownTitle[2] } : null);
+            // El texto de la actividad puede incluir el CTA Markdown y repetir el enlace.
+            // Separamos nombre y metadatos para que la tarjeta muestre cada dato una sola vez.
+            const cleanText = activity.text
+              .replace(/\[Ver actividad(?:\s*↗)?\]\(https?:\/\/[^)]+\)/gi, '')
+              .replace(/\[([^\]]+)\]\(https?:\/\/[^)]+\)/g, '$1')
               .replace(/Ver actividad\s*↗?/gi, '')
-              .replace(/^\s*[—–-]\s*/, '')
+              .replace(/\*\*/g, '')
+              .replace(/\s+/g, ' ')
+              .trim();
+            const parts = cleanText.split(/\s+[—–]\s+/, 2);
+            const name = (linkedTitle ? linkedTitle[1] : markdownTitle ? markdownTitle[1].replace(/\*\*/g, '') : parts[0] || cleanText)
               .replace(/\*\*/g, '').trim();
-            const link = activity.link || (linkedTitle ? { url: linkedTitle[2] } : markdownTitle ? { url: markdownTitle[2] } : null);
+            const detail = linkedTitle || markdownTitle
+              ? cleanText.replace(name, '').replace(/^\s*[—–-]\s*/, '').trim()
+              : (parts[1] || '').trim();
 
             return '<article class="activity-card' + (group.adventure ? ' adventure' : '') + '">' +
               '<div class="activity-main"><div class="activity-name">' + escapeHtml(name) + '</div><div class="activity-detail">' + escapeHtml(detail) + '</div></div>' +
