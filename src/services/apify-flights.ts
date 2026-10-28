@@ -5,7 +5,9 @@ import { ApifyClient } from 'apify-client';
 // los registros reales antes de entregarlos al agente.
 const ACTOR_ID = 'johnvc/google-flights-data-scraper-flight-and-price-search';
 const MAX_RESULTS = 10;
-const WAIT_SECS = 20;
+const WAIT_SECS = 60;
+// Build fijada tras comprobar entregas en dataset; configurable desde Vercel.
+const ACTOR_BUILD = process.env.APIFY_FLIGHTS_BUILD?.trim() || '0.0.450';
 
 export type BuscarVuelosApifyParams = {
   origen: string;
@@ -179,10 +181,10 @@ export async function buscarVuelosApify(params: BuscarVuelosApifyParams): Promis
   };
 
   console.info('[APIFY_FLIGHTS] Starting actor', JSON.stringify({
-    actor: ACTOR_ID, input: actorInput,
+    actor: ACTOR_ID, build: ACTOR_BUILD, waitSecs: WAIT_SECS, input: actorInput,
   }));
 
-  const run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: WAIT_SECS });
+  const run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: WAIT_SECS, build: ACTOR_BUILD });
   console.info('[APIFY_FLIGHTS] Actor returned', JSON.stringify({
     runId: run.id, status: run.status, datasetId: run.defaultDatasetId ?? null,
   }));
