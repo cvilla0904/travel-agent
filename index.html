@@ -451,8 +451,8 @@
             message: (() => {
               const selected = window.MogavelTripBuilder?.snapshot?.() || [];
               if (!selected.length) return message;
-              const selection = selected.map(item => '- ' + item.type + ': ' + item.name + (item.price ? ' (importe mostrado: ' + item.price.value + ' ' + item.price.currency + ')' : ' (importe no identificado)')).join('\\n');
-              return message + '\\n\\n[Selección actual del viaje en la web; úsala como contexto. Si pido cambiar o quitar un elemento, actualiza la propuesta y confirma claramente el cambio. No inventes precios ni des por reservados los elementos.]\\n' + selection;
+              const selection = selected.map(item => '- ' + item.type + ': ' + item.name + (item.price ? ' (importe mostrado: ' + item.price.value + ' ' + item.price.currency + ')' : ' (importe no identificado)')).join('\n');
+              return message + '\n\n[Selección actual del viaje en la web; úsala como contexto. Si pido cambiar o quitar un elemento, actualiza la propuesta y confirma claramente el cambio. No inventes precios ni des por reservados los elementos.]\n' + selection;
             })(),
             sessionId
           })
