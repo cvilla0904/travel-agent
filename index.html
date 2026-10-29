@@ -848,7 +848,7 @@
       const lines = respuesta.replace(/\r/g, '').split('\n').map(line => {
         const trimmed = line.trim();
         // The agent sometimes emits plain section labels instead of Markdown headings.
-        if (/^(?:#{1,6}\s*)?Vuelos(?:\s+.+)?$/i.test(trimmed)) return '### ' + trimmed.replace(/^#{1,6}\s*/, '');
+        if (/^(?:#{1,6}\s*)?Vuelos(?:\s+[^.:€\d]{0,40})?$/i.test(trimmed)) return '### ' + trimmed.replace(/^#{1,6}\s*/, '');
         if (/^(?:#{1,6}\s*)?Alojamientos(?:\s+en\s+.+|\s+encontrados|\s+reales)?\s*$/i.test(trimmed)) return '### ' + trimmed.replace(/^#{1,6}\s*/, '');
         if (/^(?:#{1,6}\s*)?Actividades(?:\s+.+)?$/i.test(trimmed)) return '### ' + trimmed.replace(/^#{1,6}\s*/, '');
         if (/^(?:#{1,6}\s*)?Presupuesto\s*$/i.test(trimmed)) return '### ' + trimmed.replace(/^#{1,6}\s*/, '');
@@ -1240,7 +1240,10 @@
 
       flightLines.forEach(line => {
         const trimmed = line.trim();
-        if (/^(?:-\s+|\d+[.)]\s+)?(?:\*\*)?.+?(?:\*\*)?:/i.test(trimmed) && /(?:€|EUR|precio|\[[^\]]+\]\(https?:\/\/)/i.test(trimmed)) {
+        const flightLabel = trimmed.match(/^(?:-\s+|\d+[.)]\s+)?(?:\*\*)?([^:]+?)(?:\*\*)?:/);
+        const isLinkLabel = flightLabel && /^(?:enlace|enlaces|link|url|reserva|reservar|ver|booking|fuente|más información|mas informacion)\b/i.test(flightLabel[1].replace(/\*\*/g, '').trim());
+        const hasFlightPrice = /\d[\d.,]*\s*(?:€|EUR(?![A-Za-z]))|(?:€|EUR)\s*\d/i.test(trimmed);
+        if (flightLabel && !isLinkLabel && hasFlightPrice) {
           if (currentBlock.length) flightBlocks.push(currentBlock);
           currentBlock = [trimmed];
           return;
@@ -1266,17 +1269,19 @@
             : '';
 
         const cleanDetails = blockText
-          .replace(markdownUrlMatch ? markdownUrlMatch[0] : '')
-          .replace(rawUrlMatch && !markdownUrlMatch ? rawUrlMatch[0] : '')
+          .replace(markdownUrlMatch ? markdownUrlMatch[0] : '', '')
+          .replace(rawUrlMatch && !markdownUrlMatch ? rawUrlMatch[0] : '', '')
+          .replace(/\s{2,}/g, ' ')
           .trim()
           .replace(/\*\*/g, '');
 
-        const priceMatch = cleanDetails.match(/([0-9]+(?:[.,][0-9]+)?)\s*€/);
+        const priceMatch = cleanDetails.match(/([0-9][0-9.,]*)\s*(?:€|EUR(?![A-Za-z]))/i) ||
+          cleanDetails.match(/(?:€|EUR)\s*([0-9][0-9.,]*)/i);
 
         return {
           airline,
           details: cleanDetails,
-          price: priceMatch ? priceMatch[1] + ' €' : 'Precio no disponible',
+          price: priceMatch ? priceMatch[1].replace(/[.,]+$/, '') + ' €' : 'Precio no disponible',
           url
         };
       }).filter(Boolean);
@@ -1294,7 +1299,15 @@
             ? parseActivityBlocks(sectionsLines.slice(activityMarker))
             : { html: '' };
 
-        const emptyFlightNote = '<div class="empty-flight"><span class="empty-flight-icon">✈️</span><div><strong>Sin vuelos disponibles</strong><span>No se han encontrado vuelos válidos para estas fechas.</span></div></div>';
+        // Solo se afirma "sin vuelos" si la respuesta lo dice; un fallo de consulta no es lo mismo.
+        const flightsText = lines.slice(headingIndex, flightEnd).join(' ');
+        const flightsFailed = /(?:no se pudo|no he podido|no pude|error|fall[óo]|falla|no se ha podido)/i.test(flightsText);
+        const flightsSaidNone = /(?:sin vuelos|no (?:hay|he encontrado|se han encontrado|encontr[eé]) vuelos|sin resultados)/i.test(flightsText);
+        const emptyFlightNote = flightsFailed
+          ? '<div class="empty-flight"><span class="empty-flight-icon">✈️</span><div><strong>No se han podido consultar los vuelos</strong><span>La búsqueda de vuelos ha fallado; no significa que no existan. Inténtalo de nuevo.</span></div></div>'
+          : flightsSaidNone
+            ? '<div class="empty-flight"><span class="empty-flight-icon">✈️</span><div><strong>Sin vuelos disponibles</strong><span>No se han encontrado vuelos válidos para estas fechas.</span></div></div>'
+            : '<div class="empty-flight"><span class="empty-flight-icon">✈️</span><div><strong>No se han podido mostrar los vuelos</strong><span>La respuesta no incluye opciones de vuelo reconocibles. Inténtalo de nuevo.</span></div></div>';
 
         results.innerHTML =
           renderTripSummary(beforeLines) +

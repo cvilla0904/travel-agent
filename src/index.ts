@@ -7,7 +7,7 @@ import { stdin as input, stdout as output } from 'node:process';
 import { z } from 'zod';
 import { buscarLugaresGeoapify } from './services/geoapify.js';
 import { buscarActividadesApify, buscarActividadesApifyMultidestino } from './services/apify.js';
-import { buscarVuelosApify } from './services/apify-flights.js';
+import { buscarVuelosConEstado } from './services/vuelos.js';
 import { buscarHotelesConEstado } from './services/searchapi.js';
 import { hotelOutputSchema } from './schemas/hotels.js';
 
@@ -219,210 +219,11 @@ const buscarVuelos = tool({
       pasajeros: number; aeropuertoDestino?: string; destinoRegreso?: string;
     };
 
-    const destinoBusqueda = aeropuertoDestino?.trim() || destino;
-    const opcionesIda = await buscarVuelosApify({
-      origen,
-      destino: destinoBusqueda,
-      fechaIda,
-      pasajeros,
+    return await buscarVuelosConEstado({
+      origen, destino, fechaIda, fechaVuelta, pasajeros, aeropuertoDestino, destinoRegreso,
     });
-
-    let vuelos: any[];
-    if (destinoRegreso) {
-      const opcionesRegreso = await buscarVuelosApify({
-        origen: destinoRegreso,
-        destino: origen,
-        fechaIda: fechaVuelta,
-        pasajeros,
-      });
-      vuelos = opcionesIda.slice(0, 5).flatMap((ida: any) =>
-        opcionesRegreso.slice(0, 5).map((vuelta: any) => combinarItinerarioAbierto(ida, vuelta, {
-          origen, destino, destinoRegreso, fechaIda, fechaVuelta, pasajeros,
-        })),
-      );
-    } else if (fechaVuelta) {
-      // El actor probado devuelve tramos individuales. Para ida y vuelta,
-      // buscamos cada sentido por separado y combinamos opciones reales.
-      const opcionesVuelta = await buscarVuelosApify({
-        origen: destinoBusqueda,
-        destino: origen,
-        fechaIda: fechaVuelta,
-        pasajeros,
-      });
-      vuelos = opcionesIda.slice(0, 5).flatMap((ida: any) =>
-        opcionesVuelta.slice(0, 5).map((vuelta: any) => combinarItinerarioAbierto(ida, vuelta, {
-          origen, destino: destinoBusqueda, destinoRegreso: destinoBusqueda,
-          fechaIda, fechaVuelta, pasajeros,
-        })),
-      );
-    } else {
-      vuelos = opcionesIda.map((vuelo: any) => normalizarVueloIdaVuelta(vuelo, {
-        origen, destino: destinoBusqueda, fechaIda, fechaVuelta: '', pasajeros,
-      }));
-    }
-
-    return {
-      origen,
-      destino,
-      ...(destinoRegreso ? { destinoRegreso } : {}),
-      aeropuertoDestino: aeropuertoDestino?.trim().toUpperCase() || destino,
-      aeropuertoOrigen: origen,
-      fechaIda,
-      fechaVuelta,
-      pasajeros,
-      vuelos: vuelos
-        .filter((vuelo: any) => Number.isFinite(vuelo.precioTotal) && vuelo.precioTotal > 0)
-        .sort((a: any, b: any) => a.precioTotal - b.precioTotal)
-        .slice(0, 10),
-    };
   },
 });
-
-function parsearDuracionMinutos(value: any): number {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value !== 'string') return 0;
-  const texto = value.trim().toLowerCase();
-  const horas = texto.match(/(\d+)\s*h/);
-  const minutos = texto.match(/(\d+)\s*m/);
-  if (horas || minutos) return Number(horas?.[1] ?? 0) * 60 + Number(minutos?.[1] ?? 0);
-  const numerico = Number(texto);
-  return Number.isFinite(numerico) ? numerico : 0;
-}
-
-function extraerSegmentosApify(leg: any, fallbackOrigen = '', fallbackDestino = '') {
-  const segmentos = Array.isArray(leg?.segments) ? leg.segments
-    : Array.isArray(leg?.flights) ? leg.flights
-    : Array.isArray(leg) ? leg
-    : leg && (leg.departure_airport || leg.departureAirport) && (leg.departs || leg.departure_time || leg.departureTime) ? [{
-        departure_airport: {
-          name: typeof leg.departure_airport === 'object' ? leg.departure_airport.name : (leg.departure_airport ?? leg.departureAirport ?? fallbackOrigen),
-          id: typeof leg.departure_airport === 'object' ? leg.departure_airport.id : (leg.departure_airport ?? leg.departureAirport ?? ''),
-          time: leg.departs ?? leg.departure_time ?? leg.departureTime,
-        },
-        arrival_airport: {
-          name: typeof leg.arrival_airport === 'object' ? leg.arrival_airport.name : (leg.arrival_airport ?? leg.arrivalAirport ?? fallbackDestino),
-          id: typeof leg.arrival_airport === 'object' ? leg.arrival_airport.id : (leg.arrival_airport ?? leg.arrivalAirport ?? ''),
-          time: leg.arrives ?? leg.arrival_time ?? leg.arrivalTime,
-        },
-        duration: leg.duration,
-        airline: Array.isArray(leg.airlines) ? leg.airlines.join(' + ') : (leg.airlines ?? leg.airline ?? ''),
-        flight_number: Array.isArray(leg.flight_numbers) ? leg.flight_numbers.join(', ') : (leg.flight_numbers ?? leg.flight_number ?? ''),
-      }]
-    : [];
-  return segmentos.map((segmento: any) => {
-    const salida = segmento.departureAirport ?? segmento.departure_airport ?? segmento.departure ?? {};
-    const llegada = segmento.arrivalAirport ?? segmento.arrival_airport ?? segmento.arrival ?? {};
-    const hora = (value: any) => {
-      const raw = typeof value === 'string' ? value : value?.time ?? value?.datetime ?? '';
-      const match = typeof raw === 'string' ? raw.match(/(?:^|\s)(\d{1,2}:\d{2})(?::\d{2})?$/) : null;
-      return match ? match[1] : raw;
-    };
-    const codigo = (value: any) => typeof value === 'string' ? (/^[A-Z]{3}$/i.test(value) ? value.toUpperCase() : '') : value?.code ?? value?.iata ?? value?.id ?? '';
-    const nombre = (value: any, fallback: string) => typeof value === 'string' ? value : value?.name ?? value?.city ?? fallback;
-    const duracion = parsearDuracionMinutos(segmento.durationMinutes ?? segmento.duration_minutes ?? segmento.duration ?? 0);
-    return {
-      aeropuertoSalida: nombre(salida, fallbackOrigen),
-      codigoSalida: codigo(salida),
-      horaSalida: hora(salida),
-      aeropuertoLlegada: nombre(llegada, fallbackDestino),
-      codigoLlegada: codigo(llegada),
-      horaLlegada: hora(llegada),
-      duracionMinutos: duracion,
-      aerolinea: String(segmento.airlines ?? segmento.airline ?? segmento.airlineName ?? segmento.carrier ?? ''),
-      numeroVuelo: String(segmento.flight_numbers ?? segmento.flightNumber ?? segmento.flight_number ?? ''),
-    };
-  });
-}
-
-function parsearPrecioApify(value: any): number {
-  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
-  if (typeof value !== 'string') return 0;
-
-  // Los actores pueden devolver precios como "$123", "€123", "1.234,56 €"
-  // o "1,234.56". Convertimos el valor sin depender del símbolo de moneda.
-  let texto = value.trim().replace(/[^0-9,.-]/g, '');
-  if (!texto) return 0;
-  if (texto.includes(',') && texto.includes('.')) {
-    if (texto.lastIndexOf(',') > texto.lastIndexOf('.')) {
-      texto = texto.replace(/\./g, '').replace(',', '.');
-    } else {
-      texto = texto.replace(/,/g, '');
-    }
-  } else if (texto.includes(',')) {
-    const decimales = texto.length - texto.lastIndexOf(',') - 1;
-    texto = decimales > 0 && decimales <= 2
-      ? texto.replace(',', '.')
-      : texto.replace(/,/g, '');
-  }
-  const numero = Number(texto);
-  return Number.isFinite(numero) ? numero : 0;
-}
-
-function crearEnlaceBusquedaGoogleFlights(origen: string, destino: string, fechaIda: string, fechaVuelta = ''): string {
-  const ida = `Flights from ${origen} to ${destino} on ${fechaIda}`;
-  const consulta = fechaVuelta ? `${ida} through ${fechaVuelta}` : ida;
-  return `https://www.google.com/travel/flights?hl=en&gl=us&curr=EUR&q=${encodeURIComponent(consulta)}`;
-}
-
-function normalizarVueloIdaVuelta(vuelo: any, ctx: {
-  origen: string; destino: string; fechaIda: string; fechaVuelta: string; pasajeros: number;
-}) {
-  const ida = vuelo.outbound ?? vuelo.outboundLeg ?? vuelo.departure ?? vuelo.legs?.[0] ?? vuelo;
-  const vuelta = vuelo.return ?? vuelo.returnLeg ?? vuelo.inbound ?? vuelo.legs?.[1] ?? null;
-  const segmentosIda = extraerSegmentosApify(ida, ctx.origen, ctx.destino);
-  const segmentosVuelta = extraerSegmentosApify(vuelta, ctx.destino, ctx.origen);
-  const precioTotal = parsearPrecioApify(vuelo.price ?? vuelo.totalPrice ?? vuelo.total_price ?? vuelo.priceTotal ?? 0);
-  const aerolineas = [...new Set([...segmentosIda, ...segmentosVuelta].map((s: any) => s.aerolinea).filter(Boolean))];
-  return {
-    aerolinea: String(Array.isArray(vuelo.airlines) ? vuelo.airlines.join(' + ') : (vuelo.airlines || aerolineas.join(' + ') || 'Aerolínea no indicada')),
-    precioPorPersona: Number(vuelo.pricePerPassenger ?? vuelo.price_per_passenger ?? (precioTotal / ctx.pasajeros)),
-    precioTotal,
-    moneda: String(vuelo.currency ?? 'EUR'),
-    enlace: String(vuelo.booking_url ?? vuelo.bookingUrl ?? vuelo.googleFlightsUrl ?? vuelo.google_flights_url ?? vuelo.url ?? crearEnlaceBusquedaGoogleFlights(ctx.origen, ctx.destino, ctx.fechaIda, ctx.fechaVuelta)),
-    esIdaVuelta: true,
-    tipo: 'Ida y vuelta',
-    escalasIda: Number.isFinite(Number(vuelo.stops)) ? Math.max(0, Number(vuelo.stops)) : Math.max(0, segmentosIda.length - 1),
-    escalasVuelta: vuelta && Number.isFinite(Number(vuelta.stops)) ? Math.max(0, Number(vuelta.stops)) : Math.max(0, segmentosVuelta.length - 1),
-    esDirecto: (Number.isFinite(Number(vuelo.stops)) ? Number(vuelo.stops) === 0 : segmentosIda.length === 1) &&
-      (!vuelta || (Number.isFinite(Number(vuelta.stops)) ? Number(vuelta.stops) === 0 : segmentosVuelta.length === 1)),
-    ida: {
-      fecha: ctx.fechaIda,
-      segmentos: segmentosIda,
-      duracionMinutos: parsearDuracionMinutos(ida?.durationMinutes ?? ida?.duration_minutes ?? ida?.duration ?? segmentosIda.reduce((t: number, s: any) => t + s.duracionMinutos, 0)),
-    },
-    vuelta: {
-      fecha: ctx.fechaVuelta,
-      segmentos: segmentosVuelta,
-      duracionMinutos: parsearDuracionMinutos(vuelta?.durationMinutes ?? vuelta?.duration_minutes ?? vuelta?.duration ?? segmentosVuelta.reduce((t: number, s: any) => t + s.duracionMinutos, 0)),
-    },
-  };
-}
-
-function combinarItinerarioAbierto(idaRaw: any, vueltaRaw: any, ctx: {
-  origen: string; destino: string; destinoRegreso: string; fechaIda: string; fechaVuelta: string; pasajeros: number;
-}) {
-  const ida = normalizarVueloIdaVuelta({ ...idaRaw, return: null }, {
-    origen: ctx.origen, destino: ctx.destino, fechaIda: ctx.fechaIda, fechaVuelta: ctx.fechaIda, pasajeros: ctx.pasajeros,
-  });
-  const vuelta = normalizarVueloIdaVuelta({ ...vueltaRaw, return: null }, {
-    origen: ctx.destinoRegreso, destino: ctx.origen, fechaIda: ctx.fechaVuelta, fechaVuelta: ctx.fechaVuelta, pasajeros: ctx.pasajeros,
-  });
-  const precioTotal = ida.precioTotal + vuelta.precioTotal;
-  return {
-    aerolinea: [ida.aerolinea, vuelta.aerolinea].filter(Boolean).join(' + '),
-    precioPorPersona: Math.round(precioTotal / ctx.pasajeros),
-    precioTotal,
-    moneda: ida.moneda || vuelta.moneda || 'EUR',
-    enlace: crearEnlaceBusquedaGoogleFlights(ctx.origen, ctx.destino, ctx.fechaIda, ctx.fechaVuelta),
-    esIdaVuelta: true,
-    tipo: ctx.destinoRegreso === ctx.destino ? 'Ida y vuelta' : 'Itinerario abierto / multidestino',
-    escalasIda: ida.escalasIda,
-    escalasVuelta: vuelta.escalasIda,
-    esDirecto: ida.esDirecto && vuelta.esDirecto,
-    ida: ida.ida,
-    vuelta: { ...vuelta.ida, fecha: ctx.fechaVuelta },
-  };
-}
 
 const flightSegmentSchema =
   z.object({
@@ -446,6 +247,10 @@ const flightOutputSchema =
     fechaIda: z.string(),
     fechaVuelta: z.string(),
     pasajeros: z.number(),
+    estado: z.enum(['ok', 'parcial', 'sin_resultados', 'error_proveedor', 'error_parametros']),
+    error: z.string().nullable(),
+    direccionesConError: z.array(z.enum(['ida', 'vuelta'])),
+    avisos: z.array(z.string()),
     vuelos: z.array(
       z.object({
         aerolinea: z.string(),
@@ -500,7 +305,19 @@ const flightAgent = new Agent({
 
     Apify admite nombres de ciudades y códigos IATA; si un código IATA está disponible, úsalo.
 
-    Los vuelos devueltos son opciones reales de ida y vuelta.
+    La herramienta devuelve un campo estado. Copia estado, error,
+    direccionesConError y avisos tal cual en tu salida:
+    - ok: hay opciones; preséntalas.
+    - parcial: solo hay opciones de una dirección (tipo "Solo ida" o
+      "Solo vuelta"); preséntalas e indica el aviso. No inventes la otra.
+    - sin_resultados: el proveedor respondió sin vuelos; solo entonces
+      puede decirse que no hay vuelos.
+    - error_proveedor / error_parametros: la búsqueda FALLÓ; no la
+      presentes como "no hay vuelos". Devuelve vuelos vacío y el error.
+    Nunca inventes vuelos ni precios.
+
+    Los vuelos devueltos son opciones reales (ida y vuelta, o de una sola
+    dirección cuando el estado es parcial).
     El precioTotal es el precio total de la opción para todos los pasajeros.
     precioPorPersona es el precio total dividido entre los pasajeros.
 

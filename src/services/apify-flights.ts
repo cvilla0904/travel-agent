@@ -1,5 +1,3 @@
-import { ApifyClient } from 'apify-client';
-
 // Integración de vuelos basada en el patrón operativo de la integración Apify
 // de actividades: ejecutar actor, comprobar el estado, leer el dataset y validar
 // los registros reales antes de entregarlos al agente.
@@ -8,6 +6,25 @@ const MAX_RESULTS = 10;
 const WAIT_SECS = 60;
 // Build fijada tras comprobar entregas en dataset; configurable desde Vercel.
 const ACTOR_BUILD = process.env.APIFY_FLIGHTS_BUILD?.trim() || '0.0.450';
+
+export type CodigoErrorVuelos = 'parametros' | 'configuracion' | 'proveedor' | 'formato';
+
+/** Error con categoría, para distinguir "fallo del proveedor" de "parámetros no válidos". */
+export class ErrorVuelos extends Error {
+  constructor(public readonly codigo: CodigoErrorVuelos, mensaje: string) {
+    super(mensaje);
+    this.name = 'ErrorVuelos';
+  }
+}
+
+export type ClienteApifyMinimo = {
+  actor(id: string): { call(input: any, opts?: any): Promise<any> };
+  dataset(id: string): { listItems(opts?: any): Promise<{ items: unknown[] }> };
+};
+
+export type DependenciasApifyFlights = {
+  crearCliente?: (token: string) => Promise<ClienteApifyMinimo> | ClienteApifyMinimo;
+};
 
 export type BuscarVuelosApifyParams = {
   origen: string;
@@ -37,15 +54,20 @@ const AEROPUERTOS: Record<string, string> = {
   cartagena: 'CTG', 'ciudad de mexico': 'MEX', 'ciudad de méxico': 'MEX',
   'mexico city': 'MEX', 'buenos aires': 'EZE', 'sao paulo': 'GRU',
   'são paulo': 'GRU', 'rio de janeiro': 'GIG',
+  miami: 'MIA', orlando: 'MCO', kioto: 'KIX', kyoto: 'KIX', madinah: 'MED',
+  madison: 'MSN', 'san francisco': 'SFO', chicago: 'ORD', boston: 'BOS',
+  lima: 'LIM', santiago: 'SCL', 'santiago de chile': 'SCL', cancun: 'CUN',
+  'la habana': 'HAV', habana: 'HAV', marrakech: 'RAK', 'el cairo': 'CAI',
+  napoles: 'NAP', 'nápoles': 'NAP', edimburgo: 'EDI', 'tenerife': 'TFS',
 };
 
-function resolverAeropuerto(value: string, campo: string): string {
+export function resolverAeropuerto(value: string, campo: string): string {
   const limpio = value.trim();
   if (/^[A-Z]{3}$/i.test(limpio)) return limpio.toUpperCase();
   const normalizado = limpio.toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const codigo = AEROPUERTOS[normalizado] ?? AEROPUERTOS[limpio.toLocaleLowerCase('es')];
   if (codigo) return codigo;
-  throw new Error(`No he podido identificar el aeropuerto IATA de ${campo} ("${limpio}"). Prueba con un código IATA de tres letras, por ejemplo BIO, MAD o FCO.`);
+  throw new ErrorVuelos('parametros', `No he podido identificar el aeropuerto IATA de ${campo} ("${limpio}"). Prueba con un código IATA de tres letras, por ejemplo BIO, MAD o FCO.`);
 }
 
 function normalizarClave(value: string): string {
@@ -152,17 +174,22 @@ function extraerVuelosDelDataset(items: unknown[]): Record<string, any>[] {
   return vuelos;
 }
 
-export async function buscarVuelosApify(params: BuscarVuelosApifyParams): Promise<Record<string, any>[]> {
+export async function buscarVuelosApify(
+  params: BuscarVuelosApifyParams,
+  deps: DependenciasApifyFlights = {},
+): Promise<Record<string, any>[]> {
   const token = process.env.APIFY_API_TOKEN;
-  if (!token) throw new Error('APIFY_API_TOKEN no está configurada.');
-  if (!params.origen.trim() || !params.destino.trim()) throw new Error('El origen y el destino son obligatorios.');
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(params.fechaIda)) throw new Error('La fecha de ida debe tener formato YYYY-MM-DD.');
-  if (params.fechaVuelta && !/^\d{4}-\d{2}-\d{2}$/.test(params.fechaVuelta)) throw new Error('La fecha de vuelta debe tener formato YYYY-MM-DD.');
+  if (!token) throw new ErrorVuelos('configuracion', 'APIFY_API_TOKEN no está configurada.');
+  if (!params.origen.trim() || !params.destino.trim()) throw new ErrorVuelos('parametros', 'El origen y el destino son obligatorios.');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(params.fechaIda)) throw new ErrorVuelos('parametros', 'La fecha de ida debe tener formato YYYY-MM-DD.');
+  if (params.fechaVuelta && !/^\d{4}-\d{2}-\d{2}$/.test(params.fechaVuelta)) throw new ErrorVuelos('parametros', 'La fecha de vuelta debe tener formato YYYY-MM-DD.');
 
   const origin = resolverAeropuerto(params.origen, 'origen');
   const destination = resolverAeropuerto(params.destino, 'destino');
   const adults = Math.max(1, Math.min(9, Math.floor(params.pasajeros || 1)));
-  const client = new ApifyClient({ token });
+  const client: ClienteApifyMinimo = deps.crearCliente
+    ? await deps.crearCliente(token)
+    : new (await import('apify-client')).ApifyClient({ token }) as unknown as ClienteApifyMinimo;
 
   // Nombres de campos contrastados con el formulario real del actor en Apify.
   // Ida y vuelta se consultan por separado desde buscar_vuelos, de modo que
@@ -184,16 +211,27 @@ export async function buscarVuelosApify(params: BuscarVuelosApifyParams): Promis
     actor: ACTOR_ID, build: ACTOR_BUILD, waitSecs: WAIT_SECS, input: actorInput,
   }));
 
-  const run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: WAIT_SECS, build: ACTOR_BUILD });
+  let run: any;
+  try {
+    run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: WAIT_SECS, build: ACTOR_BUILD });
+  } catch (error) {
+    // Si la build fijada ya no existe, se reintenta una sola vez con la build por defecto del actor.
+    const mensaje = error instanceof Error ? error.message : String(error);
+    if (!/build/i.test(mensaje) || process.env.APIFY_FLIGHTS_BUILD?.trim()) {
+      throw new ErrorVuelos('proveedor', `Apify no pudo ejecutar la búsqueda de vuelos: ${mensaje}`);
+    }
+    console.warn('[APIFY_FLIGHTS] Build fijada no disponible, reintentando con la build por defecto');
+    run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: WAIT_SECS });
+  }
   console.info('[APIFY_FLIGHTS] Actor returned', JSON.stringify({
     runId: run.id, status: run.status, datasetId: run.defaultDatasetId ?? null,
   }));
 
   if (!run.defaultDatasetId) {
-    throw new Error(`Apify no devolvió un dataset para vuelos (estado: ${String(run.status ?? 'UNKNOWN')}).`);
+    throw new ErrorVuelos('proveedor', `Apify no devolvió un dataset para vuelos (estado: ${String(run.status ?? 'UNKNOWN')}).`);
   }
   if (run.status !== 'SUCCEEDED' && run.status !== 'RUNNING') {
-    throw new Error(`Apify no completó la búsqueda de vuelos (estado: ${String(run.status ?? 'UNKNOWN')}).`);
+    throw new ErrorVuelos('proveedor', `Apify no completó la búsqueda de vuelos (estado: ${String(run.status ?? 'UNKNOWN')}).`);
   }
 
   // No limitar a 10 registros: el actor puede guardar todos los vuelos dentro
@@ -213,11 +251,12 @@ export async function buscarVuelosApify(params: BuscarVuelosApifyParams): Promis
   }));
 
   if (flights.length === 0) {
-    throw new Error(
-      run.status === 'RUNNING'
-        ? 'Apify sigue ejecutando la búsqueda y todavía no ha guardado vuelos reconocibles.'
-        : 'Apify terminó, pero no se reconocieron vuelos en el JSON del dataset. Revisa la estructura del resultado del actor.',
-    );
+    if (run.status === 'RUNNING') {
+      throw new ErrorVuelos('proveedor', 'Apify sigue ejecutando la búsqueda y todavía no ha guardado vuelos reconocibles.');
+    }
+    // Dataset realmente vacío tras terminar con éxito: es "sin resultados", no un fallo.
+    if (items.length === 0) return [];
+    throw new ErrorVuelos('formato', 'Apify terminó, pero no se reconocieron vuelos en el JSON del dataset. Revisa la estructura del resultado del actor.');
   }
 
   return flights.slice(0, MAX_RESULTS);
