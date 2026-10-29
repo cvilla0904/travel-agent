@@ -1237,7 +1237,7 @@
         return;
       }
       const beforeLines = lines.slice(0, headingIndex);
-      const afterStart = lines.findIndex((line, index) => index > headingIndex && /^###\s+(?:Alojamientos|Actividades|Presupuesto|Experiencias)\b/i.test(line.trim()));
+      const afterStart = lines.findIndex((line, index) => index > headingIndex && /^#{1,6}\s+(?:Alojamientos|Hoteles|Actividades|Presupuesto|Experiencias)\b/i.test(line.trim()));
       const flightEnd = afterStart === -1 ? lines.length : afterStart;
       const flightLines = lines.slice(headingIndex + 1, flightEnd);
 
@@ -1378,16 +1378,21 @@
     }
 
     /* Conversación posterior. */
+    let enviandoMensaje = false;
     async function enviarMensaje() {
+      if (enviandoMensaje) return;
       const input =
         document.getElementById('chatMessage');
 
       const message =
         input.value.trim();
 
-      if (!message) {
+      if (!message || enviandoMensaje) {
         return;
       }
+      enviandoMensaje = true;
+      const sendButton = document.querySelector('.send-button');
+      if (sendButton) { sendButton.disabled = true; sendButton.dataset.previousLabel = sendButton.textContent; sendButton.textContent = 'Enviando…'; }
 
       const results =
         document.getElementById('results');
@@ -1411,6 +1416,9 @@
         results.textContent =
           'Ha ocurrido un error: ' +
           error.message;
+      } finally {
+        enviandoMensaje = false;
+        if (sendButton) { sendButton.disabled = false; sendButton.textContent = sendButton.dataset.previousLabel || 'Enviar →'; }
       }
     }
 
