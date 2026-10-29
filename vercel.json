@@ -1,22 +1,75 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/chat.ts", "use": "@vercel/node" },
-    { "src": "index.html", "use": "@vercel/static" },
-    { "src": "toscana.html", "use": "@vercel/static" },
-    { "src": "viena.html", "use": "@vercel/static" },
-    { "src": "sobre-mogavel.html", "use": "@vercel/static" },
-    { "src": "jordania.html", "use": "@vercel/static" },
-    { "src": "travel-agent-illustration.jpg", "use": "@vercel/static" }
+    {
+      "src": "api/chat.ts",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "toscana.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "viena.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "sobre-mogavel.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "jordania.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "travel-agent-illustration.jpg",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/trip-builder.js",
+      "use": "@vercel/static"
+    }
   ],
   "routes": [
-    { "src": "/api/chat", "dest": "/api/chat.ts" },
-    { "src": "/travel-agent-illustration.jpg", "dest": "/travel-agent-illustration.jpg" },
-    { "src": "/toscana.html", "dest": "/toscana.html" },
-    { "src": "/viena.html", "dest": "/viena.html" },
-    { "src": "/sobre-mogavel.html", "dest": "/sobre-mogavel.html" },
-    { "src": "/jordania.html", "dest": "/jordania.html" },
-    { "src": "/", "dest": "/index.html" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    {
+      "src": "/api/chat",
+      "dest": "/api/chat.ts"
+    },
+    {
+      "src": "/travel-agent-illustration.jpg",
+      "dest": "/travel-agent-illustration.jpg"
+    },
+    {
+      "src": "/toscana.html",
+      "dest": "/toscana.html"
+    },
+    {
+      "src": "/viena.html",
+      "dest": "/viena.html"
+    },
+    {
+      "src": "/sobre-mogavel.html",
+      "dest": "/sobre-mogavel.html"
+    },
+    {
+      "src": "/jordania.html",
+      "dest": "/jordania.html"
+    },
+    {
+      "src": "/",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/trip-builder.js",
+      "dest": "/public/trip-builder.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
   ]
 }
