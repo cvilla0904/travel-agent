@@ -1,6 +1,9 @@
 /* Mogavel — constructor de viaje (capa UI aislada, sin llamadas a proveedores). */
 (() => {
   const chosen = { flight: null, hotel: null, activities: new Map() };
+  const storageKey = 'mogavel:trip-selection:v1';
+  const persist = () => { try { sessionStorage.setItem(storageKey, JSON.stringify({ flight: chosen.flight, hotel: chosen.hotel, activities: [...chosen.activities.values()] })); } catch (_) {} };
+  const restore = () => { try { const saved = JSON.parse(sessionStorage.getItem(storageKey) || 'null'); if (saved) { chosen.flight = saved.flight || null; chosen.hotel = saved.hotel || null; chosen.activities = new Map((saved.activities || []).map(item => [item.id, item])); } } catch (_) {} };
   const labels = { flight: 'Vuelo', hotel: 'Alojamiento', activity: 'Experiencia' };
   let panel;
 
@@ -51,6 +54,7 @@
   }
   function render() {
     setupPanel();
+    persist();
     const items = allSelected();
     panel.querySelector('.mtb-items').innerHTML = items.length ? items.map((x, i) =>
       '<div class="mtb-item"><div><b>' + x.type + '</b><span>' + esc(x.name) + '</span></div><button type="button" class="mtb-remove" data-i="' + i + '">Quitar</button></div>'
@@ -65,10 +69,11 @@
     }));
     const priced = items.filter(x => x.price);
     const currencies = [...new Set(priced.map(x => x.price.currency))];
-    const complete = priced.length === items.length && items.length > 0 && currencies.length === 1;
+    // Los proveedores expresan importes con unidades distintas (por viaje, noche, persona o actividad). No sumarlos sin una base común.
+    const complete = false;
     const total = complete ? priced.reduce((sum,x) => sum + x.price.value,0) : null;
     panel.querySelector('.mtb-total').innerHTML = total !== null
-      ? 'Total estimado de los elementos con precio comparable<strong>' + total.toLocaleString('es-ES',{style:'currency',currency:currencies[0]==='USD'?'USD':currencies[0]==='GBP'?'GBP':'EUR'}) + '</strong>'
+      ? 'Total no calculado: los precios pueden corresponder a unidades diferentes.'
       : 'Hay precios pendientes o monedas distintas. Consulta los importes en cada proveedor.';
   }
   function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -102,6 +107,11 @@
     });
     if(results.querySelector('.flight-card,.hotel-card,.activity-card')) {setupPanel();render();}
   }
+  window.MogavelTripBuilder = {
+    snapshot: () => allSelected().map(item => ({ kind: item.kind, type: item.type, name: item.name, price: item.price })),
+    reset: () => { chosen.flight = null; chosen.hotel = null; chosen.activities.clear(); try { sessionStorage.removeItem(storageKey); } catch (_) {} document.querySelectorAll('.mtb-select').forEach(refreshButton); render(); }
+  };
+  restore();
   const observer=new MutationObserver(()=>decorate());
   const start=()=>{const results=document.getElementById('results');if(results)observer.observe(results,{childList:true,subtree:true});decorate();};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
