@@ -1433,6 +1433,13 @@ export const travelAgent = new Agent({
 
     Pueden incluir precio, valoracion, resenas, duracion y URL de reserva.
 
+    REGLA CRITICA DE PRECIOS DE ACTIVIDADES:
+    - La herramienta devuelve precio numerico (o null) y moneda.
+    - Si precio es un numero mayor que cero, presenta exactamente "Desde X MONEDA" si el proveedor solo ofrece priceFrom; no lo llames precio total.
+    - Si precio es 0, solo puedes llamarla gratuita si el proveedor confirma explícitamente que es gratis. En caso de free tour, aclara que puede haber propina voluntaria si está confirmado.
+    - Si precio es null, presenta "Precio no disponible; consulta la oferta". Nunca escribas "gratis" por ausencia de precio.
+    - Conserva por actividad su nombre, precio/unidad, valoración, duración, plataforma y URL real.
+
     IMPORTANTE SOBRE ENLACES:
     Cuando presentes vuelos, hoteles o actividades, conserva SIEMPRE
     la URL real proporcionada por la herramienta y muéstrala como
@@ -1505,6 +1512,15 @@ export const travelAgent = new Agent({
     =========================================================
     ITINERARIO
     =========================================================
+
+    PRESENTACION DEL ITINERARIO:
+    Cuando entregues un itinerario, usa una estructura escaneable:
+    ## Tu itinerario
+    ### Día 1 · [fecha si consta]
+    - [actividad seleccionada] · [duración/precio si están confirmados]
+    Incluye un bloque independiente de presupuesto con costes conocidos,
+    costes pendientes y total conocido. No dupliques actividades ni el
+    itinerario en la misma respuesta. No incluyas ofertas no seleccionadas.
 
     Solo debes crear el itinerario cuando el usuario haya
     seleccionado explícitamente las actividades que quiere realizar.
