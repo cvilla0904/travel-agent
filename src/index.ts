@@ -533,16 +533,40 @@ const buscarActividades = tool({
       }
       return null;
     };
+    const extraerPrecio = (actividad: any): number | null => {
+      // Los datasets del scraper pueden nombrar la tarifa de varias formas.
+      // Priorizamos siempre el campo explícito de precio desde.
+      const candidatos = [actividad.priceFrom, actividad.price, actividad.amount, actividad.fromPrice, actividad.startingPrice];
+      for (const candidato of candidatos) {
+        const parsed = parsearPrecio(candidato);
+        if (parsed !== null) return parsed;
+      }
+      // Respaldo para textos tipo "Desde 19,90 €"; no convertir "gratis"
+      // a cero salvo que exista una señal textual explícita.
+      const texto = [actividad.priceText, actividad.priceLabel, actividad.priceDescription].find((v) => typeof v === 'string' && v.trim());
+      if (typeof texto === 'string') {
+        const match = texto.match(/(?:desde\\s*)?(\\d[\\d.,]*)\\s*(?:€|EUR|USD|GBP)/i) || texto.match(/(?:€|EUR|USD|GBP)\\s*(\\d[\\d.,]*)/i);
+        if (match) return parsearPrecio(match[1]);
+      }
+      return null;
+    };
+    const esGratisVerificado = (actividad: any): boolean => {
+      if (actividad.isFree === true || actividad.free === true || actividad.is_free === true) return true;
+      const textos = [actividad.priceText, actividad.priceLabel, actividad.priceDescription].filter((v) => typeof v === 'string').join(' ');
+      return /(?:^|\\b)(?:gratis|gratuito|gratuita|free)(?:\\b|$)/i.test(textos) &&
+        extraerPrecio(actividad) === null;
+    };
     const conPreferencia = conTitulo.map((actividad: any) => ({
       ...actividad,
-      _precioNormalizado: parsearPrecio(actividad.priceFrom),
+      _precioNormalizado: extraerPrecio(actividad),
+      _esGratisVerificado: esGratisVerificado(actividad),
       _preferencia: preferencias.reduce((puntos, termino) =>
         puntos + (normalizarTexto(actividad.title).includes(normalizarTexto(termino)) ? 1 : 0), 0),
     }));
     const unicos = Array.from(
       new Map(conPreferencia.map((actividad: any) => [actividad.url || actividad.title, actividad])).values(),
     ).sort((a: any, b: any) => b._preferencia - a._preferencia);
-    console.info('[ACTIVITIES_DIAG] Filtering summary', JSON.stringify({ destino, conTitulo: conTitulo.length, conPrecio: conTitulo.filter((actividad: any) => parsearPrecio(actividad.priceFrom) !== null).length, unicos: unicos.length }));
+    console.info('[ACTIVITIES_DIAG] Filtering summary', JSON.stringify({ destino, conTitulo: conTitulo.length, conPrecio: conTitulo.filter((actividad: any) => extraerPrecio(actividad) !== null).length, unicos: unicos.length }));
 
     const salida = {
       destino,
@@ -556,6 +580,8 @@ const buscarActividades = tool({
         nombre: actividad.title,
         tipo: Array.isArray(actividad.categories) ? actividad.categories.join(', ') : tipos.join(', '),
         precio: actividad._precioNormalizado,
+        esGratis: actividad._esGratisVerificado,
+        precioTexto: typeof actividad.priceText === 'string' ? actividad.priceText : typeof actividad.priceLabel === 'string' ? actividad.priceLabel : null,
         moneda: typeof actividad.priceCurrency === 'string' && actividad.priceCurrency.trim()
           ? actividad.priceCurrency.trim().toUpperCase()
           : null,
