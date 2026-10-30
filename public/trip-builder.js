@@ -12,8 +12,18 @@
     const selector = kind === 'flight' ? '.flight-airline' : kind === 'hotel' ? '.hotel-name' : '.activity-name';
     return textOf(card.querySelector(selector)) || textOf(card).slice(0, 110);
   };
-  function moneyOf(card) {
+  function moneyOf(card, kind) {
     const text = textOf(card);
+    if (kind === 'activity') {
+      const badge = card.querySelector('.activity-price-badge');
+      const label = textOf(badge);
+      // Las etiquetas de estado no equivalen a una tarifa. Solo guardamos importes positivos explícitos.
+      if (!badge || /GRATUITA|CONSULTAR PRECIO|PRECIO POR CONFIRMAR/i.test(label)) return null;
+      const m = label.match(/(?:DESDE\s*)?(\d[\d.,]*)\s*€/i);
+      if (!m) return null;
+      const value = Number(m[1].replace(/\./g, '').replace(',', '.'));
+      return Number.isFinite(value) && value > 0 ? { value, currency: 'EUR', basis: 'desde' } : null;
+    }
     const matches = [...text.matchAll(/(?:€\s?\d[\d.,]*|\d[\d.,]*\s?(?:€|EUR|USD|GBP))/gi)];
     if (!matches.length) return null;
     const raw = matches[0][0].replace(/EUR|USD|GBP|€/gi, '').trim().replace(/\./g, '').replace(',', '.');
@@ -43,14 +53,14 @@
     });
     const style = document.createElement('style');
     style.textContent = `
-      #mogavel-trip-builder{position:fixed;z-index:1000;right:18px;bottom:18px;width:min(370px,calc(100vw - 28px));max-height:55vh;overflow:auto;background:#fff;border:1px solid #dce4ea;border-radius:18px;box-shadow:0 14px 50px #142b4828;padding:17px;color:#1e2c3d;font:14px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+      #mogavel-trip-builder{position:fixed;z-index:1000;right:18px;bottom:18px;width:min(460px,calc(100vw - 32px));max-height:min(78vh,850px);overflow:auto;background:#fff;border:1px solid #dce4ea;border-radius:18px;box-shadow:0 14px 50px #142b4828;padding:17px;color:#1e2c3d;font:14px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
       #mogavel-trip-builder[hidden]{display:none!important}
       .flight-card>.mtb-select,.hotel-card>.mtb-select,.activity-card>.mtb-select{display:flex;grid-column:1/-1;grid-row:auto;width:100%;min-height:38px;margin:0;padding:10px 15px;white-space:normal;text-align:center;line-height:1.2;font-size:13px;border-radius:10px}
       .flight-card>.mtb-select{grid-column:1/-1}
       .hotel-card>.mtb-select,.activity-card>.mtb-select{align-self:stretch;justify-self:stretch;flex-basis:100%}
       .mtb-continue:disabled{opacity:.6;cursor:wait}
-      .mtb-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.mtb-head>div{display:grid;gap:3px}.mtb-head strong{font-size:18px;color:#142b48}.mtb-kicker{font-size:10px;letter-spacing:1.3px;color:#728498;font-weight:700}.mtb-close{border:1px solid #dce4ea;background:#fff;border-radius:8px;width:32px;height:32px;font-size:20px;color:#203d60;cursor:pointer}.mtb-items{display:grid;gap:9px}.mtb-item{display:flex;align-items:center;gap:9px;padding:11px 10px;background:#f5f8fa;border:1px solid #edf1f5;border-radius:12px}.mtb-item-copy{flex:1;min-width:0}.mtb-item-icon{display:grid;place-items:center;flex:0 0 34px;height:34px;background:#e8f0f4;border-radius:10px;font-size:16px}.mtb-item b{display:block;font-size:10px;letter-spacing:.35px;color:#718093;text-transform:uppercase}.mtb-item span{display:block;font-size:12px;font-weight:700;overflow-wrap:anywhere;line-height:1.35}.mtb-item small{display:block;color:#536b84;font-size:11px;font-weight:650;margin-top:3px}.mtb-remove{border:0;background:transparent;color:#a33;cursor:pointer;font-size:12px;align-self:center}.mtb-total{margin-top:12px;padding-top:11px;border-top:1px solid #e6eaf0;font-size:12px;color:#64748b}.mtb-total strong{display:block;color:#142b48;font-size:23px}.mtb-foot{font-size:10px;color:#778494;margin:8px 0}.mtb-continue{width:100%;padding:12px;border:0;border-radius:10px;background:#142b48;color:#fff;font-weight:700;cursor:pointer}.mtb-select{display:inline-flex;align-items:center;justify-content:center;margin-top:12px;padding:9px 13px;border:1px solid #203d60;border-radius:9px;background:#fff;color:#203d60;font-weight:700;cursor:pointer}.mtb-select[aria-pressed="true"]{background:#203d60;color:#fff}.mtb-collapsed .mtb-items,.mtb-collapsed .mtb-total,.mtb-collapsed .mtb-foot,.mtb-collapsed .mtb-continue{display:none}
-      @media(max-width:600px){#mogavel-trip-builder{right:10px;bottom:10px;max-height:44vh}.mtb-item span{max-width:240px}}
+      .mtb-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.mtb-head>div{display:grid;gap:3px}.mtb-head strong{font-size:18px;color:#142b48}.mtb-kicker{font-size:10px;letter-spacing:1.3px;color:#728498;font-weight:700}.mtb-close{border:1px solid #dce4ea;background:#fff;border-radius:8px;width:32px;height:32px;font-size:20px;color:#203d60;cursor:pointer}.mtb-items{display:grid;gap:10px}.mtb-item{display:flex;align-items:center;gap:11px;padding:13px;background:linear-gradient(110deg,#f5f8fa,#fff);border:1px solid #e7edf2;border-radius:13px;box-shadow:0 2px 8px #142b4808}.mtb-item-copy{display:grid;gap:3px}.mtb-item-icon{flex-basis:40px;height:40px;font-size:19px}.mtb-item span{font-size:13px}.mtb-item small{font-size:12px}.mtb-item-copy{flex:1;min-width:0}.mtb-item-icon{display:grid;place-items:center;flex:0 0 34px;height:34px;background:#e8f0f4;border-radius:10px;font-size:16px}.mtb-item b{display:block;font-size:10px;letter-spacing:.35px;color:#718093;text-transform:uppercase}.mtb-item span{display:block;font-size:12px;font-weight:700;overflow-wrap:anywhere;line-height:1.35}.mtb-item small{display:block;color:#536b84;font-size:11px;font-weight:650;margin-top:3px}.mtb-remove{border:0;background:transparent;color:#a33;cursor:pointer;font-size:12px;align-self:center}.mtb-total{margin-top:14px;padding:13px;background:#f2f6f9;border:1px solid #e5ecf2;border-radius:12px;font-size:12px;color:#536b84}.mtb-total strong{display:block;color:#142b48;font-size:24px}.mtb-foot{font-size:10px;color:#778494;margin:8px 0}.mtb-continue{width:100%;padding:12px;border:0;border-radius:10px;background:#142b48;color:#fff;font-weight:700;cursor:pointer}.mtb-select{display:inline-flex;align-items:center;justify-content:center;margin-top:12px;padding:9px 13px;border:1px solid #203d60;border-radius:9px;background:#fff;color:#203d60;font-weight:700;cursor:pointer}.mtb-select[aria-pressed="true"]{background:#203d60;color:#fff}.mtb-collapsed .mtb-items,.mtb-collapsed .mtb-total,.mtb-collapsed .mtb-foot,.mtb-collapsed .mtb-continue{display:none}
+      @media(max-width:600px){#mogavel-trip-builder{right:10px;bottom:10px;width:calc(100vw - 20px);max-height:68vh}.mtb-item span{max-width:none}}
     `;
     document.head.appendChild(style);
   }
@@ -100,7 +110,7 @@
       results.querySelectorAll(selector).forEach((card,index)=>{
         let button=card.querySelector('.mtb-select'); if(button) return;
         const id=kind+':'+index+':'+titleOf(card,kind);
-        const price=moneyOf(card);
+        const price=moneyOf(card,kind);
         const item={id,kind,type:labels[kind],name:titleOf(card,kind),price};
         button=document.createElement('button');button.type='button';button.className='mtb-select';button.dataset.kind=kind;button.dataset.id=id;
         card.appendChild(button);
