@@ -43,16 +43,58 @@
     panel.querySelector('.mtb-continue').addEventListener('click', () => {
       const items = allSelected();
       if (!items.length) { alert('Selecciona al menos una opción para continuar.'); return; }
-      const brief = items.map(x => '- ' + x.type + ': ' + x.name + (x.price ? ' (' + x.price.value.toLocaleString('es-ES',{style:'currency',currency:x.price.currency==='USD'?'USD':x.price.currency==='GBP'?'GBP':'EUR'}) + ')' : ' (precio por confirmar)')).join('\n');
       const input = document.getElementById('chatMessage');
+      const chatBox = document.getElementById('chatBox');
+      if (chatBox) {
+        let review = document.getElementById('mogavel-trip-review');
+        if (!review) {
+          review = document.createElement('section');
+          review.id = 'mogavel-trip-review';
+          review.className = 'mtr-review';
+          const composer = chatBox.querySelector('.chat-input');
+          if (composer) chatBox.insertBefore(review, composer);
+          else chatBox.appendChild(review);
+        }
+        const money = value => value ? value.value.toLocaleString('es-ES',{style:'currency',currency:value.currency==='USD'?'USD':value.currency==='GBP'?'GBP':'EUR'}) : 'Precio por confirmar';
+        const known = items.filter(x => x.price).length;
+        review.innerHTML = '<div class="mtr-top"><div><span class="mtr-kicker">TU PROPUESTA</span><h3>Un viaje elegido por ti</h3><p>' + items.length + ' elementos · ' + known + ' con importe identificado</p></div><span class="mtr-stamp">✦ A tu medida</span></div><div class="mtr-grid">' + items.map(x => {
+          const ico = x.kind === 'flight' ? '✈' : x.kind === 'hotel' ? '▦' : '◇';
+          return '<article class="mtr-card"><span class="mtr-icon" aria-hidden="true">' + ico + '</span><div class="mtr-copy"><small>' + esc(x.type) + '</small><strong>' + esc(x.name) + '</strong><span>' + esc(money(x.price)) + '</span></div><span class="mtr-check" aria-label="Incluido">✓</span></article>';
+        }).join('') + '</div><div class="mtr-bottom"><div><small>Estado del viaje</small><strong>Propuesta · Sin reservar</strong></div><span>Los importes pendientes se confirmarán con el proveedor.</span></div>';
+        review.scrollIntoView({behavior:'smooth',block:'center'});
+      }
       if (input) {
-        input.value = 'Quiero continuar con este viaje y revisar/modificar mi selección:\n' + brief + '\nAyúdame a completar el itinerario y dime qué cambios puedo pedir.';
-        input.focus();
-        document.getElementById('chatBox')?.scrollIntoView({behavior:'smooth',block:'center'});
+        input.placeholder = '¿Qué quieres ajustar? Ej. Cambiar el hotel, quitar una actividad o completar el itinerario.';
+        input.value = '';
+        input.focus({preventScroll:true});
       }
     });
     const style = document.createElement('style');
-    style.textContent = `
+    style.textContent = `      #mogavel-trip-review{margin:22px 0 18px;padding:clamp(18px,3vw,30px);border:1px solid #dfe7ee;border-radius:22px;background:linear-gradient(135deg,#fff 0%,#f5f8fb 100%);box-shadow:0 14px 38px rgba(20,43,72,.07)}
+      #mogavel-trip-review .mtr-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px}
+      #mogavel-trip-review .mtr-kicker{font-size:10px;letter-spacing:1.8px;font-weight:800;color:#d26c49}
+      #mogavel-trip-review h3{margin:5px 0 4px;font:700 clamp(21px,2.4vw,29px)/1.15 Georgia,serif;color:#142b48}
+      #mogavel-trip-review .mtr-top p{margin:0;color:#687b91;font-size:13px}
+      #mogavel-trip-review .mtr-stamp{flex-shrink:0;background:#fff1e5;color:#a85b3a;border-radius:99px;padding:8px 12px;font-size:11px;font-weight:750}
+      #mogavel-trip-review .mtr-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+      #mogavel-trip-review .mtr-card{display:flex;align-items:flex-start;gap:12px;padding:15px;background:#fff;border:1px solid #e4eaf0;border-radius:15px;min-width:0}
+      #mogavel-trip-review .mtr-icon{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:13px;background:#edf3f7;color:#203d60;font-size:21px}
+      #mogavel-trip-review .mtr-copy{display:grid;gap:4px;min-width:0;flex:1}
+      #mogavel-trip-review .mtr-copy small{font-size:10px;letter-spacing:.8px;text-transform:uppercase;font-weight:800;color:#78889b}
+      #mogavel-trip-review .mtr-copy strong{font-size:14px;line-height:1.35;color:#1e2c3d;overflow-wrap:anywhere}
+      #mogavel-trip-review .mtr-copy span{font-size:13px;font-weight:750;color:#203d60}
+      #mogavel-trip-review .mtr-check{color:#13864a;font-weight:900}
+      #mogavel-trip-review .mtr-bottom{display:flex;align-items:center;justify-content:space-between;gap:18px;border-top:1px solid #e1e8ee;margin-top:16px;padding-top:14px}
+      #mogavel-trip-review .mtr-bottom div{display:grid;gap:3px}
+      #mogavel-trip-review .mtr-bottom small{color:#78889b;font-size:10px;text-transform:uppercase;letter-spacing:.7px;font-weight:800}
+      #mogavel-trip-review .mtr-bottom strong{color:#142b48;font-size:13px}
+      #mogavel-trip-review .mtr-bottom>span{max-width:340px;color:#687b91;font-size:12px;text-align:right}
+      #chatBox .chat-input{align-items:stretch}
+      #chatBox #chatMessage{min-height:100px;max-height:240px;padding:16px 18px;border:1px solid #d9e2eb;border-radius:14px;font:500 15px/1.55 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;resize:vertical;background:#fff;color:#1e2c3d;box-shadow:inset 0 1px 2px rgba(20,43,72,.025)}
+      #chatBox #chatMessage:focus{outline:3px solid rgba(32,61,96,.12);border-color:#203d60}
+      #chatBox #chatMessage::placeholder{color:#8190a1}
+      @media(max-width:700px){#mogavel-trip-review .mtr-grid{grid-template-columns:1fr}#mogavel-trip-review .mtr-top{display:grid}#mogavel-trip-review .mtr-bottom{align-items:flex-start;flex-direction:column}#mogavel-trip-review .mtr-bottom>span{text-align:left}}
+
       #mogavel-trip-builder{position:fixed;z-index:1000;right:18px;bottom:18px;width:min(460px,calc(100vw - 32px));max-height:min(78vh,850px);overflow:auto;background:#fff;border:1px solid #dce4ea;border-radius:18px;box-shadow:0 14px 50px #142b4828;padding:17px;color:#1e2c3d;font:14px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
       #mogavel-trip-builder[hidden]{display:none!important}
       .flight-card>.mtb-select,.hotel-card>.mtb-select,.activity-card>.mtb-select{display:flex;grid-column:1/-1;grid-row:auto;width:100%;min-height:38px;margin:0;padding:10px 15px;white-space:normal;text-align:center;line-height:1.2;font-size:13px;border-radius:10px}
