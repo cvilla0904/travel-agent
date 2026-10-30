@@ -623,6 +623,12 @@ const activitiesOutputSchema =
           precio:
             z.number().nullable(),
 
+          esGratis:
+            z.boolean(),
+
+          precioTexto:
+            z.string().nullable(),
+
           moneda:
             z.string().nullable(),
 
@@ -700,9 +706,15 @@ const activitiesAgent =
       Devuelve únicamente información obtenida
       de buscar_actividades.
 
-      Los precios deben utilizarse cuando la herramienta
-      los proporcione. Si una actividad no tiene precio,
-      no inventes ninguno.
+      Conserva exactamente para cada actividad los campos precio, esGratis,
+      precioTexto, moneda y URL de la herramienta.
+      Si precio es mayor que cero, informa 'Desde [importe] [moneda]' cuando
+      no conste que sea el precio final e incluye el texto de modalidad/unidad.
+      Si esGratis es true, destaca GRATUITA. Si precio es null y esGratis false,
+      indica Precio por confirmar. Nunca interpretes precio ausente como gratis.
+
+      Los precios deben utilizarse cuando la herramienta los proporcione.
+      Si una actividad no tiene precio, no inventes ninguno.
     `,
 
     tools: [
