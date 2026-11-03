@@ -451,7 +451,7 @@
             message: (() => {
               const selected = window.MogavelTripBuilder?.snapshot?.() || [];
               if (!selected.length) return message;
-              const selection = selected.map(item => '- ' + item.type + ': ' + item.name + (item.price ? ' (importe mostrado: ' + item.price.value + ' ' + item.price.currency + ')' : ' (importe no identificado)')).join('\n');
+              const selection = selected.map(item => '- ' + item.type + ': ' + item.name + (item.price ? (item.price.free ? ' (gratuita según el proveedor)' : item.price.basis === 'desde' ? ' (precio orientativo "desde" del proveedor: ' + item.price.value + ' ' + item.price.currency + '; no es un precio final garantizado)' : ' (importe mostrado: ' + item.price.value + ' ' + item.price.currency + ')') : ' (importe no identificado)')).join('\n');
               return message + '\n\n[Selección actual del viaje en la web; úsala como contexto. Si pido cambiar o quitar un elemento, actualiza la propuesta y confirma claramente el cambio. No inventes precios ni des por reservados los elementos.]\n' + selection;
             })(),
             sessionId
@@ -1101,9 +1101,9 @@
               : (parts[1] || '')).trim();
 
             // No inferimos gratuidad de un importe cero: puede ser un dato por defecto del agente.
-            const freeSignal = /(?:^|[;,.\\s])(?:gratuita|gratuito|gratis|free)(?:$|[;,.\\s])/i.test(detail);
-            const priceMatch = detail.match(/(?:desde\\s*)?(\\d[\\d.,]*)\\s*(?:€|EUR)(?![A-Za-z])/i) || detail.match(/(?:€|EUR)\\s*(\\d[\\d.,]*)/i);
-            const amount = priceMatch ? Number(priceMatch[1].replace(/\\./g, '').replace(',', '.')) : null;
+            const freeSignal = /(?:^|[;,.\s])(?:gratuita|gratuito|gratis|free)(?:$|[;,.\s])/i.test(detail);
+            const priceMatch = detail.match(/(?:desde\s*)?(\d[\d.,]*)\s*(?:€|EUR)(?![A-Za-z])/i) || detail.match(/(?:€|EUR)\s*(\d[\d.,]*)/i);
+            const amount = priceMatch ? Number(priceMatch[1].replace(/\./g, '').replace(',', '.')) : null;
             const explicitlyFree = freeSignal && (amount === null || amount === 0);
             const verifiedPaid = priceMatch && Number.isFinite(amount) && amount > 0;
             const priceBadge = explicitlyFree

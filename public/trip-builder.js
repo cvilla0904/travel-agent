@@ -6,6 +6,13 @@
   const restore = () => { try { const saved = JSON.parse(sessionStorage.getItem(storageKey) || 'null'); if (saved) { chosen.flight = saved.flight || null; chosen.hotel = saved.hotel || null; chosen.activities = new Map((saved.activities || []).map(item => [item.id, item])); } } catch (_) {} };
   const labels = { flight: 'Vuelo', hotel: 'Alojamiento', activity: 'Experiencia' };
   let panel;
+  // Importe mostrado al usuario: conserva la naturaleza "desde" y distingue gratuita de pendiente.
+  const amountLabel = price => {
+    if (!price) return 'Precio por confirmar';
+    if (price.free) return 'Gratuita';
+    const text = price.value.toLocaleString('es-ES',{style:'currency',currency:price.currency==='USD'?'USD':price.currency==='GBP'?'GBP':'EUR'});
+    return price.basis === 'desde' ? 'Desde ' + text : text;
+  };
 
   const textOf = el => (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
   const titleOf = (card, kind) => {
@@ -18,7 +25,9 @@
       const badge = card.querySelector('.activity-price-badge');
       const label = textOf(badge);
       // Las etiquetas de estado no equivalen a una tarifa. Solo guardamos importes positivos explícitos.
-      if (!badge || /GRATUITA|CONSULTAR PRECIO|PRECIO POR CONFIRMAR/i.test(label)) return null;
+      // Gratuita (anunciada por el proveedor) NO es lo mismo que precio desconocido.
+      if (badge && /^GRATUITA$/i.test(label)) return { value: 0, currency: 'EUR', basis: 'gratuita', free: true };
+      if (!badge || /CONSULTAR PRECIO|PRECIO POR CONFIRMAR/i.test(label)) return null;
       const m = label.match(/(?:DESDE\s*)?(\d[\d.,]*)\s*€/i);
       if (!m) return null;
       const value = Number(m[1].replace(/\./g, '').replace(',', '.'));
@@ -55,7 +64,7 @@
           if (composer) chatBox.insertBefore(review, composer);
           else chatBox.appendChild(review);
         }
-        const money = value => value ? value.value.toLocaleString('es-ES',{style:'currency',currency:value.currency==='USD'?'USD':value.currency==='GBP'?'GBP':'EUR'}) : 'Precio por confirmar';
+        const money = amountLabel;
         const known = items.filter(x => x.price).length;
         review.innerHTML = '<div class="mtr-top"><div><span class="mtr-kicker">TU PROPUESTA</span><h3>Un viaje elegido por ti</h3><p>' + items.length + ' elementos · ' + known + ' con importe identificado</p></div><span class="mtr-stamp">✦ A tu medida</span></div><div class="mtr-grid">' + items.map(x => {
           const ico = x.kind === 'flight' ? '✈' : x.kind === 'hotel' ? '▦' : '◇';
@@ -116,7 +125,7 @@
     panel.hidden = items.length === 0;
     panel.querySelector('.mtb-items').innerHTML = items.length ? items.map((x, i) => {
       const icon = x.kind === 'flight' ? '✈️' : x.kind === 'hotel' ? '🏨' : '◇';
-      const amount = x.price ? x.price.value.toLocaleString('es-ES',{style:'currency',currency:x.price.currency==='USD'?'USD':x.price.currency==='GBP'?'GBP':'EUR'}) : 'Precio por confirmar';
+      const amount = amountLabel(x.price);
       return '<div class="mtb-item"><div class="mtb-item-icon" aria-hidden="true">' + icon + '</div><div class="mtb-item-copy"><b>' + x.type + '</b><span>' + esc(x.name) + '</span><small>' + esc(amount) + '</small></div><button type="button" class="mtb-remove" data-i="' + i + '">Quitar</button></div>';
     }).join('') : '<p style="color:#718093;font-size:12px;margin:0">Elige un vuelo, un alojamiento y las experiencias que te interesen.</p>';
     panel.querySelectorAll('.mtb-remove').forEach(btn => btn.addEventListener('click', () => {
