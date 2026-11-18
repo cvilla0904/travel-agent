@@ -87,3 +87,44 @@ test('estado: se limita el histórico de respuestas y limpiar borra la búsqueda
   E.limpiar();
   assert.equal(E.leer(), null);
 });
+
+const J = (x: any) => JSON.parse(JSON.stringify(x));
+
+test('estado: los mensajes se guardan en orden cronológico (respuesta, propuesta, petición, respuesta) y conservan el sessionId', () => {
+  const E = cargar().crear(almacenMemoria());
+  E.iniciar(DATOS);
+  E.agregarRespuesta('R1');
+  const items = [{ kind: 'hotel', type: 'Hotel', name: 'Hotel A', price: null }];
+  assert.deepEqual(J(E.registrarPropuesta(items)), { ok: true, nueva: true });
+  E.agregarMensajeUsuario('  Cambia el hotel  ');
+  E.agregarRespuesta('R2');
+  const s = E.leer();
+  assert.deepEqual(J(s.mensajes.map((m: any) => m.tipo)), ['agente', 'propuesta', 'usuario', 'agente']);
+  assert.equal(s.mensajes[2].texto, 'Cambia el hotel');
+  assert.equal(s.sessionId, 'sesion-1');
+  assert.deepEqual(J(s.respuestas), ['R1', 'R2']);
+});
+
+test('estado: registrarPropuesta no duplica una propuesta idéntica y añade una nueva si cambia la selección', () => {
+  const E = cargar().crear(almacenMemoria());
+  E.iniciar(DATOS); E.agregarRespuesta('R1');
+  const a = [{ kind: 'flight', type: 'Vuelo', name: 'Alfa', price: null }];
+  const b = a.concat([{ kind: 'hotel', type: 'Hotel', name: 'Uno', price: null }]);
+  assert.equal(E.registrarPropuesta(a).nueva, true);
+  assert.equal(E.registrarPropuesta(a).nueva, false);
+  assert.equal(E.registrarPropuesta(b).nueva, true);
+  assert.equal(E.leer().mensajes.filter((m: any) => m.tipo === 'propuesta').length, 2);
+  assert.equal(E.registrarPropuesta('no es lista').ok, false);
+});
+
+test('estado: sin búsqueda activa no se guardan mensajes; un mensaje vacío se ignora; un estado antiguo sin `mensajes` se reconstruye', () => {
+  const alm = almacenMemoria(); const E = cargar().crear(alm);
+  assert.equal(E.agregarMensajeUsuario('hola'), false);
+  assert.equal(E.registrarPropuesta([]).ok, false);
+  E.iniciar(DATOS);
+  assert.equal(E.agregarMensajeUsuario('   '), false);
+  // Formato anterior (Fase 1): sin `mensajes`.
+  alm.setItem('mogavel:search:v1', JSON.stringify({ v: 1, sessionId: 'x', mensaje: 'm', formulario: {}, modo: 'complete', estado: 'completa', error: null, respuestas: ['A', 'B'], creada: 1 }));
+  const s = E.leer();
+  assert.deepEqual(J(s.mensajes.map((m: any) => [m.tipo, m.texto])), [['agente', 'A'], ['agente', 'B']]);
+});

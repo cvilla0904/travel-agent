@@ -13,6 +13,7 @@
 
   var CLAVE = 'mogavel:search:v1';
   var MAX_RESPUESTAS = 30;
+  var MAX_MENSAJES = 80;
 
   function almacenPorDefecto() {
     try { return global.sessionStorage || null; } catch (_) { return null; }
@@ -25,6 +26,10 @@
         if (!crudo) return null;
         var dato = JSON.parse(crudo);
         if (!dato || dato.v !== 1 || typeof dato.sessionId !== 'string' || !Array.isArray(dato.respuestas)) return null;
+        // Estados guardados antes de existir `mensajes`: se reconstruye la línea de tiempo desde las respuestas.
+        if (!Array.isArray(dato.mensajes)) {
+          dato.mensajes = dato.respuestas.map(function (t) { return { tipo: 'agente', texto: t, t: dato.creada || 0 }; });
+        }
         return dato;
       } catch (_) { return null; }
     }
@@ -53,6 +58,7 @@
           estado: 'pendiente',
           error: null,
           respuestas: [],
+          mensajes: [],
           creada: Date.now()
         });
       },
@@ -71,8 +77,34 @@
         var d = leer(); if (!d || typeof texto !== 'string') return false;
         d.respuestas.push(texto);
         if (d.respuestas.length > MAX_RESPUESTAS) d.respuestas = d.respuestas.slice(-MAX_RESPUESTAS);
+        d.mensajes.push({ tipo: 'agente', texto: texto, t: Date.now() });
+        if (d.mensajes.length > MAX_MENSAJES) d.mensajes = d.mensajes.slice(-MAX_MENSAJES);
         d.estado = 'completa'; d.error = null;
         return escribir(d);
+      },
+
+      /** Petición escrita por el usuario en la conversación (va antes de la respuesta del agente). */
+      agregarMensajeUsuario: function (texto) {
+        var d = leer(); if (!d || typeof texto !== 'string' || !texto.trim()) return false;
+        d.mensajes.push({ tipo: 'usuario', texto: texto.trim(), t: Date.now() });
+        if (d.mensajes.length > MAX_MENSAJES) d.mensajes = d.mensajes.slice(-MAX_MENSAJES);
+        return escribir(d);
+      },
+
+      /**
+       * Registra la propuesta seleccionada («Un viaje elegido por ti») en su posición cronológica.
+       * Si la última propuesta es idéntica no se duplica; si cambió la selección, se añade una nueva.
+       * Devuelve { ok, nueva }.
+       */
+      registrarPropuesta: function (items) {
+        var d = leer(); if (!d || !Array.isArray(items)) return { ok: false, nueva: false };
+        var firma = JSON.stringify(items);
+        var ultima = null;
+        for (var i = d.mensajes.length - 1; i >= 0; i--) { if (d.mensajes[i].tipo === 'propuesta') { ultima = d.mensajes[i]; break; } }
+        if (ultima && JSON.stringify(ultima.items) === firma) return { ok: true, nueva: false };
+        d.mensajes.push({ tipo: 'propuesta', items: items, t: Date.now() });
+        if (d.mensajes.length > MAX_MENSAJES) d.mensajes = d.mensajes.slice(-MAX_MENSAJES);
+        return { ok: escribir(d), nueva: true };
       },
 
       marcarError: function (mensaje) {

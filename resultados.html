@@ -31,15 +31,61 @@
     #results{display:block;margin:0;padding:6px 0 0;background:none;border:0;border-radius:0;box-shadow:none;white-space:normal}
     .res-panel[hidden]{display:none!important}
     .res-panel:empty::before{content:attr(data-vacio);display:block;padding:34px 18px;text-align:center;color:#687b91;font-size:15px;border:1px dashed #d8e0e8;border-radius:16px;margin-top:20px;background:#fff}
-    #notas{margin-top:26px;display:grid;gap:14px}
-    #notas:empty{display:none}
-    #notas .res-nota{padding:22px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 24px rgba(22,42,67,.05);white-space:pre-wrap;line-height:1.7}
-    #notas h3{margin:0 0 8px;font:700 18px/1.2 Georgia,serif;color:#142b48}
+    .conversacion{display:grid;gap:16px;margin:22px 0 18px}
+    .conversacion:empty{display:none}
+    .conv-msg{min-width:0}
+    .conv-quien{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#687b91;margin:0 0 6px}
+    .conv-usuario{justify-self:end;max-width:min(560px,92%);padding:14px 18px;border-radius:18px 18px 4px 18px;background:#142b48;color:#fff}
+    .conv-usuario .conv-quien{color:#c9d6e6}
+    .conv-usuario p{margin:0;white-space:pre-wrap;line-height:1.55;overflow-wrap:anywhere}
+    .conv-agente .conv-cuerpo{display:grid;gap:14px}
+    .conv-agente .res-nota{padding:22px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 24px rgba(22,42,67,.05);white-space:pre-wrap;line-height:1.7;overflow-wrap:anywhere}
+    .conv-actualizado{margin:0;color:#5d6f84;font-size:14px}
+    .conv-propuesta{scroll-margin-top:90px}
+    /* Presupuesto e itinerario de la conversación (render-conversacion.js) */
+    .cv-sec{padding:clamp(18px,3vw,26px);background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 8px 24px rgba(22,42,67,.05);min-width:0}
+    .cv-cab{margin-bottom:14px}.cv-kicker{display:block;font-size:10px;letter-spacing:1.8px;font-weight:800;color:#d26c49;margin-bottom:4px}
+    .cv-cab h3{margin:0;font:700 22px/1.2 Georgia,serif;color:#142b48}
+    .cv-texto{line-height:1.65;color:#2c3e55;overflow-wrap:anywhere}.cv-nota{color:#5d6f84;font-size:14px;margin-top:10px}
+    .cv-resto{padding:4px 2px}
+    .cv-resto:last-child{color:#4a5d73}
+    .cv-chip{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11.5px;font-weight:800;letter-spacing:.02em;white-space:nowrap}
+    .cv-cerrado{background:#e6f4ec;color:#0e6b3a}.cv-desde{background:#eaf1fb;color:#1d4f91}.cv-gratis{background:#fff3d6;color:#7a5200}.cv-pendiente{background:#f3f0ea;color:#6a5c45}
+    .cv-elegida-chip{background:#13864a;color:#fff}.cv-adicional-chip{background:#fff;color:#8a5a12;border:1px dashed #d9a74a}
+    .cv-presupuesto{background:linear-gradient(135deg,#fff 0%,#f6f9fc 100%)}
+    .cv-total{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:16px 18px;margin-bottom:16px;border-radius:16px;background:#142b48;color:#fff}
+    .cv-total small{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#c9d6e6;font-weight:700}
+    .cv-total strong{font:700 clamp(24px,5vw,32px)/1.1 Georgia,serif;white-space:nowrap}
+    .cv-grupos{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+    .cv-grupo{padding:14px 16px;border:1px solid #e6edf3;border-radius:14px;background:#fff;min-width:0}
+    .cv-grupo h4{margin:0 0 8px;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:#687b91}
+    .cv-grupo ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+    .cv-grupo li{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:14.5px}
+    .cv-concepto{min-width:0;overflow-wrap:anywhere}.cv-valor{text-align:right;font-weight:700;color:#142b48;flex:0 0 auto;max-width:55%}
+    .cv-dias{list-style:none;margin:0;padding:0;display:grid;gap:0}
+    .cv-dia{display:grid;grid-template-columns:104px minmax(0,1fr);gap:16px;position:relative;padding-bottom:18px}
+    .cv-dia::before{content:"";position:absolute;left:51px;top:34px;bottom:0;width:2px;background:#e1e8ef}
+    .cv-dia:last-child{padding-bottom:0}.cv-dia:last-child::before{display:none}
+    .cv-dia-marca{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+    .cv-dia-num{display:inline-block;padding:6px 12px;border-radius:99px;background:#142b48;color:#fff;font-size:13px;font-weight:800;position:relative;z-index:1}
+    .cv-dia-fecha{font-size:12px;color:#687b91;line-height:1.3;overflow-wrap:anywhere;background:#fff;position:relative;z-index:1}
+    .cv-dia-cuerpo{display:grid;gap:10px;min-width:0}
+    .cv-item{padding:12px 14px;border:1px solid #e6edf3;border-radius:14px;background:#fff;min-width:0}
+    .cv-item.cv-elegida{border-color:#9fd3b3;background:#f4fbf7}.cv-item.cv-adicional{border-style:dashed;border-color:#e3c68f;background:#fffcf5}
+    .cv-item-cab{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between}
+    .cv-item-cab strong{color:#142b48;overflow-wrap:anywhere}.cv-item p{margin:6px 0 0;color:#4a5d73;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+    .cv-item>.cv-chip{margin-top:8px}
+    .cv-lista{list-style:none;margin:0;padding:0;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+    .cv-gastronomia .cv-item{background:#fffaf4}
+    .cv-sec a{color:#1d4f91;overflow-wrap:anywhere}
     #chatBox{display:block;margin-top:28px}
     @media(max-width:700px){
       .res-main{padding-top:18px}
       .res-tab{min-width:0;padding:13px 4px;font-size:14px;gap:5px}
       .trip-summary{grid-template-columns:1fr}
+      .cv-dia{grid-template-columns:1fr;gap:8px}.cv-dia::before{display:none}.cv-dia-marca{flex-direction:row;justify-content:flex-start;gap:10px}
+      .cv-total{flex-direction:column;align-items:flex-start;gap:4px}.cv-grupos,.cv-lista{grid-template-columns:1fr}
+      .conv-usuario{max-width:96%}
       body{padding-bottom:84px}
     }
     @media(max-width:480px){.res-tab>span[aria-hidden]{display:none}.res-tab{font-size:13.5px}}
@@ -72,11 +118,10 @@
       <section class="res-panel" id="panel-actividades" role="tabpanel" aria-labelledby="tab-actividades" data-vacio="Aún no hay actividades en esta búsqueda." hidden></section>
     </div>
 
-    <div id="notas" aria-live="polite"></div>
-
     <div id="chatBox" class="chat-box">
       <h2>Sigamos preparando tu viaje</h2>
       <p>Pide cambios, compara opciones o cuéntame qué te gustaría añadir. Tu agente te ayudará a darle forma.</p>
+      <div id="conversacion" class="conversacion" aria-live="polite"></div>
       <div class="chat-input"><textarea id="chatMessage" placeholder="Ej. Quiero elegir un hotel céntrico y añadir una visita guiada"></textarea><button class="primary send-button" type="button" id="enviarSeguimiento">Enviar <span aria-hidden="true">→</span></button></div>
     </div>
   </main>
@@ -86,6 +131,7 @@
   <noscript><p style="padding:20px;text-align:center">Mogavel necesita JavaScript para mostrar los resultados.</p></noscript>
   <script src="/render-resultados.js"></script>
   <script src="/estado-busqueda.js"></script>
+  <script src="/render-conversacion.js"></script>
   <script src="/resultados.js"></script>
   <script src="/trip-builder.js" defer></script>
 </body>

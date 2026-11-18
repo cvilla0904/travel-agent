@@ -52,6 +52,14 @@
     {
       "src": "public/estado-busqueda.js",
       "use": "@vercel/static"
+    },
+    {
+      "src": "public/viaje-indicador.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/render-conversacion.js",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -106,6 +114,14 @@
     {
       "src": "/estado-busqueda.js",
       "dest": "/public/estado-busqueda.js"
+    },
+    {
+      "src": "/viaje-indicador.js",
+      "dest": "/public/viaje-indicador.js"
+    },
+    {
+      "src": "/render-conversacion.js",
+      "dest": "/public/render-conversacion.js"
     },
     {
       "src": "/(.*)",

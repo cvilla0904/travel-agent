@@ -129,21 +129,119 @@
     panel.replaceChildren.apply(panel, nodos);
   }
 
-  /** Pinta una respuesta del agente. Las secciones que no vengan en ella conservan lo que ya había. */
+  /** Pinta las pestañas con una respuesta del agente. Devuelve { notas, hayPestanas } (lo que no es de ninguna pestaña). */
   function aplicarRespuesta(texto) {
     var staging = document.createElement('div');
     global.renderResultados(texto, staging);
     var partes = particionar(staging);
     if (partes.resumen.length) mostrar(partes.resumen, $('resumen'));
     TABS.forEach(function (t) { if (partes[t].length) mostrar(partes[t], $('panel-' + t)); });
-    partes.notas.forEach(function (nodo) {
-      var contenedor = document.createElement('div');
-      contenedor.className = 'res-nota';
-      contenedor.appendChild(nodo);
-      $('notas').appendChild(contenedor);
-    });
     actualizarContadores();
     // Los nodos recién insertados los decora trip-builder.js (MutationObserver sobre #results).
+    return {
+      notas: partes.notas,
+      hayPestanas: partes.resumen.length + partes.vuelos.length + partes.hoteles.length + partes.actividades.length > 0
+    };
+  }
+
+  /* ---------- Conversación cronológica: propuesta → petición del usuario → respuesta del agente ---------- */
+
+  function nombresActividadesElegidas() {
+    var tb = global.MogavelTripBuilder;
+    if (!tb || typeof tb.snapshot !== 'function') return null;
+    try {
+      return tb.snapshot().filter(function (x) { return x.kind === 'activity'; }).map(function (x) { return x.name; });
+    } catch (_) { return null; }
+  }
+
+  function normalizar(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim(); }
+
+  function entrada(clase, etiqueta) {
+    var d = document.createElement('article');
+    d.className = 'conv-msg ' + clase;
+    if (etiqueta) { var e = document.createElement('div'); e.className = 'conv-quien'; e.textContent = etiqueta; d.appendChild(e); }
+    $('conversacion').appendChild(d);
+    return d;
+  }
+
+  function pintarUsuario(texto) {
+    var d = entrada('conv-usuario', 'Tú');
+    var p = document.createElement('p');
+    p.textContent = texto;
+    d.appendChild(p);
+    return d;
+  }
+
+  function pintarPropuesta(items) {
+    var d = entrada('conv-propuesta', null);
+    d.id = 'mogavel-trip-review';
+    d.className += ' mtr-review';
+    var tb = global.MogavelTripBuilder;
+    if (tb && typeof tb.rellenarPropuesta === 'function') tb.rellenarPropuesta(d, items);
+    return d;
+  }
+
+  /**
+   * Respuesta del agente en la conversación: secciones reconocidas (presupuesto, itinerario, complementarias,
+   * gastronomía) con presentación propia y, además, el texto que no se reconoce, íntegro. Si la respuesta solo
+   * actualiza pestañas y no trae texto adicional, se indica con una línea breve.
+   */
+  function pintarAgente(texto, info) {
+    var d = entrada('conv-agente', 'Mogavel');
+    var cuerpo = document.createElement('div');
+    cuerpo.className = 'conv-cuerpo';
+    var conv = global.MogavelConversacion;
+    var frag = conv ? conv.renderizar(texto, { seleccion: nombresActividadesElegidas(), incluirTextoSuelto: !info.hayPestanas }) : null;
+    var reconocidas = frag ? conv.analizar(texto).secciones.filter(function (s) { return s.tipo !== 'otro'; }) : [];
+    var titulos = reconocidas.map(function (s) { return normalizar(s.titulo); }).filter(Boolean);
+    var hayContenido = false;
+    if (frag) { cuerpo.appendChild(frag); hayContenido = true; }
+
+    if (frag && !info.hayPestanas) {
+      // Respuesta de solo texto: lo no reconocido (introducción, notas, cierre) se muestra completo.
+      var a = conv.analizar(texto), resto = [];   // la introducción ya la pinta renderizar(), antes de las secciones
+      a.secciones.forEach(function (sec) { if (sec.tipo === 'otro') { resto.push(sec.titulo); resto = resto.concat(sec.lineas); } });
+      var limpio = resto.map(function (l) { return String(l).replace(/[#*]{1,3}/g, '').trim(); }).filter(Boolean);
+      if (limpio.length) {
+        var t = document.createElement('div'); t.className = 'cv-texto cv-resto';
+        limpio.forEach(function (l, i) { if (i) t.appendChild(document.createElement('br')); t.appendChild(document.createTextNode(l)); });
+        cuerpo.appendChild(t);
+      }
+    } else {
+      info.notas.forEach(function (nodo) {
+        var txt = normalizar(nodo.textContent);
+        if (titulos.some(function (tt) { return txt.indexOf(tt) !== -1; })) return; // ya mostrado en la sección estructurada
+        var c = document.createElement('div'); c.className = 'res-nota'; c.appendChild(nodo);
+        cuerpo.appendChild(c); hayContenido = true;
+      });
+    }
+    if (!hayContenido && !cuerpo.childNodes.length) {
+      // Solo se indica la actualización cuando responde a una petición del usuario (no tras la búsqueda inicial).
+      var respondeAPeticion = d.previousElementSibling && d.previousElementSibling.classList.contains('conv-usuario');
+      if (!info.hayPestanas || !respondeAPeticion) { d.remove(); return null; }
+      var n = document.createElement('p'); n.className = 'conv-actualizado';
+      n.textContent = 'He actualizado los resultados de las pestañas.';
+      cuerpo.appendChild(n);
+    }
+    d.appendChild(cuerpo);
+    return d;
+  }
+
+  function mostrarPropuesta(items) {
+    var est = global.MogavelEstado.leer();
+    var existente = $('conversacion').querySelectorAll('.conv-propuesta');
+    var r = est ? global.MogavelEstado.registrarPropuesta(items) : { ok: true, nueva: !existente.length };
+    var nodo = existente.length ? existente[existente.length - 1] : null;
+    if (r.nueva || !nodo) nodo = pintarPropuesta(items);
+    // Solo la última lleva el id (evita ids duplicados).
+    Array.prototype.forEach.call($('conversacion').querySelectorAll('.conv-propuesta'), function (n) { n.removeAttribute('id'); });
+    nodo.id = 'mogavel-trip-review';
+    nodo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    var input = $('chatMessage');
+    if (input) {
+      input.placeholder = '¿Qué quieres ajustar? Por ejemplo: cambia el hotel, añade tiempo libre o rehaz el itinerario.';
+      input.focus({ preventScroll: true });
+    }
   }
 
   function pestanaInicial(estado) {
@@ -198,7 +296,7 @@
     try {
       var texto = await consultarAgente(estado.mensaje, estado.sessionId);
       global.MogavelEstado.agregarRespuesta(texto);
-      aplicarRespuesta(texto);
+      pintarAgente(texto, aplicarRespuesta(texto));
       ajustarPestanaVacia();
       avisoEstado('');
     } catch (error) {
@@ -226,10 +324,14 @@
     var etiqueta = boton.innerHTML;
     boton.disabled = true; boton.textContent = 'Enviando…';
     input.value = '';
+    global.MogavelEstado.agregarMensajeUsuario(mensaje);
+    var burbuja = pintarUsuario(mensaje);
+    burbuja.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     try {
       var texto = await consultarAgente(mensaje, estado.sessionId);
       global.MogavelEstado.agregarRespuesta(texto);
-      aplicarRespuesta(texto);
+      var respuestaNodo = pintarAgente(texto, aplicarRespuesta(texto));
+      if (respuestaNodo && respuestaNodo.scrollIntoView) respuestaNodo.scrollIntoView({ behavior: 'smooth', block: 'start' });
       ajustarPestanaVacia();
       avisoEstado('');
     } catch (error) {
@@ -271,7 +373,16 @@
       return;
     }
 
-    estado.respuestas.forEach(aplicarRespuesta);
+    // Las pestañas se reconstruyen con las respuestas; la conversación, en el orden en que ocurrió.
+    var infos = estado.respuestas.map(aplicarRespuesta), k = infos.length - estado.mensajes.filter(function (m) { return m.tipo === 'agente'; }).length;
+    var idx = 0;
+    estado.mensajes.forEach(function (m) {
+      if (m.tipo === 'usuario') pintarUsuario(m.texto);
+      else if (m.tipo === 'propuesta') pintarPropuesta(m.items);
+      else if (m.tipo === 'agente') { var info = infos[k + idx] || { notas: [], hayPestanas: false }; idx++; pintarAgente(m.texto, info); }
+    });
+    var props = $('conversacion').querySelectorAll('.conv-propuesta');
+    if (props.length) props[props.length - 1].id = 'mogavel-trip-review';
     ajustarPestanaVacia();
     $('enviarSeguimiento').addEventListener('click', enviarSeguimiento);
     $('chatMessage').addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) enviarSeguimiento(); });
@@ -281,7 +392,7 @@
     else if (estado.estado === 'error') mostrarReintento('Ha ocurrido un error: ' + esc(estado.error || 'desconocido'), estado, true);
   }
 
-  global.MogavelResultados = { particionar: particionar, aplicarRespuesta: aplicarRespuesta, activarPestana: activarPestana };
+  global.MogavelResultados = { particionar: particionar, aplicarRespuesta: aplicarRespuesta, activarPestana: activarPestana, mostrarPropuesta: mostrarPropuesta };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
   else iniciar();

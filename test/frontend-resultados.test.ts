@@ -204,7 +204,7 @@ test('precios: cerrado, «desde», gratuito y pendiente se conservan en pestaña
     // Seguimiento: el mensaje lleva el contexto con los precios tal cual y el MISMO sessionId.
     await t.p.fill('#chatMessage', 'Calcula el presupuesto');
     await t.p.click('#enviarSeguimiento');
-    await t.p.waitForSelector('#notas .res-nota');
+    await t.p.waitForSelector('#conversacion .cv-presupuesto');
     assert.equal(t.peticiones.length, 2);
     assert.equal(t.peticiones[1].sessionId, t.peticiones[0].sessionId);
     const m = t.peticiones[1].message as string;
@@ -212,8 +212,8 @@ test('precios: cerrado, «desde», gratuito y pendiente se conservan en pestaña
     assert.match(m, /Free tour del centro \(gratuita según el proveedor\)/);
     assert.match(m, /Visita sin tarifa \(importe no identificado\)/);
     assert.match(m, /Vuelo: Aerolínea Alfa \(importe mostrado: 240 EUR\)/);
-    // El presupuesto (texto) va a notas y no destruye las pestañas ni las selecciones.
-    assert.match(await t.p.evaluate(() => document.getElementById('notas')!.innerText), /Total conocido: 240/);
+    // El presupuesto (texto) va a la conversación y no destruye las pestañas ni las selecciones.
+    assert.match(await t.p.evaluate(() => document.getElementById('conversacion')!.innerText), /total conocido[\s\S]*240[\s\S]*Quedan importes pendientes/i);
     assert.equal(await cuenta(t.p, '.flight-card'), 2);
     assert.equal((await itemsPanel(t.p)).length, 6);
   } finally { await t.cerrar(); }
