@@ -134,3 +134,25 @@ export function consultasActividadesParaDestino(destino: string): string[] {
 }
 
 
+
+/**
+ * Análisis de un dataset del actor para UNA ciudad: de dónde sale cada descarte. Pura (sin red);
+ * la usa el script de diagnóstico y las pruebas.
+ */
+export function analizarDataset(items: any[], destino: string) {
+  const lista = Array.isArray(items) ? items : [];
+  const ciudades: Record<string, number> = {};
+  for (const a of lista) { const c = String(a?.city ?? '(sin ciudad)'); ciudades[c] = (ciudades[c] ?? 0) + 1; }
+  const { validas, diagnostico } = filtrarActividadesDeCiudad(lista, destino);
+  const precioNumerico = validas.filter((a) => extraerPrecio(a) !== null).length;
+  return {
+    destino,
+    consultas: consultasActividadesParaDestino(destino),
+    ...diagnostico,
+    ciudadesEnDataset: ciudades,
+    validasConPrecio: precioNumerico,
+    validasSinPrecio: validas.length - precioNumerico,
+    ejemplosValidos: validas.slice(0, 3).map((a) => ({ titulo: a.title, ciudad: a.city ?? null })),
+    ejemplosDescartados: lista.filter((a) => !validas.includes(a)).slice(0, 3).map((a) => ({ titulo: a?.title ?? null, ciudad: a?.city ?? null })),
+  };
+}

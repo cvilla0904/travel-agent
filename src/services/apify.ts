@@ -1,10 +1,23 @@
 import { ApifyClient } from 'apify-client';
 import { consultasActividadesParaDestino as consultasParaDestino } from './actividades-ciudad.js';
 
-const ACTOR_ID = 'scrapesage/tours-activities-scraper';
+export const ACTOR_ID = 'scrapesage/tours-activities-scraper';
 const PLATFORMS = ['civitatis', 'tiqets'];
 const MAX_RESULTS_PER_QUERY = 10;
-const WAIT_SECS = 20;
+export const WAIT_SECS = 20;
+
+/** Input exacto que recibe el actor (compartido con el script de diagnóstico para que no se desvíen). */
+export function inputActor(consultas: string[]) {
+  return {
+    searchQueries: consultas,
+    platforms: PLATFORMS,
+    currency: 'EUR',
+    language: 'es',
+    includeActivityDetails: true,
+    maxResults: Math.max(10, consultas.length * MAX_RESULTS_PER_QUERY),
+    maxResultsPerQuery: MAX_RESULTS_PER_QUERY,
+  };
+}
 
 async function ejecutarActor(searchQueries: string[]) {
   const token = process.env.APIFY_API_TOKEN;
@@ -15,22 +28,16 @@ async function ejecutarActor(searchQueries: string[]) {
 
   const client = new ApifyClient({ token });
   const actor = client.actor(ACTOR_ID);
-  const actorInput = {
-    searchQueries: consultas,
-    platforms: PLATFORMS,
-    currency: 'EUR',
-    language: 'es',
-    includeActivityDetails: true,
-    maxResults: Math.max(10, consultas.length * MAX_RESULTS_PER_QUERY),
-    maxResultsPerQuery: MAX_RESULTS_PER_QUERY,
-  };
+  const actorInput = inputActor(consultas);
 
   console.info('[APIFY_DIAG] Starting actor', JSON.stringify({ actor: ACTOR_ID, input: actorInput }));
+  const inicio = Date.now();
   const run = await actor.call(actorInput, { waitSecs: WAIT_SECS });
   console.info('[APIFY_DIAG] Actor returned', JSON.stringify({
     status: run.status,
     runId: run.id,
     datasetId: run.defaultDatasetId ?? null,
+    segundos: Math.round((Date.now() - inicio) / 100) / 10,
   }));
 
   if (!run.defaultDatasetId) {
@@ -52,6 +59,8 @@ async function ejecutarActor(searchQueries: string[]) {
     datasetId: run.defaultDatasetId,
     itemCount: items.length,
     sampleFields: items[0] ? Object.keys(items[0] as Record<string, unknown>) : [],
+    // Etiquetas de ciudad del dataset (máx. 10): permiten ver si el actor responde con otro nombre/idioma.
+    ciudades: resumenCiudades(items as any[]),
   }));
 
   if (items.length === 0 && run.status === 'RUNNING') {
@@ -70,4 +79,13 @@ export async function buscarActividadesApify(params: {
 
 export async function buscarActividadesApifyMultidestino(destinos: string[]) {
   return ejecutarActor(destinos.flatMap(consultasParaDestino));
+}
+
+function resumenCiudades(items: any[]): Record<string, number> {
+  const cuenta: Record<string, number> = {};
+  for (const item of items) {
+    const ciudad = String(item?.city ?? '(sin ciudad)');
+    if (Object.keys(cuenta).length < 10 || ciudad in cuenta) cuenta[ciudad] = (cuenta[ciudad] ?? 0) + 1;
+  }
+  return cuenta;
 }

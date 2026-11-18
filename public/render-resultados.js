@@ -51,8 +51,32 @@ function renderResultados(respuesta, target) {
   const results = target || document.getElementById('results');
   const chatBox = document.getElementById('chatBox');
   if (chatBox) chatBox.style.display = 'block';
+  // El agente no siempre escribe «### Vuelos» tal cual: a veces añade emoji («## ✈️ Vuelos»), numeración,
+  // fechas con dígitos («## Vuelos Madrid → París (11–18 ene)») o usa negrita en vez de almohadillas.
+  // Se normaliza solo la ETIQUETA de sección (nunca el contenido) para que el parser la reconozca.
+  const SECCION = /^(?:Vuelos|Alojamientos?|Hoteles|Actividades|Presupuesto|Experiencias)\b/i;
+  const etiquetaDeSeccion = (trimmed) => {
+    const conAlmohadillas = trimmed.match(/^(#{1,6})\s*(.+)$/);
+    const soloNegrita = trimmed.match(/^\*\*([^*]{2,100})\*\*\s*:?\s*$/);
+    if (!conAlmohadillas && !soloNegrita) return null;
+    const texto = (conAlmohadillas ? conAlmohadillas[2] : soloNegrita[1])
+      .replace(/\*\*/g, '')
+      .replace(/^(?:\d+[.)]\s*)?[^\p{L}\p{N}]*/u, '')   // emoji, viñetas y numeración iniciales
+      .replace(/^(?:\d+[.)]\s*)/, '')
+      .replace(/\s*:\s*$/, '')                          // «**Vuelos:**»
+      .trim();
+    if (!SECCION.test(texto)) return null;
+    return { nivel: conAlmohadillas ? conAlmohadillas[1].length : 0, texto };
+  };
   const lines = respuesta.replace(/\r/g, '').split('\n').map(line => {
     const trimmed = line.trim();
+    const etiqueta = etiquetaDeSeccion(trimmed);
+    if (etiqueta) {
+      // Vuelos se reconoce siempre como «###»; el resto conserva su nivel (los subtítulos «####» de hoteles
+      // siguen siéndolo) y la negrita pasa a «###».
+      if (/^Vuelos\b/i.test(etiqueta.texto)) return '### ' + etiqueta.texto;
+      return '#'.repeat(etiqueta.nivel || 3) + ' ' + etiqueta.texto;
+    }
     // The agent sometimes emits plain section labels instead of Markdown headings.
     if (/^(?:#{1,6}\s*)?Vuelos(?:\s+[^.:€\d]{0,40})?$/i.test(trimmed)) return '### ' + trimmed.replace(/^#{1,6}\s*/, '');
     if (/^(?:#{1,6}\s*)?Alojamientos(?:\s+en\s+.+|\s+encontrados|\s+reales)?\s*$/i.test(trimmed)) return '### ' + trimmed.replace(/^#{1,6}\s*/, '');
@@ -457,7 +481,8 @@ function renderResultados(respuesta, target) {
   let currentBlock = [];
 
   flightLines.forEach(line => {
-    const trimmed = line.trim();
+    // «**Iberia** — 240 € …» se lee igual que «**Iberia**: 240 € …» (solo cambia el separador).
+    const trimmed = line.trim().replace(/^((?:-\s+|\d+[.)]\s+)?\*\*[^*]+\*\*)\s+[—–]\s+/, '$1: ');
     const flightLabel = trimmed.match(/^(?:-\s+|\d+[.)]\s+)?(?:\*\*)?([^:]+?)(?:\*\*)?:/);
     const isLinkLabel = flightLabel && /^(?:enlace|enlaces|link|url|reserva|reservar|ver|booking|fuente|más información|mas informacion)\b/i.test(flightLabel[1].replace(/\*\*/g, '').trim());
     const hasFlightPrice = /\d[\d.,]*\s*(?:€|EUR(?![A-Za-z]))|(?:€|EUR)\s*\d/i.test(trimmed);

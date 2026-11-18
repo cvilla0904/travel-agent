@@ -114,3 +114,22 @@ test('consultas al actor: Bruselas y Viena también se piden con su nombre ingl�
   assert.deepEqual(consultasActividadesParaDestino('Paris'), ['Paris', 'París']);
   assert.deepEqual(consultasActividadesParaDestino('Tallin'), ['Tallin']);
 });
+
+import { analizarDataset } from '../src/services/actividades-ciudad.ts';
+
+test('análisis de dataset: separa proveedor / sin datos / descartadas por ciudad / precio, y muestra las etiquetas de ciudad', () => {
+  const items = [
+    act('Brussels', 'Atomium', { priceFrom: 16 }), act('Brussels', 'Chocolate tour'),
+    act('Antwerp', 'Puerto de Amberes', { priceFrom: 20 }), act(undefined, 'Sin ciudad ni mención'),
+    { title: 'Sin url', city: 'Brussels' },
+  ];
+  const r = analizarDataset(items, 'Bruselas');
+  assert.deepEqual(r.consultas, ['Bruselas', 'Brussels']);
+  assert.equal(r.resultadosProveedor, 5);
+  assert.equal(r.sinTituloOUrl, 1);
+  assert.equal(r.descartadasPorCiudad, 2);
+  assert.equal(r.resultadosValidos, 2);
+  assert.equal(r.validasConPrecio, 1); assert.equal(r.validasSinPrecio, 1);
+  assert.deepEqual(r.ciudadesEnDataset, { Brussels: 3, Antwerp: 1, '(sin ciudad)': 1 });
+  assert.ok(r.ejemplosDescartados.some((e: any) => e.ciudad === 'Antwerp'));
+});
