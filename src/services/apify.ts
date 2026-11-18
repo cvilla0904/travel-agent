@@ -1,36 +1,10 @@
 import { ApifyClient } from 'apify-client';
+import { consultasActividadesParaDestino as consultasParaDestino } from './actividades-ciudad.js';
 
 const ACTOR_ID = 'scrapesage/tours-activities-scraper';
 const PLATFORMS = ['civitatis', 'tiqets'];
 const MAX_RESULTS_PER_QUERY = 10;
 const WAIT_SECS = 20;
-
-// Consultamos el nombre local y el habitual en inglés. El actor puede responder
-// de forma diferente según el idioma de la búsqueda, aunque el destino sea el mismo.
-const ALIASES_DESTINO: Record<string, string[]> = {
-  roma: ['Rome', 'Roma'],
-  rome: ['Rome', 'Roma'],
-  florencia: ['Florence', 'Florencia'],
-  florence: ['Florence', 'Florencia'],
-  venecia: ['Venice', 'Venecia'],
-  venice: ['Venice', 'Venecia'],
-  londres: ['London', 'Londres'],
-  london: ['London', 'Londres'],
-  munich: ['Munich', 'Múnich'],
-  múnich: ['Munich', 'Múnich'],
-  paris: ['Paris', 'París'],
-  parís: ['Paris', 'París'],
-  amsterdam: ['Amsterdam'],
-  barcelona: ['Barcelona'],
-  madrid: ['Madrid'],
-};
-
-function consultasParaDestino(destino: string): string[] {
-  const limpio = destino.trim();
-  const clave = limpio.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-  const alias = ALIASES_DESTINO[clave];
-  return alias ? [...new Set([limpio, ...alias])] : [limpio];
-}
 
 async function ejecutarActor(searchQueries: string[]) {
   const token = process.env.APIFY_API_TOKEN;

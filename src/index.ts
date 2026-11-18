@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { buscarLugaresGeoapify } from './services/geoapify.js';
 import { buscarActividadesApify, buscarActividadesApifyMultidestino } from './services/apify.js';
 import { buscarVuelosConEstado } from './services/vuelos.js';
-import { actividadEsDeCiudad } from './services/actividades-ciudad.js';
+import { filtrarActividadesDeCiudad, actividadParaMultidestino } from './services/actividades-ciudad.js';
 import { parsearPrecio, extraerPrecio, esGratisVerificado } from './services/precios-actividades.js';
 import { buscarHotelesConEstado } from './services/searchapi.js';
 import { hotelOutputSchema } from './schemas/hotels.js';
@@ -515,15 +515,10 @@ const buscarActividades = tool({
     // válidos cuando la etiqueta city del actor no coincidía con el idioma del destino.
     // No descartamos una actividad real solo porque el proveedor no publique precio.
     // Exigimos título y URL HTTP(S); el precio se normaliza y puede quedar como null.
-    const conTitulo = resultados.filter((actividad: any) => {
-      const url = typeof actividad?.url === 'string' ? actividad.url.trim() : '';
-      return typeof actividad?.title === 'string' &&
-        actividad.title.trim().length > 0 &&
-        (url.startsWith('https://') || url.startsWith('http://')) &&
-        // El actor puede mezclar resultados de varias consultas en el mismo dataset.
-        // Nunca mostramos una actividad si no podemos verificar que pertenece al destino.
-        actividadEsDeCiudad(actividad, destino);
-    });
+    // Nunca mostramos una actividad si no podemos verificar que pertenece al destino; el diagnóstico
+    // separa lo que devolvió el proveedor de lo que descartamos por ciudad.
+    const { validas: conTitulo, diagnostico: diagnosticoFiltro } = filtrarActividadesDeCiudad(resultados, destino);
+    console.info('[ACTIVITIES_DIAG] City filter', JSON.stringify({ destino, ...diagnosticoFiltro }));
     const normalizarTexto = (valor: unknown) => String(valor ?? '')
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
     const conPreferencia = conTitulo.map((actividad: any) => ({
@@ -545,6 +540,9 @@ const buscarActividades = tool({
         resultadosProveedor: resultados.length,
         resultadosConTitulo: conTitulo.length,
         resultadosConPrecioNumerico: conTitulo.filter((actividad: any) => parsearPrecio(actividad.priceFrom) !== null).length,
+        sinTituloOUrl: diagnosticoFiltro.sinTituloOUrl,
+        descartadasPorCiudad: diagnosticoFiltro.descartadasPorCiudad,
+        ciudadesDescartadas: diagnosticoFiltro.ciudadesDescartadas,
       },
       actividades: unicos.slice(0, 15).map((actividad: any) => ({
         nombre: actividad.title,
@@ -579,6 +577,9 @@ const activitiesOutputSchema =
       resultadosProveedor: z.number(),
       resultadosConTitulo: z.number(),
       resultadosConPrecioNumerico: z.number(),
+      sinTituloOUrl: z.number(),
+      descartadasPorCiudad: z.number(),
+      ciudadesDescartadas: z.array(z.string()),
     }),
 
     actividades:
@@ -906,27 +907,13 @@ const buscarRecursosMultidestino = tool({
       const hoteles: any[] = hotelResult.hoteles.slice(0, 10);
       const errorAlojamientos: string | null = hotelResult.error;
 
-      const actividades = actividadesProveedor
-        .filter(
-          (actividad: any) =>
-            actividad?.title &&
-            typeof actividad.priceFrom === 'number' &&
-            actividadEsDeCiudad(actividad, ciudad),
-        )
+      // Mismo criterio que en un solo destino: se conservan las actividades con precio pendiente.
+      const { validas: actividadesCiudad, diagnostico: diagnosticoActividades } =
+        filtrarActividadesDeCiudad(actividadesProveedor, ciudad);
+      console.info('[ACTIVITIES_DIAG] Multidestino city filter', JSON.stringify({ ciudad, ...diagnosticoActividades }));
+      const actividades = actividadesCiudad
         .slice(0, 10)
-        .map((actividad: any) => ({
-          nombre: actividad.title,
-          tipo:
-            actividad.categories?.join(', ') ||
-            tipos.join(', '),
-          precio: Number(actividad.priceFrom ?? 0),
-          moneda: actividad.priceCurrency ?? 'EUR',
-          valoracion: Number(actividad.rating ?? 0),
-          numeroResenas: Number(actividad.reviewCount ?? 0),
-          duracion: actividad.durationText ?? '',
-          url: actividad.url ?? '',
-          plataforma: actividad.platform ?? '',
-        }));
+        .map((actividad: any) => actividadParaMultidestino(actividad, tipos));
 
       resultados.push({
         ciudad,
@@ -939,6 +926,7 @@ const buscarRecursosMultidestino = tool({
           alojamientos: errorAlojamientos,
           actividades: errorActividadesProveedor,
         },
+        diagnosticoActividades,
         diagnosticoErrorAlojamientos: errorAlojamientos
           ? {
               codigoError: hotelResult.codigoError,
@@ -954,7 +942,7 @@ const buscarRecursosMultidestino = tool({
     return {
       ciudades: resultados,
       nota:
-        'Los resultados están agrupados por ciudad y proceden de búsquedas reales.',
+        'Los resultados están agrupados por ciudad y proceden de búsquedas reales. En actividades, si precio es null y esGratis es false, el precio está por confirmar: no lo presentes como 0 ni como gratis.',
     };
   },
 });
