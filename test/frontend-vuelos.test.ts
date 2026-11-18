@@ -2,10 +2,10 @@
 // Sin red: /api/chat se intercepta. Si Playwright/Chromium no están disponibles, se omite.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
+import { servirFrontend } from './servidor-frontend.ts';
 
 const require = createRequire(import.meta.url);
 let chromium: any = null;
@@ -42,11 +42,7 @@ const casos: Array<[string, string, (r: any) => void]> = [
 test('frontend vuelos (Chromium)', { skip: omitir }, async () => {
   let respuesta = '';
   const root = path.resolve(import.meta.dirname, '..');
-  const srv = http.createServer((q, r) => {
-    if (q.url === '/') { r.setHeader('content-type', 'text/html'); r.end(fs.readFileSync(path.join(root, 'index.html'))); } else { r.statusCode = 404; r.end(); }
-  });
-  await new Promise<void>((ok) => srv.listen(0, ok));
-  const base = 'http://127.0.0.1:' + (srv.address() as any).port;
+  const { base, cerrar } = await servirFrontend(root);
   const b = await chromium.launch(EXEC ? { executablePath: EXEC } : {});
   try {
     for (const [nombre, md, comprobar] of casos) {
@@ -64,5 +60,5 @@ test('frontend vuelos (Chromium)', { skip: omitir }, async () => {
       try { comprobar(r); } catch (e: any) { e.message = `[${nombre}] ${e.message} :: ${JSON.stringify(r)}`; throw e; }
       await p.close();
     }
-  } finally { await b.close(); srv.close(); }
+  } finally { await b.close(); cerrar(); }
 });

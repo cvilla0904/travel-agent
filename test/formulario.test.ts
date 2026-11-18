@@ -149,7 +149,7 @@ test('destino con país o código no genera falsos conflictos ("Florencia, Itali
 });
 
 test('cableado en buscarViaje: una sola composición, una sola llamada al agente, aclaración sin búsqueda ni sesión nueva', () => {
-  const fn = /async function buscarViaje\(\) \{([\s\S]*?)\n    \}\n\n    function escapeHtml/.exec(html);
+  const fn = /async function buscarViaje\(\) \{([\s\S]*?)\n    \}\n\n    \/\* Conversación posterior\. \*\//.exec(html);
   assert.ok(fn, 'buscarViaje no encontrada');
   const cuerpo = fn![1]!;
   assert.equal((cuerpo.match(/componerPeticionViaje\(/g) || []).length, 1);
@@ -158,6 +158,9 @@ test('cableado en buscarViaje: una sola composición, una sola llamada al agente
   const iAcl = cuerpo.indexOf("peticion.estado === 'aclaracion'");
   const iReturn = cuerpo.indexOf('return;', iAcl);
   assert.ok(iAcl > -1 && iReturn > iAcl && iReturn < cuerpo.indexOf('iniciarNuevaBusqueda()'), 'la aclaración sale antes de nueva sesión y de buscar');
+  // Fase 1: la búsqueda se delega en /resultados.html (que hace la única llamada) antes del flujo antiguo de respaldo.
+  assert.ok(cuerpo.indexOf("location.assign('/resultados.html')") > cuerpo.indexOf('iniciarNuevaBusqueda()'), 'navega a resultados tras crear sesión nueva');
+  assert.ok(cuerpo.indexOf("location.assign('/resultados.html')") < cuerpo.indexOf('consultarAgente('), 'navega antes del respaldo en la misma página');
   assert.match(cuerpo, /if \(busquedaEnCurso\) return;/);
   assert.match(cuerpo, /finally \{\s*busquedaEnCurso = false;/);
 });

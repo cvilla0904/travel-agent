@@ -46,9 +46,17 @@
     panel = document.createElement('aside');
     panel.id = 'mogavel-trip-builder';
     panel.setAttribute('aria-live', 'polite');
-    panel.innerHTML = '<div class="mtb-head"><div><span class="mtb-kicker">TU VIAJE</span><strong>Tu selección</strong></div><button type="button" class="mtb-close" aria-label="Ocultar resumen">−</button></div><div class="mtb-items"></div><div class="mtb-total"></div><p class="mtb-foot">Estimación orientativa. Confirma el importe y las condiciones en el proveedor.</p><button type="button" class="mtb-continue">Continuar con mi viaje</button>';
+    panel.innerHTML = '<div class="mtb-head"><div><span class="mtb-kicker">TU VIAJE</span><strong>Tu selección</strong></div><button type="button" class="mtb-close" aria-label="Plegar o desplegar Tu viaje" aria-expanded="true">−</button></div><div class="mtb-items"></div><div class="mtb-total"></div><p class="mtb-foot">Estimación orientativa. Confirma el importe y las condiciones en el proveedor.</p><button type="button" class="mtb-continue">Continuar con mi viaje</button>';
     document.body.appendChild(panel);
-    panel.querySelector('.mtb-close').addEventListener('click', () => panel.classList.toggle('mtb-collapsed'));
+    const closeBtn = panel.querySelector('.mtb-close');
+    const syncCollapsed = () => { const c = panel.classList.contains('mtb-collapsed'); closeBtn.setAttribute('aria-expanded', String(!c)); closeBtn.textContent = c ? '+' : '−'; };
+    const toggle = () => { panel.classList.toggle('mtb-collapsed'); syncCollapsed(); };
+    closeBtn.addEventListener('click', (e) => { e.stopPropagation(); toggle(); });
+    panel.querySelector('.mtb-head').addEventListener('click', toggle);
+    panel.querySelector('.mtb-head').style.cursor = 'pointer';
+    // En móvil el panel es un desplegable inferior: empieza plegado para no tapar los resultados.
+    try { if (window.matchMedia('(max-width:700px)').matches) panel.classList.add('mtb-collapsed'); } catch (_) {}
+    syncCollapsed();
     panel.querySelector('.mtb-continue').addEventListener('click', () => {
       const items = allSelected();
       if (!items.length) { alert('Selecciona al menos una opción para continuar.'); return; }
@@ -111,7 +119,7 @@
       .hotel-card>.mtb-select,.activity-card>.mtb-select{align-self:stretch;justify-self:stretch;flex-basis:100%}
       .mtb-continue:disabled{opacity:.6;cursor:wait}
       .mtb-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.mtb-head>div{display:grid;gap:3px}.mtb-head strong{font-size:18px;color:#142b48}.mtb-kicker{font-size:10px;letter-spacing:1.3px;color:#728498;font-weight:700}.mtb-close{border:1px solid #dce4ea;background:#fff;border-radius:8px;width:32px;height:32px;font-size:20px;color:#203d60;cursor:pointer}.mtb-items{display:grid;gap:10px}.mtb-item{display:flex;align-items:center;gap:11px;padding:13px;background:linear-gradient(110deg,#f5f8fa,#fff);border:1px solid #e7edf2;border-radius:13px;box-shadow:0 2px 8px #142b4808}.mtb-item-copy{display:grid;gap:3px}.mtb-item-icon{flex-basis:40px;height:40px;font-size:19px}.mtb-item span{font-size:13px}.mtb-item small{font-size:12px}.mtb-item-copy{flex:1;min-width:0}.mtb-item-icon{display:grid;place-items:center;flex:0 0 34px;height:34px;background:#e8f0f4;border-radius:10px;font-size:16px}.mtb-item b{display:block;font-size:10px;letter-spacing:.35px;color:#718093;text-transform:uppercase}.mtb-item span{display:block;font-size:12px;font-weight:700;overflow-wrap:anywhere;line-height:1.35}.mtb-item small{display:block;color:#536b84;font-size:11px;font-weight:650;margin-top:3px}.mtb-remove{border:0;background:transparent;color:#a33;cursor:pointer;font-size:12px;align-self:center}.mtb-total{margin-top:14px;padding:13px;background:#f2f6f9;border:1px solid #e5ecf2;border-radius:12px;font-size:12px;color:#536b84}.mtb-total strong{display:block;color:#142b48;font-size:24px}.mtb-foot{font-size:10px;color:#778494;margin:8px 0}.mtb-continue{width:100%;padding:12px;border:0;border-radius:10px;background:#142b48;color:#fff;font-weight:700;cursor:pointer}.mtb-select{display:inline-flex;align-items:center;justify-content:center;margin-top:12px;padding:9px 13px;border:1px solid #203d60;border-radius:9px;background:#fff;color:#203d60;font-weight:700;cursor:pointer}.mtb-select[aria-pressed="true"]{background:#203d60;color:#fff}.mtb-collapsed .mtb-items,.mtb-collapsed .mtb-total,.mtb-collapsed .mtb-foot,.mtb-collapsed .mtb-continue{display:none}
-      @media(max-width:600px){#mogavel-trip-builder{right:10px;bottom:10px;width:calc(100vw - 20px);max-height:68vh}.mtb-item span{max-width:none}}
+      @media(max-width:700px){#mogavel-trip-builder{left:0;right:0;bottom:0;width:100%;max-height:72vh;border-radius:18px 18px 0 0;border-bottom:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 34px #142b4824}.mtb-collapsed .mtb-head{margin-bottom:0}.mtb-item span{max-width:none}}
     `;
     document.head.appendChild(style);
   }
@@ -123,6 +131,8 @@
     persist();
     const items = allSelected();
     panel.hidden = items.length === 0;
+    panel.querySelector('.mtb-kicker').textContent = items.length ? 'TU VIAJE · ' + items.length + (items.length === 1 ? ' ELEMENTO' : ' ELEMENTOS') : 'TU VIAJE';
+    try { document.dispatchEvent(new CustomEvent('mogavel:seleccion')); } catch (_) {}
     panel.querySelector('.mtb-items').innerHTML = items.length ? items.map((x, i) => {
       const icon = x.kind === 'flight' ? '✈️' : x.kind === 'hotel' ? '🏨' : '◇';
       const amount = amountLabel(x.price);
@@ -152,17 +162,29 @@
     button.setAttribute('aria-pressed',String(Boolean(active)));
     button.textContent=active?'✓ Seleccionado':'Añadir a mi viaje';
   }
+  // Identificador estable: no depende del orden de las tarjetas ni de si su pestaña está visible.
+  // Se calcula con título + enlace + importe; si dos tarjetas son idénticas se distinguen con un sufijo.
+  const hashText = str => { let h = 5381; for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
+  const externalUrlOf = card => { const a = card.querySelector('a[href^="http"]'); return a ? a.getAttribute('href') : ''; };
+  function stableId(card, kind, price, vistos) {
+    const clave = [titleOf(card, kind), externalUrlOf(card), price ? [price.value, price.currency, price.basis || ''].join('/') : ''].join('|').toLowerCase().replace(/\s+/g, ' ');
+    const base = kind + ':' + hashText(clave);
+    const n = (vistos.get(base) || 0) + 1;
+    vistos.set(base, n);
+    return n > 1 ? base + '#' + n : base;
+  }
   function decorate() {
     const results=document.getElementById('results'); if(!results) return;
     const categories=[
       ['.flight-card','flight'],['.hotel-card','hotel'],['.activity-card','activity']
     ];
     categories.forEach(([selector,kind])=>{
-      results.querySelectorAll(selector).forEach((card,index)=>{
-        let button=card.querySelector('.mtb-select'); if(button) return;
-        const id=kind+':'+index+':'+titleOf(card,kind);
+      const vistos=new Map();
+      results.querySelectorAll(selector).forEach((card)=>{
         const price=moneyOf(card,kind);
-        const item={id,kind,type:labels[kind],name:titleOf(card,kind),price};
+        const id=stableId(card,kind,price,vistos);
+        let button=card.querySelector('.mtb-select'); if(button) return;
+        const item={id,kind,type:labels[kind],name:titleOf(card,kind),price,url:externalUrlOf(card)};
         button=document.createElement('button');button.type='button';button.className='mtb-select';button.dataset.kind=kind;button.dataset.id=id;
         card.appendChild(button);
         refreshButton(button);
@@ -176,7 +198,15 @@
     });
     if(results.querySelector('.flight-card,.hotel-card,.activity-card')) {setupPanel();render();}
   }
+  // Texto de contexto que se añade al mensaje enviado al agente. Mismo formato que usa index.html.
+  function contextoSeleccion(message) {
+    const selected = window.MogavelTripBuilder.snapshot();
+    if (!selected.length) return message;
+    const selection = selected.map(item => '- ' + item.type + ': ' + item.name + (item.price ? (item.price.free ? ' (gratuita según el proveedor)' : item.price.basis === 'desde' ? ' (precio orientativo "desde" del proveedor: ' + item.price.value + ' ' + item.price.currency + '; no es un precio final garantizado)' : ' (importe mostrado: ' + item.price.value + ' ' + item.price.currency + ')') : ' (importe no identificado)')).join('\n');
+    return message + '\n\n[Selección actual del viaje en la web; úsala como contexto. Si pido cambiar o quitar un elemento, actualiza la propuesta y confirma claramente el cambio. No inventes precios ni des por reservados los elementos.]\n' + selection;
+  }
   window.MogavelTripBuilder = {
+    contexto: contextoSeleccion,
     snapshot: () => allSelected().map(item => ({ kind: item.kind, type: item.type, name: item.name, price: item.price })),
     reset: () => { chosen.flight = null; chosen.hotel = null; chosen.activities.clear(); try { sessionStorage.removeItem(storageKey); } catch (_) {} document.querySelectorAll('.mtb-select').forEach(refreshButton); render(); }
   };

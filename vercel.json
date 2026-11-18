@@ -32,6 +32,26 @@
     {
       "src": "public/trip-builder.js",
       "use": "@vercel/static"
+    },
+    {
+      "src": "public/render-resultados.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/resultados.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "resultados.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/resultados.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/estado-busqueda.js",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -66,6 +86,26 @@
     {
       "src": "/trip-builder.js",
       "dest": "/public/trip-builder.js"
+    },
+    {
+      "src": "/resultados.html",
+      "dest": "/resultados.html"
+    },
+    {
+      "src": "/render-resultados.js",
+      "dest": "/public/render-resultados.js"
+    },
+    {
+      "src": "/resultados.js",
+      "dest": "/public/resultados.js"
+    },
+    {
+      "src": "/resultados.css",
+      "dest": "/public/resultados.css"
+    },
+    {
+      "src": "/estado-busqueda.js",
+      "dest": "/public/estado-busqueda.js"
     },
     {
       "src": "/(.*)",

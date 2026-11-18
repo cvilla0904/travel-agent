@@ -220,7 +220,8 @@ test('contrato estático: la herramienta usa buscarHotelesConEstado y no queda t
 });
 
 test('UI: el parser de valoración admite /10 normalizado a /5', () => {
-  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  // El parser vive ahora en el renderer compartido (Fase 1).
+  const html = readFileSync(new URL('../public/render-resultados.js', import.meta.url), 'utf8');
   const m = html.match(/const ratingMatch = text\.match\((\/.+\/i)\);/);
   assert.ok(m, 'regex de valoración no encontrada');
   const re = new RegExp(m![1]!.slice(1, -2), 'i');

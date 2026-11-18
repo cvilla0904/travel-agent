@@ -1,10 +1,10 @@
 // Frontend real (index.html + public/trip-builder.js) en Chromium con respuestas FICTICIAS. Sin red.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
+import { servirFrontend } from './servidor-frontend.ts';
 
 const require = createRequire(import.meta.url);
 let chromium: any = null;
@@ -23,13 +23,7 @@ const MD = `### Vuelos
 
 test('actividades: el precio mostrado se conserva en la selección y en el contexto enviado al agente', { skip: !chromium && 'playwright no disponible' }, async () => {
   const root = path.resolve(import.meta.dirname, '..');
-  const srv = http.createServer((q, r) => {
-    if (q.url === '/') { r.setHeader('content-type', 'text/html'); r.end(fs.readFileSync(path.join(root, 'index.html'))); }
-    else if (q.url === '/trip-builder.js') { r.setHeader('content-type', 'text/javascript'); r.end(fs.readFileSync(path.join(root, 'public/trip-builder.js'))); }
-    else { r.statusCode = 404; r.end(); }
-  });
-  await new Promise<void>((ok) => srv.listen(0, ok));
-  const base = 'http://127.0.0.1:' + (srv.address() as any).port;
+  const { base, cerrar } = await servirFrontend(root);
   const b = await chromium.launch(EXEC ? { executablePath: EXEC } : {});
   try {
     const p = await b.newPage();
@@ -53,5 +47,5 @@ test('actividades: el precio mostrado se conserva en la selección y en el conte
     assert.match(enviado, /Coliseo, Foro y Palatino \(precio orientativo "desde" del proveedor: 62\.1 EUR/);
     assert.match(enviado, /Free tour del centro \(gratuita según el proveedor\)/);
     assert.match(enviado, /Visita sin tarifa \(importe no identificado\)/);
-  } finally { await b.close(); srv.close(); }
+  } finally { await b.close(); cerrar(); }
 });

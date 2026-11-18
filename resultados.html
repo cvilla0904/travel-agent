@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8f5ef">
+  <meta name="robots" content="noindex">
+  <title>Resultados de tu viaje · Mogavel</title>
+  <link rel="stylesheet" href="/resultados.css">
+  <style>
+    /* Ajustes propios de la página de resultados (sobre las reglas compartidas de resultados.css). */
+    body{background:#fffaf4;padding-bottom:96px}
+    header{position:relative;top:auto;left:auto;right:auto;height:72px}
+    .res-main{padding:28px 0 40px}
+    .res-top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+    .res-back{display:inline-flex;align-items:center;gap:6px;color:#203d60;font-weight:700;font-size:14px;text-decoration:none}
+    .res-back:hover{text-decoration:underline}
+    #estado{margin:14px 0 0}
+    #estado .res-aviso{padding:16px 18px;border:1px solid #e4d9c8;border-radius:14px;background:#fff7ea;color:#6c4d1f;font-size:14px;line-height:1.5}
+    #estado .res-aviso.res-error{background:#fdecec;border-color:#f1c4c4;color:#8a2c2c}
+    #estado .res-aviso button{margin-left:10px;padding:8px 14px;border-radius:10px;border:1px solid currentColor;background:#fff;color:inherit;font-weight:700;cursor:pointer}
+    .res-tabs{display:flex;gap:6px;margin:22px 0 0;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+    .res-tabs::-webkit-scrollbar{display:none}
+    .res-tab{flex:1 1 0;min-width:112px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 16px;border:0;border-bottom:3px solid transparent;background:none;color:#5d6f84;font:700 15px/1.2 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;cursor:pointer;white-space:nowrap}
+    .res-tab:hover{color:#142b48}
+    .res-tab[aria-selected="true"]{color:#142b48;border-bottom-color:#e7775f}
+    .res-tab:focus-visible{outline:3px solid rgba(32,61,96,.25);outline-offset:-3px;border-radius:8px}
+    .res-count{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 7px;border-radius:99px;background:#edf2f7;color:#203d60;font-size:12px;font-weight:800}
+    .res-tab[aria-selected="true"] .res-count{background:#142b48;color:#fff}
+    .res-count[data-sel="1"]{background:#13864a;color:#fff}
+    #results{display:block;margin:0;padding:6px 0 0;background:none;border:0;border-radius:0;box-shadow:none;white-space:normal}
+    .res-panel[hidden]{display:none!important}
+    .res-panel:empty::before{content:attr(data-vacio);display:block;padding:34px 18px;text-align:center;color:#687b91;font-size:15px;border:1px dashed #d8e0e8;border-radius:16px;margin-top:20px;background:#fff}
+    #notas{margin-top:26px;display:grid;gap:14px}
+    #notas:empty{display:none}
+    #notas .res-nota{padding:22px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 24px rgba(22,42,67,.05);white-space:pre-wrap;line-height:1.7}
+    #notas h3{margin:0 0 8px;font:700 18px/1.2 Georgia,serif;color:#142b48}
+    #chatBox{display:block;margin-top:28px}
+    @media(max-width:700px){
+      .res-main{padding-top:18px}
+      .res-tab{min-width:0;padding:13px 4px;font-size:14px;gap:5px}
+      .trip-summary{grid-template-columns:1fr}
+      body{padding-bottom:84px}
+    }
+    @media(max-width:480px){.res-tab>span[aria-hidden]{display:none}.res-tab{font-size:13.5px}}
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="nav wrap" aria-label="Navegación principal">
+      <a class="brand" href="/index.html#inicio"><span class="brand-mark" aria-hidden="true">✦</span>Mogavel</a>
+      <div class="nav-links"><a href="/index.html#inicio">Inicio</a><a href="/index.html#como-funciona">Cómo funciona</a><a href="/index.html#planifica-tu-viaje">Planifica tu viaje</a><a href="/sobre-mogavel.html">Sobre Mogavel</a></div>
+      <a class="login" href="/index.html#crear-cuenta">Crear cuenta</a>
+    </nav>
+  </header>
+
+  <main class="res-main wrap">
+    <div class="res-top"><a class="res-back" href="/index.html#mis-viajes">← Nueva búsqueda</a></div>
+    <div id="resumen"></div>
+    <div id="estado" role="status" aria-live="polite"></div>
+
+    <div class="res-tabs" role="tablist" aria-label="Resultados del viaje">
+      <button type="button" class="res-tab" role="tab" id="tab-vuelos" data-tab="vuelos" aria-controls="panel-vuelos" aria-selected="true" tabindex="0"><span aria-hidden="true">✈️</span> Vuelos <span class="res-count" data-count="vuelos">0</span></button>
+      <button type="button" class="res-tab" role="tab" id="tab-hoteles" data-tab="hoteles" aria-controls="panel-hoteles" aria-selected="false" tabindex="-1"><span aria-hidden="true">🏨</span> Hoteles <span class="res-count" data-count="hoteles">0</span></button>
+      <button type="button" class="res-tab" role="tab" id="tab-actividades" data-tab="actividades" aria-controls="panel-actividades" aria-selected="false" tabindex="-1"><span aria-hidden="true">◇</span> Actividades <span class="res-count" data-count="actividades">0</span></button>
+    </div>
+
+    <!-- Los tres paneles permanecen montados; solo se alterna el atributo hidden. -->
+    <div id="results" aria-live="polite">
+      <section class="res-panel" id="panel-vuelos" role="tabpanel" aria-labelledby="tab-vuelos" data-vacio="Aún no hay vuelos en esta búsqueda."></section>
+      <section class="res-panel" id="panel-hoteles" role="tabpanel" aria-labelledby="tab-hoteles" data-vacio="Aún no hay alojamientos en esta búsqueda." hidden></section>
+      <section class="res-panel" id="panel-actividades" role="tabpanel" aria-labelledby="tab-actividades" data-vacio="Aún no hay actividades en esta búsqueda." hidden></section>
+    </div>
+
+    <div id="notas" aria-live="polite"></div>
+
+    <div id="chatBox" class="chat-box">
+      <h2>Sigamos preparando tu viaje</h2>
+      <p>Pide cambios, compara opciones o cuéntame qué te gustaría añadir. Tu agente te ayudará a darle forma.</p>
+      <div class="chat-input"><textarea id="chatMessage" placeholder="Ej. Quiero elegir un hotel céntrico y añadir una visita guiada"></textarea><button class="primary send-button" type="button" id="enviarSeguimiento">Enviar <span aria-hidden="true">→</span></button></div>
+    </div>
+  </main>
+
+  <footer><div class="footer-inner wrap"><span class="footer-brand">✦ Mogavel</span><span>Viajes pensados para ti.</span><nav class="footer-links" aria-label="Enlaces"><a href="/index.html#como-funciona">Cómo funciona</a><a href="/index.html#planifica-tu-viaje">Planifica tu viaje</a><a href="/sobre-mogavel.html">Sobre Mogavel</a><a href="mailto:holamogavel@gmail.com">Contacto</a></nav></div></footer>
+
+  <noscript><p style="padding:20px;text-align:center">Mogavel necesita JavaScript para mostrar los resultados.</p></noscript>
+  <script src="/render-resultados.js"></script>
+  <script src="/estado-busqueda.js"></script>
+  <script src="/resultados.js"></script>
+  <script src="/trip-builder.js" defer></script>
+</body>
+</html>

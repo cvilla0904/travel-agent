@@ -1,0 +1,148 @@
+/* Mogavel — estilos de la página de resultados.
+   Reglas copiadas de las hojas en línea de index.html (en el mismo orden, para conservar la cascada):
+   base de página, cabecera, tarjetas de vuelos/hoteles/actividades, resumen, chat y pie.
+   Si se cambia el aspecto de las tarjetas en index.html, replicarlo aquí. */
+:root{--navy:#142b48;--navy2:#203d60;--ink:#1e2c3d;--muted:#697789;--line:#e6eaf0;--blue:#eaf2f8;--sand:#f5efe5;--white:#fff;--shadow:0 16px 48px rgba(22,42,67,.09)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#f7f8fa;color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+a{color:inherit;text-decoration:none}
+.wrap{width:min(1160px,calc(100% - 48px));margin:auto}
+header{height:78px;display:flex;align-items:center;border-bottom:1px solid rgba(20,43,72,.07);background:rgba(247,248,250,.92)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:28px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:750;font-size:18px;color:var(--navy);letter-spacing:-.4px}
+.brand-mark{width:36px;height:36px;border-radius:12px;background:var(--navy);display:grid;place-items:center;color:white;font-size:18px}
+.nav-links{display:flex;gap:32px;color:#596779;font-size:14px}
+.nav-links a:hover{color:var(--navy)}
+.login{border:1px solid #d8dee6;background:white;color:var(--navy);padding:11px 18px;border-radius:999px;font-size:14px;font-weight:650}
+.primary{width:auto;margin:0;border:0;background:var(--navy);color:white;border-radius:12px;padding:14px 20px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .2s,transform .2s}
+.primary:hover{background:var(--navy2);transform:translateY(-1px)}
+.trip-details{margin-top:15px;border-top:1px solid #edf0f3;padding-top:13px;color:#627185;font-size:13px}
+.trip-details summary{cursor:pointer;font-weight:650;color:#52667b}
+#results{display:none;max-width:none;margin:24px 0 0;padding:24px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 24px rgba(22,42,67,.05);white-space:pre-wrap;line-height:1.7}
+.loading{color:#718093}
+.flight-results{margin-top:16px;display:grid;gap:12px;counter-reset:flight}
+.flight-card{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:20px;padding:19px 20px 19px 24px;border:1px solid #e2e8ee;border-radius:18px;background:linear-gradient(135deg,#fff 0%,#fbfcfd 100%);box-shadow:0 6px 18px rgba(22,42,67,.045);transition:transform .2s,box-shadow .2s,border-color .2s;overflow:hidden}
+.flight-card:before{counter-increment:flight;content:counter(flight);position:absolute;left:0;top:0;bottom:0;width:4px;background:#8aabbc;display:grid;place-items:center}
+.flight-card:hover{border-color:#b9ccd8;box-shadow:0 10px 26px rgba(22,42,67,.09);transform:translateY(-2px)}
+.flight-main{min-width:0}
+.flight-airline{display:flex;align-items:center;gap:9px;color:var(--navy);font-weight:800;font-size:14px;letter-spacing:-.1px}
+.flight-airline:before{content:"✈";display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:#edf4f7;color:#416a80;font-size:13px}
+.flight-detail{margin-top:8px;color:#68798b;font-size:12px;line-height:1.55}
+.flight-itinerary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:13px}
+.flight-leg{padding:11px 12px;border:1px solid #e8edf1;border-radius:12px;background:#fff}
+.flight-leg-label{display:block;margin-bottom:7px;color:#8491a0;font-size:9px;font-weight:800;letter-spacing:.12em}
+.flight-leg-route{display:flex;align-items:center;gap:7px;flex-wrap:wrap;color:var(--navy);font-size:12px;font-weight:750}
+.flight-route-arrow{color:#9ba8b5}
+.flight-leg-meta,.flight-extra{margin-top:7px;color:#718093;font-size:11px;line-height:1.5}
+.flight-carrier{display:inline-flex;margin-right:5px;padding:4px 7px;border-radius:7px;background:#edf4f7;font-size:12px}
+.flight-price{white-space:nowrap;text-align:right;color:var(--navy);font-weight:850;font-size:20px;letter-spacing:-.3px}
+.flight-price small{display:block;margin-top:3px;color:#8a96a5;font-size:10px;font-weight:600;letter-spacing:.02em}
+.result-text{white-space:pre-wrap;line-height:1.65;color:#53677d}
+.result-link{display:inline-flex;align-items:center;justify-content:center;gap:5px;color:#315f75;text-decoration:none;font-weight:750}
+.result-link:hover{text-decoration:underline}
+.flight-no-link{font-size:11px;color:#8a96a4}
+.flight-select{border:0;background:var(--navy);color:white;border-radius:11px;padding:11px 15px;font:inherit;font-size:12px;font-weight:750;cursor:pointer;white-space:nowrap;box-shadow:0 4px 10px rgba(20,43,72,.12)}
+.flight-select:hover{background:var(--navy2)}
+@media(max-width:850px){.hotel-category-grid{grid-template-columns:1fr}.flight-card{grid-template-columns:minmax(0,1fr) auto}.flight-card .flight-select{grid-column:2;grid-row:1 / span 2}.flight-itinerary{grid-template-columns:1fr}}
+@media(max-width:600px){.flight-card{display:flex;align-items:stretch;flex-direction:column}.flight-price{text-align:left}.flight-select{width:100%}.flight-itinerary{grid-template-columns:1fr}.hotel-card{align-items:flex-start}.hotel-card:before{margin-top:1px}.hotel-link{align-self:center}}
+.trip-summary{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(2,minmax(150px,.7fr));gap:10px;margin-bottom:24px;padding:18px;background:linear-gradient(135deg,#f7fafc 0%,#eef5f8 100%);border:1px solid #dfe8ee;border-radius:20px;box-shadow:0 9px 24px rgba(22,42,67,.06)}
+.trip-route{padding:4px 6px}
+.trip-kicker{display:block;margin-bottom:7px;color:#8090a0;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.trip-route strong{display:block;color:var(--navy);font-size:22px;letter-spacing:-.4px}
+.trip-route strong:before{content:"📍";margin-right:8px;font-size:18px}
+.trip-meta{display:flex;align-items:center;gap:10px;padding:11px 13px;background:rgba(255,255,255,.78);border:1px solid rgba(214,225,232,.9);border-radius:13px}
+.trip-meta-icon{width:30px;height:30px;display:grid;place-items:center;flex:0 0 30px;border-radius:10px;background:#e7f0f4;color:#315873;font-size:13px}
+.trip-meta span{display:block;color:#8491a0;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.trip-meta strong{display:block;margin-top:3px;color:#52677c;font-size:12px;font-weight:700}
+.result-section-title{display:flex;align-items:center;gap:10px;margin:0 0 14px;color:var(--navy);font-size:18px;letter-spacing:-.2px}
+.result-section-title:before{content:"";display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;border-radius:11px;background:#edf4f7;font-size:16px}
+.result-section-title:after{content:"";flex:1;height:1px;background:#edf0f3}
+.result-section-title.flights:before{content:"✈️"}
+.result-section-title.hotels:before{content:"🏨"}
+.result-section-title.activities:before{content:"🎟️"}
+.result-section-title.adventure:before{content:"🧭"}
+.hotel-category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.hotel-category{min-width:0}
+.hotel-category-title{margin:0 0 12px;color:var(--navy);font-size:15px;font-weight:750}
+.hotel-offers{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.hotel-offer-link{font-size:11px;color:#315f75;background:#f2f6f8;border:1px solid #dce7ec;border-radius:8px;padding:5px 8px}
+.hotel-results{margin-top:16px;display:grid;grid-template-columns:1fr;gap:13px}
+.hotel-card{position:relative;display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:16px;padding:18px 20px 18px 16px;border:1px solid #dfe7ec;border-radius:19px;background:linear-gradient(135deg,#fff 0%,#f8fbfc 100%);box-shadow:0 7px 20px rgba(22,42,67,.055);transition:transform .2s,box-shadow .2s,border-color .2s;overflow:hidden}
+.hotel-card:before{content:"🏨";display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#e8f2f5,#f1f5ec);border:1px solid #dbe8e9;color:#496879;font-size:19px;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+.hotel-card:hover{border-color:#afc5d1;box-shadow:0 12px 28px rgba(22,42,67,.09);transform:translateY(-2px)}
+.hotel-main{min-width:0;flex:1}
+.hotel-link,.activity-link{flex-shrink:0}
+.hotel-name{color:var(--navy);font-weight:800;font-size:14px;letter-spacing:-.1px}
+.hotel-detail{margin-top:6px;color:#718093;font-size:12px;line-height:1.55}
+.hotel-link{white-space:nowrap;padding:9px 12px;border:1px solid #d5e1e7;border-radius:11px;background:#fff;color:#315f75}
+.hotel-link:hover{text-decoration:none;background:#eef5f7}
+.hotel-no-link{font-size:11px;color:#8a96a4}
+.search-note{margin-top:16px;color:#8995a3;font-size:11px;line-height:1.5}
+.empty-flight{display:flex;align-items:center;gap:13px;margin:0 0 6px;padding:14px 16px;border:1px solid #e5eaee;border-radius:15px;background:#fafcfd;color:#718093}
+.empty-flight-icon{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:12px;background:#edf4f7;font-size:18px}
+.empty-flight strong{display:block;color:var(--navy);font-size:13px}
+.empty-flight span:last-child{display:block;margin-top:3px;font-size:11px}
+.activity-results{margin-top:16px;display:grid;grid-template-columns:1fr;gap:13px}
+.activity-card{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:16px;padding:18px 20px 18px 16px;border:1px solid #e1e7ec;border-radius:19px;background:linear-gradient(135deg,#fff 0%,#fbfaf7 100%);box-shadow:0 7px 20px rgba(22,42,67,.05);transition:.2s}
+.activity-card:before{content:"🎟️";display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#fff0d9,#f5edf9);border:1px solid #eee1d2;color:#9b6a35;font-size:18px}
+.activity-card.adventure:before{content:"🧭"}
+.activity-card:hover{border-color:#c9b9a4;box-shadow:0 12px 28px rgba(22,42,67,.08);transform:translateY(-2px)}
+.activity-main{min-width:0;flex:1}
+.activity-price-badge{justify-self:end;align-self:center;padding:12px 15px;border-radius:13px;background:#fff5e8;border:1px solid #f0d5ae;color:#8a5317;font-weight:900;font-size:15px;letter-spacing:.35px;white-space:nowrap}
+.activity-price-badge.free{background:#e5f6e9;border:1px solid #a8dcb6;color:#176534;font-size:19px;box-shadow:0 3px 12px #17653412}
+.activity-price-badge.from{background:#eaf2f8;border-color:#c6d8e8;color:#20486c}
+.activity-price-badge.unknown{background:#f4f5f7;border-color:#e1e5e9;color:#65758a;font-size:11px;letter-spacing:0}
+.activity-card.is-free{border:1.5px solid #a8dcb6;background:linear-gradient(135deg,#fff 0%,#f2fbf4 100%);box-shadow:0 8px 24px #1765340d}
+.activity-name{color:var(--navy);font-weight:800;font-size:14px}
+.activity-detail{margin-top:5px;color:#718093;font-size:12px;line-height:1.5}
+.activity-link{grid-column:1/-1;justify-self:end;align-self:center;white-space:nowrap;padding:10px 15px;border:1px solid #ddd7ce;border-radius:11px;background:#fff;color:#765735;font-weight:800;min-height:42px;display:inline-flex;align-items:center;justify-content:center}
+.activity-link:hover{text-decoration:none;background:#f8f3eb}
+.activity-card.is-paid{border-color:#c6d8e8;background:linear-gradient(135deg,#fff 0%,#f5f9fc 100%)}
+.activity-card .activity-price-badge{min-width:120px;text-align:center}
+.activity-card .activity-main{grid-column:2;grid-row:1}
+.activity-card:before{grid-column:1;grid-row:1}
+.activity-card .activity-price-badge{grid-column:3;grid-row:1}
+.activity-card .activity-link{grid-row:2}
+.chat-box{display:none;max-width:none;margin:22px 0 0;padding:25px;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
+.chat-box h2{margin:0;color:var(--navy);font:500 24px Georgia,"Times New Roman",serif}
+.chat-box>p{margin:9px 0 17px;color:var(--muted);font-size:14px;line-height:1.55}
+.chat-input{display:flex;gap:12px;align-items:stretch}
+.chat-input textarea{flex:1;min-height:62px;resize:vertical;border:1px solid var(--line);border-radius:12px;padding:13px;font:inherit;font-size:14px}
+.send-button{margin:0;width:130px;flex-shrink:0}
+footer{padding:28px 0;color:#8290a0;font-size:12px;border-top:1px solid #e7ebef}
+.footer-inner{display:flex;justify-content:space-between;align-items:center}
+.footer-brand{font-weight:700;color:var(--navy)}
+@media(max-width:850px){.nav-links{gap:17px}}
+@media(max-width:600px){.wrap{width:min(100% - 32px,1160px)}header{height:68px}.nav{gap:12px}.brand{font-size:16px}.brand-mark{width:33px;height:33px}.nav-links{display:none}.login{padding:9px 12px;font-size:12px}.primary{width:100%}.trip-brief{grid-template-columns:repeat(2,1fr)}.chat-box{padding:19px}.chat-input{flex-direction:column}.send-button{width:100%}.footer-inner{gap:12px;flex-direction:column;align-items:flex-start}}
+.footer-inner{flex-wrap:wrap;gap:18px}
+.footer-links{display:flex;flex-wrap:wrap;gap:16px;margin-left:auto}
+.footer-links a{font-size:12px;color:var(--muted)}
+.footer-links a:hover{color:var(--navy);text-decoration:underline}
+@media(max-width:700px){.footer-links{width:100%;margin-left:0;gap:12px 16px}}
+body{ background: #f8f7f5; }
+.primary{ padding: 12px 17px; }
+.trip-details{ margin-top: 12px; padding-top: 11px; }
+:root{ --cream: #f7f4ee; --coral: #e98270; }
+body{ background: #f8f7f5; }
+.primary{ padding: 12px 17px; }
+.trip-details{ margin-top: 12px; padding-top: 11px; }
+:root{--navy:#102b4d;--navy2:#193b60;--coral:#e7775f;--ink:#243247;--muted:#617187;--sand:#f8f0e5}
+body{background:#fffaf4}
+header{position:absolute;z-index:20;top:0;left:0;right:0;height:72px;background:linear-gradient(180deg,rgba(255,251,245,.96),rgba(255,251,245,.78));border-bottom:1px solid rgba(255,255,255,.45);backdrop-filter:blur(10px)}
+.wrap{width:min(1240px,calc(100% - 48px))}
+.brand{font-family:Georgia,"Times New Roman",serif;font-size:24px;font-weight:500;letter-spacing:-.8px}
+.brand-mark{width:auto;height:auto;background:none;color:var(--coral);font-size:25px;border-radius:0}
+.nav-links{gap:30px;color:#25364c;font-size:13px}
+.login{background:var(--navy);color:white;border-color:var(--navy);border-radius:9px;padding:12px 20px}
+.primary{background:var(--navy);border-radius:8px;padding:12px 16px;font-size:12px;white-space:nowrap}
+.primary:hover{background:#214d77}
+footer{background:#fffaf4}
+@media(max-width:720px){header{height:64px}.wrap{width:calc(100% - 30px)}.nav-links{display:none}.primary{width:100%;justify-content:center}}
+header{position:absolute;z-index:20;top:0;left:0;right:0;height:78px;background:rgba(255,252,247,.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.35)}
+.brand-mark{background:transparent;color:#f07854;border-radius:0;font-size:30px;width:30px;height:30px}
+.login{background:var(--navy);border-color:var(--navy);color:#fff;border-radius:11px;padding:13px 20px}
+footer{background:#fff}
+.footer-links{display:flex;gap:18px;flex-wrap:wrap}
+.footer-links a:hover{color:var(--navy)}
+@media(max-width:600px){header{height:66px}.footer-inner{align-items:flex-start}.footer-links{gap:12px}}
