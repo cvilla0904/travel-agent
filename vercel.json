@@ -42,6 +42,46 @@
       "use": "@vercel/static"
     },
     {
+      "src": "public/carrusel-viajes.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/precarga-viaje.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "colombia.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "corcega.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "rajastan.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "sarajevo.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/destinos/colombia.svg",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/destinos/corcega.svg",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/destinos/rajastan.svg",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/destinos/sarajevo.svg",
+      "use": "@vercel/static"
+    },
+    {
       "src": "public/carga-busqueda.js",
       "use": "@vercel/static"
     },
@@ -110,6 +150,46 @@
     {
       "src": "/resultados.js",
       "dest": "/public/resultados.js"
+    },
+    {
+      "src": "/colombia.html",
+      "dest": "/colombia.html"
+    },
+    {
+      "src": "/destinos/colombia.svg",
+      "dest": "/public/destinos/colombia.svg"
+    },
+    {
+      "src": "/corcega.html",
+      "dest": "/corcega.html"
+    },
+    {
+      "src": "/destinos/corcega.svg",
+      "dest": "/public/destinos/corcega.svg"
+    },
+    {
+      "src": "/rajastan.html",
+      "dest": "/rajastan.html"
+    },
+    {
+      "src": "/destinos/rajastan.svg",
+      "dest": "/public/destinos/rajastan.svg"
+    },
+    {
+      "src": "/sarajevo.html",
+      "dest": "/sarajevo.html"
+    },
+    {
+      "src": "/destinos/sarajevo.svg",
+      "dest": "/public/destinos/sarajevo.svg"
+    },
+    {
+      "src": "/carrusel-viajes.js",
+      "dest": "/public/carrusel-viajes.js"
+    },
+    {
+      "src": "/precarga-viaje.js",
+      "dest": "/public/precarga-viaje.js"
     },
     {
       "src": "/carga-busqueda.js",

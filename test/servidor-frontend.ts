@@ -4,7 +4,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const TIPOS: Record<string, string> = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css' };
+const TIPOS: Record<string, string> = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml' };
 
 export async function servirFrontend(root: string): Promise<{ base: string; cerrar: () => void }> {
   const srv = http.createServer((q, r) => {
@@ -12,6 +12,7 @@ export async function servirFrontend(root: string): Promise<{ base: string; cerr
     const archivo = url === '/' ? 'index.html'
       : /^\/[\w-]+\.html$/.test(url) ? url.slice(1)
       : /^\/[\w-]+\.(js|css)$/.test(url) ? 'public' + url
+      : /^\/destinos\/[\w-]+\.svg$/.test(url) ? 'public' + url
       : '';
     const ruta = archivo ? path.join(root, archivo) : '';
     if (!ruta || !fs.existsSync(ruta)) { r.statusCode = 404; r.end(); return; }
