@@ -264,6 +264,29 @@ function renderResultados(respuesta, target) {
     };
   }
 
+  // Estado de la consulta de actividades ("Estado de actividades: error — motivo"). Distingue una consulta
+  // fallida o incompleta de una búsqueda que simplemente no tiene actividades.
+  function parseEstadoActividades(lines) {
+    for (const line of lines) {
+      const m = String(line).trim().match(/^(?:>\s*)?(?:[-*]\s*)?(?:\*\*)?Estado de actividades:?(?:\*\*)?\s*(error|parcial|sin_resultados)\s*(?:[—–-]\s*(.+))?$/i);
+      if (m) return { estado: m[1].toLowerCase(), mensaje: (m[2] || '').replace(/\*+/g, '').trim() };
+    }
+    return null;
+  }
+
+  function conEstadoActividades(lines, section) {
+    const info = parseEstadoActividades(lines);
+    if (!info) return section;
+    const titulo = {
+      error: 'No se han podido consultar las actividades',
+      parcial: 'Resultados de actividades incompletos',
+      sin_resultados: 'Sin actividades verificadas para este destino'
+    }[info.estado];
+    const nota = '<div class="search-note actividades-estado actividades-estado-' + info.estado + '" role="status" data-estado-actividades="' + info.estado + '">' +
+      '<strong>' + titulo + '.</strong> ' + escapeHtml(info.mensaje || (info.estado === 'error' ? 'La consulta al proveedor ha fallado; esto no significa que no existan actividades.' : '')) + '</div>';
+    return { html: nota + (section && section.html ? section.html : '') };
+  }
+
   function parseActivityBlocks(sectionLines) {
     const groups = [];
     let currentGroup = null;
@@ -422,7 +445,7 @@ function renderResultados(respuesta, target) {
       const block = sectionLines.slice(start, end);
       const title = block[0].trim().replace(/^###\s+/, '');
       const hotelSection = parseHotelBlocks(block);
-      const activitySection = parseActivityBlocks(block);
+      const activitySection = conEstadoActividades(block, parseActivityBlocks(block));
 
       return '<section class="multicity-section" style="margin-top:28px">' +
         '<h3 class="multicity-title">' + escapeHtml(title) + '</h3>' +
@@ -536,11 +559,12 @@ function renderResultados(respuesta, target) {
       ? { html: '' }
       : parseHotelBlocks(sectionsLines);
     const activityMarker = sectionsLines.findIndex(line => /^#{0,6}\s*Actividades/i.test(line.trim()));
-    const activitySection = multicitySection.html
+    const activitySectionBase = multicitySection.html
       ? { html: '' }
       : activityMarker !== -1
         ? parseActivityBlocks(sectionsLines.slice(activityMarker))
         : { html: '' };
+    const activitySection = multicitySection.html ? activitySectionBase : conEstadoActividades(sectionsLines, activitySectionBase);
 
     // Solo se afirma "sin vuelos" si la respuesta lo dice; un fallo de consulta no es lo mismo.
     const flightsText = lines.slice(headingIndex, flightEnd).join(' ');
@@ -568,11 +592,12 @@ function renderResultados(respuesta, target) {
     ? { html: '' }
     : parseHotelBlocks(lines.slice(headingIndex + 1));
   const activityMarker = lines.findIndex((line, index) => index > headingIndex && /^#{0,6}\s*Actividades/i.test(line.trim()));
-  const activitySection = multicitySection.html
+  const activitySectionBase = multicitySection.html
     ? { html: '' }
     : activityMarker !== -1
       ? parseActivityBlocks(lines.slice(activityMarker))
       : { html: '' };
+  const activitySection = multicitySection.html ? activitySectionBase : conEstadoActividades(lines.slice(headingIndex + 1), activitySectionBase);
 
   const cards = flights.map(flight => {
     const parts = flight.details.split(/\s*\|\s*/).filter(Boolean);
