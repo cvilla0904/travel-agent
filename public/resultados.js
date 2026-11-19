@@ -287,10 +287,21 @@
     $('estado').innerHTML = html ? '<div class="res-aviso' + (esError ? ' res-error' : '') + '">' + html + '</div>' : '';
   }
 
+  function conteosActuales() {
+    var c = {};
+    TABS.forEach(function (t) { c[t] = $('panel-' + t).querySelectorAll(SELECTORES_TARJETA[t]).length; });
+    return c;
+  }
+
+  function terminarCarga(estado) {
+    if (global.MogavelCarga) global.MogavelCarga.terminar(estado.modo, conteosActuales());
+  }
+
   async function lanzarBusqueda(estado) {
     if (enCurso) return;
     enCurso = true;
-    $('estado').innerHTML = '<div class="loading">Buscando vuelos, alojamientos y experiencias para ti...</div>';
+    avisoEstado('');
+    if (global.MogavelCarga) global.MogavelCarga.iniciar(estado.modo);
     // Se marca "en curso" ANTES de llamar: una recarga no repite la búsqueda (cada una consume créditos).
     global.MogavelEstado.marcarEnCurso();
     try {
@@ -299,7 +310,9 @@
       pintarAgente(texto, aplicarRespuesta(texto));
       ajustarPestanaVacia();
       avisoEstado('');
+      terminarCarga(estado);
     } catch (error) {
+      if (global.MogavelCarga) global.MogavelCarga.fallar(estado.modo);
       global.MogavelEstado.marcarError(error.message);
       mostrarReintento('Ha ocurrido un error: ' + esc(error.message), estado, true);
     } finally {
@@ -369,6 +382,7 @@
 
     if (!estado) {
       $('chatBox').style.display = 'none';
+      if (global.MogavelCarga) global.MogavelCarga.ocultar();
       avisoEstado('No hay ninguna búsqueda en curso. <a href="/index.html#mis-viajes">Empieza una nueva búsqueda</a>.');
       return;
     }

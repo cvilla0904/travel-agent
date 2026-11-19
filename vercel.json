@@ -42,6 +42,10 @@
       "use": "@vercel/static"
     },
     {
+      "src": "public/carga-busqueda.js",
+      "use": "@vercel/static"
+    },
+    {
       "src": "resultados.html",
       "use": "@vercel/static"
     },
@@ -106,6 +110,10 @@
     {
       "src": "/resultados.js",
       "dest": "/public/resultados.js"
+    },
+    {
+      "src": "/carga-busqueda.js",
+      "dest": "/public/carga-busqueda.js"
     },
     {
       "src": "/resultados.css",
