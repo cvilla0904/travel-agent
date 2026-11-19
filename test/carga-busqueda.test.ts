@@ -58,7 +58,7 @@ const estados = (p: any) => p.evaluate(() => Object.fromEntries([...document.que
 const cargaVisible = (p: any) => p.evaluate(() => { const c = document.getElementById('carga')!; return !c.hidden && getComputedStyle(c).display !== 'none'; });
 
 test('modelo: estadoRecursos distingue buscando, sin resultados, error y no solicitado', () => {
-  const ctx: any = { window: {}, document: {} };
+  const ctx: any = { window: {}, document: { readyState: 'complete', getElementById: () => null } };
   ctx.window = ctx;
   vm.runInNewContext(fs.readFileSync(path.join(root, 'public/carga-busqueda.js'), 'utf8'), ctx);
   const { estadoRecursos, recursosDelModo } = ctx.MogavelCarga;
@@ -85,7 +85,10 @@ test('mientras /api/chat sigue en vuelo: pantalla de carga, todo «Buscando…»
     assert.equal(await t.p.locator('#chatBox').isVisible(), false);
     assert.equal(await t.p.evaluate(() => document.getElementById('estado')!.innerText.trim()), '');
     assert.equal(t.llamadas(), 1);
-    assert.equal(await t.p.evaluate(() => getComputedStyle(document.querySelector('.carga-avion')!).animationName), 'carga-vuelo');
+    const x0 = await t.p.evaluate(() => (document.querySelector('.carga-avion') as SVGGraphicsElement).getBoundingClientRect().left);
+    await t.p.waitForTimeout(900);
+    const x1 = await t.p.evaluate(() => (document.querySelector('.carga-avion') as SVGGraphicsElement).getBoundingClientRect().left);
+    assert.notEqual(Math.round(x0), Math.round(x1), 'el avión se mueve por la ruta');
     // Al llegar la respuesta, la carga desaparece y aparecen los resultados.
     t.liberar({ texto: CON_TODO });
     await t.p.waitForSelector('#panel-vuelos .flight-card');
@@ -168,9 +171,12 @@ test('móvil 375 px: sin desbordamiento horizontal y con movimiento reducido el 
     await t.p.emulateMedia({ reducedMotion: 'reduce' });
     await lanzar(t.p, t.base);
     await t.p.waitForSelector('#carga:not([hidden])');
-    const r = await t.p.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, anim: getComputedStyle(document.querySelector('.carga-avion')!).animationName }));
+    const r = await t.p.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, pausada: (document.getElementById('carga-svg') as any).animationsPaused() }));
     assert.ok(r.sw <= r.cw, `desborda: ${r.sw} > ${r.cw}`);
-    assert.equal(r.anim, 'none');
+    assert.equal(r.pausada, true, 'con movimiento reducido el avión no se anima');
+    // El avión está sobre la ruta dibujada (dentro del recuadro del SVG), también en móvil.
+    const dentro = await t.p.evaluate(() => { const s = document.getElementById('carga-svg')!.getBoundingClientRect(); const a = document.querySelector('.carga-avion')!.getBoundingClientRect(); return a.left >= s.left - 2 && a.right <= s.right + 2 && a.top >= s.top - 20 && a.bottom <= s.bottom + 20; });
+    assert.ok(dentro);
     await t.p.screenshot({ path: process.env.CAPTURAS ? path.join(process.env.CAPTURAS, 'carga-movil.png') : undefined });
   } finally { await t.cerrar(); }
 });

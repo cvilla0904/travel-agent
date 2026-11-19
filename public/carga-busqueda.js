@@ -72,6 +72,17 @@
   function fallar(modo) { pintar(modo, 'error'); mostrar(false); }
   function ocultar() { mostrar(false); }
 
+  // Con «reducir movimiento» el avión queda quieto a mitad de ruta (las animaciones SMIL no obedecen a CSS).
+  function quietoSiReducido() {
+    var svg = document.getElementById('carga-svg');
+    if (!svg || typeof svg.pauseAnimations !== 'function') return;
+    if (global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      try { svg.setCurrentTime(2.75); svg.pauseAnimations(); } catch (e) { /* sin SMIL: no hay animación que parar */ }
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', quietoSiReducido);
+  else quietoSiReducido();
+
   global.MogavelCarga = {
     iniciar: iniciar, terminar: terminar, fallar: fallar, ocultar: ocultar,
     estadoRecursos: estadoRecursos, recursosDelModo: recursosDelModo
