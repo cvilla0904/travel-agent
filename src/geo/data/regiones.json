@@ -1,0 +1,96 @@
+[
+ {
+  "id": "region:toscana",
+  "nombre": "Toscana",
+  "pais": "IT",
+  "nombres": [
+   "Tuscany",
+   "Toscana"
+  ],
+  "centro": {
+   "lat": 43.35,
+   "lon": 11.0
+  },
+  "aeropuertosAcceso": [
+   "FLR",
+   "PSA"
+  ],
+  "descripcion": "Colinas, ciudades de arte y vino entre Florencia, Siena y Pisa."
+ },
+ {
+  "id": "region:costa-amalfitana",
+  "nombre": "Costa Amalfitana",
+  "pais": "IT",
+  "nombres": [
+   "Amalfi Coast",
+   "Costiera Amalfitana",
+   "Costa de Amalfi"
+  ],
+  "centro": {
+   "lat": 40.63,
+   "lon": 14.6
+  },
+  "aeropuertosAcceso": [
+   "NAP"
+  ],
+  "descripcion": "Acantilados y pueblos sobre el golfo de Salerno; el acceso habitual es Nápoles."
+ },
+ {
+  "id": "region:alpes-suizos",
+  "nombre": "Alpes suizos",
+  "pais": "CH",
+  "nombres": [
+   "Swiss Alps",
+   "Alpes de Suiza"
+  ],
+  "centro": {
+   "lat": 46.6,
+   "lon": 8.0
+  },
+  "aeropuertosAcceso": [
+   "ZRH",
+   "GVA"
+  ],
+  "descripcion": "Montaña, lagos y pueblos alpinos; el acceso depende de la zona concreta."
+ },
+ {
+  "id": "region:andalucia",
+  "nombre": "Andalucía",
+  "pais": "ES",
+  "nombres": [
+   "Andalusia",
+   "Andalucia"
+  ],
+  "centro": {
+   "lat": 37.4,
+   "lon": -4.7
+  },
+  "aeropuertosAcceso": [
+   "SVQ",
+   "AGP",
+   "GRX"
+  ],
+  "descripcion": "Del Atlántico al Mediterráneo: Sevilla, Granada, Málaga y Córdoba."
+ },
+ {
+  "id": "region:sur-de-francia",
+  "nombre": "Sur de Francia",
+  "pais": "FR",
+  "nombres": [
+   "South of France",
+   "Midi de Francia",
+   "Sud de la France"
+  ],
+  "centro": {
+   "lat": 43.6,
+   "lon": 5.0
+  },
+  "aeropuertosAcceso": [
+   "NCE",
+   "MRS",
+   "MPL",
+   "TLS"
+  ],
+  "descripcion": "Provenza, Costa Azul y Languedoc; varios accesos según la zona."
+ }
+]
