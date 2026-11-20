@@ -149,8 +149,13 @@ const planificarRuta = tool({
       diasAsignados -= 1;
     }
 
+    const ultimaCiudad = ciudadesUnicas[ciudadesUnicas.length - 1];
+    if (!ultimaCiudad) {
+      throw new Error('No hay ciudades disponibles para distribuir los días.');
+    }
+
     while (diasAsignados < diasTotales) {
-      ciudadesUnicas[ciudadesUnicas.length - 1].dias += 1;
+      ultimaCiudad.dias += 1;
       diasAsignados += 1;
     }
 
@@ -755,6 +760,7 @@ const buscarRecursosMultidestino = tool({
       adultos,
       tipos,
     } = input as {
+      rutaId: string;
       ciudades: Array<{ ciudad: string; dias: number }>;
       fechaIda: string;
       fechaVuelta: string;
