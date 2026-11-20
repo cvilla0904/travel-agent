@@ -8,6 +8,9 @@
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "checkJs": false,
     "target": "esnext",
     "types": [],
     // For nodejs:
@@ -41,4 +44,5 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
   }
+  "exclude": ["src/index.backup.ts"]
 }
