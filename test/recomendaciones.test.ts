@@ -157,7 +157,7 @@ test('navegación: cada una de las siete tarjetas abre su página (200, h1) y de
   try {
     for (const url of ORDEN) {
       await t.p.goto(t.base + '/');
-      const resp = await Promise.all([t.p.waitForURL('**' + url), t.p.evaluate((u) => { (document.querySelector(`.journey-cta[href="${u}"]`) as HTMLElement).click(); }, url)]);
+      const resp = await Promise.all([t.p.waitForURL('**' + url), t.p.evaluate((u: string) => { (document.querySelector(`.journey-cta[href="${u}"]`) as HTMLElement).click(); }, url)]);
       void resp;
       assert.ok((await t.p.locator('h1').first().innerText()).length > 10, url);
       assert.ok(await t.p.locator('.back').isVisible());
