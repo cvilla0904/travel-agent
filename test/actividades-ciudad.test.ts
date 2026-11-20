@@ -72,6 +72,8 @@ test('diagnóstico: distingue lo que devolvió el proveedor, lo válido y lo des
   assert.deepEqual(JSON.parse(JSON.stringify(diagnostico)), {
     resultadosProveedor: 7, sinTituloOUrl: 3, descartadasPorCiudad: 2, resultadosValidos: 2,
     ciudadesDescartadas: ['Barcelona', 'Paris'],
+    aceptadasPorCoordenadas: 0,
+    descartesPorMotivo: { ciudad_distinta_sin_coordenadas: 2 },
   });
 });
 
@@ -109,7 +111,9 @@ test('consultas al actor: Bruselas y Viena también se piden con su nombre ingl�
   assert.deepEqual(consultasActividadesParaDestino('Bruselas'), ['Bruselas', 'Brussels']);
   assert.deepEqual(consultasActividadesParaDestino('Viena'), ['Viena', 'Vienna']);
   assert.deepEqual(consultasActividadesParaDestino('Praga'), ['Praga', 'Prague']);
-  assert.deepEqual(consultasActividadesParaDestino('Brussels'), ['Brussels']);
+  // «Brussels» solo daba /es/brussels/ en Civitatis (inexistente): ahora también se pide «Bruselas».
+  assert.deepEqual(consultasActividadesParaDestino('Brussels'), ['Brussels', 'Bruselas']);
+  assert.deepEqual(consultasActividadesParaDestino('Vienna'), ['Vienna', 'Viena']);
   assert.deepEqual(consultasActividadesParaDestino('Roma'), ['Roma', 'Rome']);
   assert.deepEqual(consultasActividadesParaDestino('Paris'), ['Paris', 'París']);
   assert.deepEqual(consultasActividadesParaDestino('Tallin'), ['Tallin']);

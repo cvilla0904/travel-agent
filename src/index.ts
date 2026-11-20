@@ -6,7 +6,8 @@ import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { z } from 'zod';
 import { buscarLugaresGeoapify } from './services/geoapify.js';
-import { buscarActividadesApify, buscarActividadesApifyMultidestino } from './services/apify.js';
+import { buscarActividadesApifyMultidestino } from './services/apify.js';
+import { buscarActividadesDestino } from './services/actividades-busqueda.js';
 import { buscarVuelosConEstado } from './services/vuelos.js';
 import { filtrarActividadesDeCiudad, actividadParaMultidestino } from './services/actividades-ciudad.js';
 import { parsearPrecio, extraerPrecio, esGratisVerificado } from './services/precios-actividades.js';
@@ -491,87 +492,17 @@ const buscarActividades = tool({
   },
 
   execute: async (input) => {
-    const {
-      destino,
-      tipos,
-    } = input as {
-      destino: string;
-      tipos: string[];
-    };
-
-    const traduccionesTipo: Record<string, string[]> = {
-      naturaleza: ['nature', 'outdoor', 'nature tours'],
-      cultura: ['culture', 'museums', 'guided tours'],
-      'gastronomía': ['food', 'gastronomy', 'food tours'],
-      aventura: ['adventure', 'outdoor activities'],
-    };
-    const preferencias = tipos.flatMap((tipo) => traduccionesTipo[tipo] ?? []);
-    // El actor espera ciudades en searchQueries; las preferencias no deben contaminar la consulta.
-    console.info('[ACTIVITIES_DIAG] Tool started', JSON.stringify({ destino, tipos, preferencias }));
-    const resultados = await buscarActividadesApify({ destino });
-    console.info('[ACTIVITIES_DIAG] Provider returned', JSON.stringify({ destino, count: resultados.length, sampleFields: resultados[0] ? Object.keys(resultados[0] as Record<string, unknown>) : [] }));
-    // Restauramos el criterio sencillo de la versión anterior: el propio proveedor
-    // busca por ciudad. El filtro geográfico estricto estaba descartando resultados
-    // válidos cuando la etiqueta city del actor no coincidía con el idioma del destino.
-    // No descartamos una actividad real solo porque el proveedor no publique precio.
-    // Exigimos título y URL HTTP(S); el precio se normaliza y puede quedar como null.
-    // Nunca mostramos una actividad si no podemos verificar que pertenece al destino; el diagnóstico
-    // separa lo que devolvió el proveedor de lo que descartamos por ciudad.
-    const { validas: conTitulo, diagnostico: diagnosticoFiltro } = filtrarActividadesDeCiudad(resultados, destino);
-    console.info('[ACTIVITIES_DIAG] City filter', JSON.stringify({ destino, ...diagnosticoFiltro }));
-    const normalizarTexto = (valor: unknown) => String(valor ?? '')
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-    const conPreferencia = conTitulo.map((actividad: any) => ({
-      ...actividad,
-      _precioNormalizado: extraerPrecio(actividad),
-      _esGratisVerificado: esGratisVerificado(actividad),
-      _preferencia: preferencias.reduce((puntos, termino) =>
-        puntos + (normalizarTexto(actividad.title).includes(normalizarTexto(termino)) ? 1 : 0), 0),
-    }));
-    const unicos = Array.from(
-      new Map(conPreferencia.map((actividad: any) => [actividad.url || actividad.title, actividad])).values(),
-    ).sort((a: any, b: any) => b._preferencia - a._preferencia);
-    console.info('[ACTIVITIES_DIAG] Filtering summary', JSON.stringify({ destino, conTitulo: conTitulo.length, conPrecio: conTitulo.filter((actividad: any) => extraerPrecio(actividad) !== null).length, unicos: unicos.length }));
-
-    const salida = {
-      destino,
-      diagnosticoBusqueda: {
-        consultas: [destino],
-        resultadosProveedor: resultados.length,
-        resultadosConTitulo: conTitulo.length,
-        resultadosConPrecioNumerico: conTitulo.filter((actividad: any) => parsearPrecio(actividad.priceFrom) !== null).length,
-        sinTituloOUrl: diagnosticoFiltro.sinTituloOUrl,
-        descartadasPorCiudad: diagnosticoFiltro.descartadasPorCiudad,
-        ciudadesDescartadas: diagnosticoFiltro.ciudadesDescartadas,
-      },
-      actividades: unicos.slice(0, 15).map((actividad: any) => ({
-        nombre: actividad.title,
-        tipo: Array.isArray(actividad.categories) ? actividad.categories.join(', ') : tipos.join(', '),
-        precio: actividad._precioNormalizado,
-        esGratis: actividad._esGratisVerificado,
-        precioTexto: typeof actividad.priceText === 'string' ? actividad.priceText : typeof actividad.priceLabel === 'string' ? actividad.priceLabel : null,
-        moneda: typeof actividad.priceCurrency === 'string' && actividad.priceCurrency.trim()
-          ? actividad.priceCurrency.trim().toUpperCase()
-          : null,
-        valoracion: Number.isFinite(Number(actividad.rating)) ? Number(actividad.rating) : 0,
-        numeroResenas: Number.isFinite(Number(actividad.reviewCount)) ? Number(actividad.reviewCount) : 0,
-        duracion: typeof actividad.durationText === 'string' ? actividad.durationText : '',
-        cancelacionGratuita: typeof actividad.freeCancellation === 'boolean' ? actividad.freeCancellation : false,
-        direccion: '',
-        latitud: 0,
-        longitud: 0,
-        url: typeof actividad.url === 'string' ? actividad.url : '',
-        plataforma: typeof actividad.platform === 'string' ? actividad.platform : '',
-      })),
-    };
-    console.info('[ACTIVITIES_DIAG] Tool output', JSON.stringify({ destino, returnedActivities: salida.actividades.length }));
-    return salida;
+    const { destino, tipos } = input as { destino: string; tipos: string[] };
+    return buscarActividadesDestino({ destino, tipos });
   },
 });
 
 const activitiesOutputSchema =
   z.object({
     destino: z.string(),
+    estado: z.enum(['ok', 'parcial', 'sin_resultados', 'error']),
+    motivo: z.string().nullable(),
+    mensaje: z.string().nullable(),
     diagnosticoBusqueda: z.object({
       consultas: z.array(z.string()),
       resultadosProveedor: z.number(),
@@ -629,6 +560,12 @@ const activitiesOutputSchema =
 
           plataforma:
             z.string(),
+
+          ciudadProveedor:
+            z.string(),
+
+          verificacionUbicacion:
+            z.string(),
         }),
       ),
   });
@@ -653,18 +590,15 @@ const activitiesAgent =
       duración y URL de reserva.
 
       IMPORTANTE:
-      La herramienta de búsqueda funciona mejor con
-      el nombre habitual de la ciudad en inglés.
-      Si el destino recibido está en español u otro idioma,
-      utiliza internamente su equivalente habitual en inglés
-      para realizar la búsqueda.
+      Pasa a la herramienta el destino EXACTAMENTE como lo recibes, sin
+      traducirlo. La herramienta ya consulta al proveedor con el nombre en
+      español y en inglés. Traducirlo antes empeoró la búsqueda: Civitatis en
+      español solo publica /es/bruselas/ y no /es/brussels/.
 
-      Ejemplos:
-      - Florencia -> Florence
-      - Venecia -> Venice
-      - Roma -> Rome
-      - Londres -> London
-      - Múnich -> Munich
+      Copia en tu salida los campos estado, motivo y mensaje de la herramienta
+      sin modificarlos. Si estado es "error", "parcial" o "sin_resultados",
+      devuelve la lista de actividades que haya (puede estar vacía) y NO
+      presentes un error como si no existieran actividades.
 
       No inventes:
       - actividades
@@ -1364,6 +1298,19 @@ export const travelAgent = new Agent({
     obtenidos de Civitatis y Tiqets mediante Apify.
 
     Pueden incluir precio, valoracion, resenas, duracion y URL de reserva.
+
+    ESTADO DE LA CONSULTA DE ACTIVIDADES (obligatorio):
+    activities_agent devuelve estado: ok, parcial, sin_resultados o error.
+    - Si estado es "error", "parcial" o "sin_resultados", escribe dentro de la
+      sección de actividades, en una línea propia y con este formato exacto:
+      Estado de actividades: <estado> — <mensaje de la herramienta>
+      Un "error" significa que la consulta falló, NO que no existan actividades:
+      nunca lo presentes como "no hay actividades".
+    - Si estado es "parcial" y hay actividades, muéstralas y añade esa línea.
+    - Si estado es "ok", no escribas esa línea.
+    - Las actividades se muestran con la ciudad real del destino; no las
+      reetiquetes. Si verificacionUbicacion es "coordenadas", puedes indicar
+      que la ubicación se verificó por coordenadas.
 
     REGLA CRITICA DE PRECIOS DE ACTIVIDADES:
     - La herramienta devuelve precio numerico (o null) y moneda.

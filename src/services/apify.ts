@@ -19,12 +19,16 @@ export function inputActor(consultas: string[]) {
   };
 }
 
-async function ejecutarActor(searchQueries: string[]) {
+export type EjecucionActor = { items: any[]; status: string; runId: string | null; datasetId: string | null; consultas: string[] };
+
+const ERROR_EN_CURSO_SIN_RESULTADOS = 'Apify sigue buscando actividades y todavía no ha guardado resultados. La ejecución no ha fallado, pero no hay resultados disponibles en este momento.';
+
+async function ejecutarActorDetallado(searchQueries: string[]): Promise<EjecucionActor> {
   const token = process.env.APIFY_API_TOKEN;
   if (!token) throw new Error('APIFY_API_TOKEN no está configurada.');
 
   const consultas = [...new Set(searchQueries.map((q) => q.trim()).filter(Boolean))];
-  if (consultas.length === 0) return [];
+  if (consultas.length === 0) return { items: [], status: 'SUCCEEDED', runId: null, datasetId: null, consultas };
 
   const client = new ApifyClient({ token });
   const actor = client.actor(ACTOR_ID);
@@ -63,11 +67,18 @@ async function ejecutarActor(searchQueries: string[]) {
     ciudades: resumenCiudades(items as any[]),
   }));
 
-  if (items.length === 0 && run.status === 'RUNNING') {
-    throw new Error('Apify sigue buscando actividades y todavía no ha guardado resultados. La ejecución no ha fallado, pero no hay resultados disponibles en este momento.');
-  }
+  return { items: items as any[], status: String(run.status), runId: run.id ?? null, datasetId: run.defaultDatasetId ?? null, consultas };
+}
 
-  return items;
+async function ejecutarActor(searchQueries: string[]) {
+  const ejecucion = await ejecutarActorDetallado(searchQueries);
+  if (ejecucion.items.length === 0 && ejecucion.status === 'RUNNING') throw new Error(ERROR_EN_CURSO_SIN_RESULTADOS);
+  return ejecucion.items;
+}
+
+/** Como buscarActividadesApify, pero conserva el estado de la ejecución para poder informar de «incompleta». */
+export async function buscarActividadesApifyDetallado(params: { destino: string }) {
+  return ejecutarActorDetallado(consultasParaDestino(params.destino));
 }
 
 export async function buscarActividadesApify(params: {
