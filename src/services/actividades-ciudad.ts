@@ -60,7 +60,7 @@ export type EvaluacionUbicacion = {
   motivo?: MotivoDescarte;
   /** Etiqueta de ciudad tal y como la devolvió el proveedor (trazabilidad). */
   ciudadProveedor: string | null;
-  distanciaKm?: number;
+  distanciaKm?: number | undefined;
 };
 
 /**
