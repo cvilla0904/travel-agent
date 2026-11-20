@@ -23,7 +23,7 @@ const AUTOCOMPLETE: Record<string, unknown[]> = {
   ],
   Amsterdam: [sug('Amsterdam', 'Amsterdam, North Holland, Netherlands', '-2140479', 'city', 'nl')],
 };
-const FLORENCE_ORIGINAL = AUTOCOMPLETE.Florence;
+const FLORENCE_ORIGINAL = AUTOCOMPLETE.Florence!;
 const PROPS = [
   { title: 'Hotel A', hotel_class: '4', rating: '8,6', reviews: '1,234 reviews', extracted_price: 480, link: 'https://www.booking.com/hotel/a.html?x=1', currency: 'EUR', has_free_cancellation: true },
   { title: 'Hotel B', rating: 9.1, reviews: 50, price: '€ 1.200,50', link: 'https://www.booking.com/hotel/b.html' },
