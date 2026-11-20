@@ -136,7 +136,10 @@ test('selecciones: se conservan al cambiar de pestaña, se cambian y se quitan s
     assert.equal(items.length, 4);
     assert.ok(items.some((x: string) => /Beta/.test(x)) && !items.some((x: string) => /Alfa/.test(x)));
     // Quitar una actividad desde el panel «TU VIAJE»: las demás siguen.
-    await t.p.evaluate(() => { document.querySelector('#mogavel-trip-builder').classList.remove('mtb-collapsed'); });
+    await t.p.evaluate(() => {
+      const builder = document.querySelector('#mogavel-trip-builder');
+      if (builder) builder.classList.remove('mtb-collapsed');
+    });
     await t.p.click('#mogavel-trip-builder .mtb-remove >> nth=-1');
     items = await itemsPanel(t.p);
     assert.equal(items.length, 3);
