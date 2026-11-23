@@ -61,8 +61,8 @@ export default function handler(req: any, res: any) {
 
   const q = typeof req.query?.q === 'string' ? req.query.q.trim() : '';
   const clave = normalizar(q);
-  if (clave.length < 2 || clave.length > 100) {
-    return res.status(400).json({ ok: false, error: 'El parámetro q debe contener entre 2 y 100 caracteres.' });
+  if (clave.length < 3 || clave.length > 100) {
+    return res.status(400).json({ ok: false, error: 'El parámetro q debe contener entre 3 y 100 caracteres.' });
   }
 
   const pais = typeof req.query?.pais === 'string' && /^[a-z]{2}$/i.test(req.query.pais)
