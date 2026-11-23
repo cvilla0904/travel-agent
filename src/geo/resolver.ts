@@ -69,7 +69,10 @@ export function resolverDestino(cat: Catalogo, texto: string, opciones: { pais?:
 
   const preferido = cat.preferido(clave);
   if (preferido) {
-    const p = unicas.filter((i) => i.pais === preferido);
+    // 1) la ciudad curada concreta (si se conoce); 2) la única entidad de ese país.
+    const exacta = preferido.id ? unicas.find((i) => i.id === preferido.id) : undefined;
+    if (exacta) return { estado: 'reconocido', origen: 'catalogo', identidad: exacta };
+    const p = unicas.filter((i) => i.pais === preferido.pais);
     if (p.length === 1) return { estado: 'reconocido', origen: 'catalogo', identidad: p[0]! };
   }
   const ordenadas = unicas.sort((a, b) => (b.tipo === 'ciudad' ? 1 : 0) - (a.tipo === 'ciudad' ? 1 : 0));

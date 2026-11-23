@@ -13,7 +13,7 @@
  *    iso_region, municipality, scheduled_service, icao_code, iata_code, gps_code, local_code, …
  */
 import { distanciaKm, normalizar } from './normalizar.js';
-import type { Aeropuerto, Ciudad, EntradaIndice, Indice, Pais, Region, ShardPais } from './tipos.js';
+import type { Aeropuerto, Ciudad, EntradaIndice, Indice, Pais, PreferidoCatalogo, Region, ShardPais } from './tipos.js';
 
 export const RADIO_AEROPUERTO_KM = 80;
 export const MAX_NOMBRES_CIUDAD = 20;
@@ -153,7 +153,7 @@ export interface GrupoCurado { consulta: string; nombres: string[] }
  */
 export function asociarCuradas(
   ciudades: Array<{ id: string; pais: string; poblacion: number; nombres: string[] }>, grupos: GrupoCurado[],
-): { extraPorCiudad: Map<string, string[]>; preferidos: Record<string, string>; sinCiudad: string[] } {
+): { extraPorCiudad: Map<string, string[]>; preferidos: Record<string, PreferidoCatalogo>; sinCiudad: string[] } {
   const anclas = new Map<string, number[]>();
   grupos.forEach((g, i) => { const k = normalizar(g.consulta); anclas.set(k, [...(anclas.get(k) ?? []), i]); });
   const mejor = new Map<number, { id: string; pais: string; poblacion: number }>();
@@ -170,7 +170,7 @@ export function asociarCuradas(
       }
     }
   }
-  const preferidos: Record<string, string> = {};
+  const preferidos: Record<string, PreferidoCatalogo> = {};
   const sinCiudad: string[] = [];
   const extraPorCiudad = new Map<string, string[]>();
   grupos.forEach((g, gi) => {
@@ -178,7 +178,7 @@ export function asociarCuradas(
     if (!c) { sinCiudad.push(g.consulta); return; }
     const nombres = [g.consulta, ...g.nombres].map(normalizar).filter(Boolean);
     extraPorCiudad.set(c.id, [...(extraPorCiudad.get(c.id) ?? []), ...nombres]);
-    for (const n of nombres) preferidos[n] ??= c.pais;
+    for (const n of nombres) preferidos[n] ??= { pais: c.pais, id: `gn:${c.id}` };
   });
   return { extraPorCiudad, preferidos, sinCiudad };
 }
@@ -200,8 +200,8 @@ export interface EntradaConstruccion {
 
 export interface CatalogoConstruido {
   indice: Indice; paises: Pais[]; shards: Record<string, ShardPais>; sinCiudad: string[];
-  /** nombre normalizado → ISO del país, derivado de ciudadesCuradas (el archivo editorial destacados.json prevalece). */
-  preferidos: Record<string, string>;
+  /** nombre normalizado → ciudad curada (país e id), derivado de ciudadesCuradas (el archivo editorial destacados.json prevalece). */
+  preferidos: Record<string, PreferidoCatalogo>;
   /** Grupos editoriales para los que no se halló ninguna ciudad (a revisar). */
   curadasSinCiudad: string[];
 }

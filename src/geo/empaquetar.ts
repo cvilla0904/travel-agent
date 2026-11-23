@@ -16,7 +16,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
-import type { Aeropuerto, FichaCiudad, Indice, MetaCatalogo, Pais, ShardPais } from './tipos.js';
+import type { Aeropuerto, FichaCiudad, Indice, MetaCatalogo, Pais, PreferidoCatalogo, ShardPais } from './tipos.js';
 
 export const FORMATO_CATALOGO = 2;
 export const LONGITUD_PREFIJO = 3;
@@ -89,7 +89,7 @@ const sha = (b: Buffer | string) => crypto.createHash('sha256').update(b).digest
 export interface DatosEscritura {
   indice: Indice; paises: Pais[]; shards: Record<string, ShardPais>;
   /** nombre normalizado → ISO (derivado de las ciudades curadas). */
-  preferidos?: Record<string, string>;
+  preferidos?: Record<string, PreferidoCatalogo>;
 }
 
 /** Escribe el catálogo v2 en `dir` (normalmente src/geo/data/catalogo). No toca otros archivos de src/geo/data. */

@@ -72,3 +72,6 @@ export type ResultadoResolucion =
   | { estado: 'error_geocodificador'; error: string };
 
 export interface AeropuertoAcceso { iata: string; nombre: string; distanciaKm: number; esAcceso: true }
+
+/** Ciudad curada a la que apunta un nombre repetido (derivada de las equivalencias editoriales de ciudades.ts). */
+export interface PreferidoCatalogo { pais: string; id: string }
