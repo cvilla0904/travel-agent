@@ -180,7 +180,7 @@ export function construirCatalogo(e: EntradaConstruccion): CatalogoConstruido {
       .filter((n) => n && n.length <= 40 && NOMBRE_VALIDO.test(n));
     const unicos = [...new Set(alternos.map(normalizar).filter((n) => n && n !== normalizar(c.nombre)))].slice(0, MAX_NOMBRES_CIUDAD);
     const id = `gn:${c.id}`;
-    const ciudad: Ciudad = { id, nombre: c.nombre, pais: iso, poblacion: c.poblacion, lat: c.lat, lon: c.lon, nombres: unicos, aeropuertos: [] };
+    const ciudad: Ciudad = { id, nombre: c.nombre, nombreAscii: c.ascii, pais: iso, poblacion: c.poblacion, lat: c.lat, lon: c.lon, nombres: unicos, aeropuertos: [] };
     if (c.admin1) ciudad.admin1 = c.admin1;
     shard.ciudades[id] = ciudad;
     poner(c.nombre, ['c', id, iso]);
