@@ -7,7 +7,9 @@
     "test": "tsx --test test/*.test.ts",
     "probar:hoteles": "tsx scripts/probar-hoteles.ts",
     "start": "tsx src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "geo:descargar": "bash scripts/descargar-datos-geo.sh",
+    "geo:generar": "tsx scripts/construir-catalogo-geo.ts .cache/geo-source"
   },
   "repository": {
     "type": "git",
