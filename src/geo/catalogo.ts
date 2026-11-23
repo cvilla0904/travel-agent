@@ -82,8 +82,21 @@ class Lru<K, V> {
   }
 }
 
-export const DIR_CATALOGO = path.join(import.meta.dirname, 'data', 'catalogo');
-const DIR_DATOS = path.join(import.meta.dirname, 'data');
+/**
+ * Carpeta de datos. En local y en pruebas es la contigua a este archivo; en una función de Vercel el código puede estar
+ * empaquetado en otro sitio y los archivos de `includeFiles` conservan su ruta relativa a la raíz del proyecto
+ * (LAMBDA_TASK_ROOT o el directorio de trabajo). Se usa el primer candidato que contiene el catálogo.
+ */
+function resolverDirDatos(): string {
+  const candidatos = [
+    path.join(import.meta.dirname, 'data'),
+    ...(process.env.LAMBDA_TASK_ROOT ? [path.join(process.env.LAMBDA_TASK_ROOT, 'src', 'geo', 'data')] : []),
+    path.join(process.cwd(), 'src', 'geo', 'data'),
+  ];
+  return candidatos.find((d) => fs.existsSync(path.join(d, 'catalogo', 'meta.json'))) ?? candidatos[0]!;
+}
+const DIR_DATOS = resolverDirDatos();
+export const DIR_CATALOGO = path.join(DIR_DATOS, 'catalogo');
 
 /** Lee `longitud` bytes de `desde` sin cargar el archivo entero. */
 function leerTrozo(fd: number, desde: number, longitud: number): Buffer {

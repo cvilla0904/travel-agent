@@ -6,8 +6,7 @@ node_modules/
 # Datos fuente descargados para construir el catálogo geográfico
 .cache/geo-source/
 
-# Catálogo geográfico generado (ver src/geo/README.md, «Despliegue del catálogo»)
-src/geo/data/catalogo/
+# Formato antiguo del catálogo (reempaquetado a src/geo/data/catalogo, que SÍ se versiona; ver src/geo/README.md)
 src/geo/data/indice.json
 src/geo/data/paises.json
 src/geo/data/paises/
