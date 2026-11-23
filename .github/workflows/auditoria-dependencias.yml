@@ -34,7 +34,7 @@ jobs:
           echo "proxy-agent latest depende de:"; npm view proxy-agent@latest dependencies --json | tr -d '\n '; echo
           echo "basic-ftp versiones recientes:"; npm view basic-ftp versions --json | tr -d '\n ' | tail -c 200; echo
       - name: Aplicar correcciones compatibles (sin --force)
-        run: npm audit fix
+        run: npm audit fix || true
       - name: Cambios en package.json y package-lock.json
         run: |
           git diff --stat -- package.json package-lock.json

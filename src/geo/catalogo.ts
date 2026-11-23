@@ -3,7 +3,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import { FORMATO_CATALOGO, LONGITUD_PREFIJO, fichaDesdeFila, geonameid, prefijoBucket, type DirIndice } from './empaquetar.js';
 import type {
-  Aeropuerto, Ciudad, Destacados, Indice, EntradaIndice, FichaCiudad, MetaCatalogo, Pais, Region, ShardPais,
+  Aeropuerto, Ciudad, Destacados, Indice, EntradaIndice, FichaCiudad, MetaCatalogo, Pais, PreferidoCatalogo, Region, ShardPais,
 } from './tipos.js';
 
 /**
@@ -19,8 +19,8 @@ export interface Fuente {
   buscarPrefijo(clave: string): Array<[string, EntradaIndice[]]>;
   ficha(id: string): FichaCiudad | undefined;
   aeropuertos(): Record<string, Aeropuerto>;
-  /** nombre normalizado → ISO preferido, generado a partir de las ciudades curadas (puede estar vacío). */
-  preferidos(): Record<string, string>;
+  /** nombre normalizado → ciudad curada preferida, generado a partir de las ciudades curadas (puede estar vacío). */
+  preferidos(): Record<string, PreferidoCatalogo>;
   paises(): Pais[];
   pais(iso: string): ShardPais | undefined;
   regiones(): Region[];
@@ -53,7 +53,10 @@ export class Catalogo {
   }
   destacados() { return this.fuente.destacados(); }
   /** País preferido para un nombre repetido: primero el editorial (destacados.json), luego el derivado de las ciudades curadas. */
-  preferido(clave: string): string | undefined { return this.fuente.destacados().preferidos[clave] ?? this.fuente.preferidos()[clave]; }
+  preferido(clave: string): { pais: string; id?: string } | undefined {
+    const editorial = this.fuente.destacados().preferidos[clave];
+    return editorial ? { pais: editorial } : this.fuente.preferidos()[clave];
+  }
   shard(iso: string): ShardPais | undefined { return this.fuente.pais(iso.toUpperCase()); }
   /** Ciudad completa (con nombres alternativos). Carga el archivo del país: para una ficha ligera usa ficha(). */
   ciudad(id: string, iso: string): Ciudad | undefined { return this.shard(iso)?.ciudades[id]; }
@@ -125,7 +128,7 @@ export function fuenteEnDisco(dir = DIR_CATALOGO, dirEditorial = DIR_DATOS): Fue
 
   const fichas = new Lru<string, FichaCiudad | null>(2048);
   let aeropuertos: Record<string, Aeropuerto> | undefined;
-  let preferidos: Record<string, string> | undefined;
+  let preferidos: Record<string, PreferidoCatalogo> | undefined;
   let paises: Pais[] | undefined;
   let regiones: Region[] | undefined;
   let destacados: Destacados | undefined;
@@ -162,7 +165,7 @@ export function fuenteEnDisco(dir = DIR_CATALOGO, dirEditorial = DIR_DATOS): Fue
     },
     aeropuertos: () => (aeropuertos ??= (iniciar(), leerJson<Record<string, Aeropuerto>>(dir, 'aeropuertos.json'))),
     paises: () => (paises ??= (iniciar(), leerJson<Pais[]>(dir, 'paises.json'))),
-    preferidos: () => (preferidos ??= (iniciar(), fs.existsSync(path.join(dir, 'preferidos.json')) ? leerJson<Record<string, string>>(dir, 'preferidos.json') : {})),
+    preferidos: () => (preferidos ??= (iniciar(), fs.existsSync(path.join(dir, 'preferidos.json')) ? leerJson<Record<string, PreferidoCatalogo>>(dir, 'preferidos.json') : {})),
     pais: (iso) => {
       iniciar();
       const hit = shards.get(iso);
@@ -181,7 +184,7 @@ export function fuenteEnDisco(dir = DIR_CATALOGO, dirEditorial = DIR_DATOS): Fue
 
 /** Fuente en memoria (pruebas y utilidades): misma semántica que la de disco, sin empaquetar. */
 export function fuenteEnMemoria(
-  c: { indice: Indice; paises: Pais[]; shards: Record<string, ShardPais>; preferidos?: Record<string, string> },
+  c: { indice: Indice; paises: Pais[]; shards: Record<string, ShardPais>; preferidos?: Record<string, PreferidoCatalogo> },
   editorial: { regiones: () => Region[]; destacados: () => Destacados },
 ): Fuente {
   const nombres = c.indice.nombres;

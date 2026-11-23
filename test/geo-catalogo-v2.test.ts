@@ -238,7 +238,7 @@ test('ciudad grande con cientos de nombres: «Bruselas» no se pierde por el lí
   const con = construirCatalogo({ ...base, ciudadesCuradas: grupos });
   assert.deepEqual(con.curadasSinCiudad, []);
   const cat = new Catalogo(fuenteEnMemoria(con, editorial));
-  assert.equal(con.preferidos['bruselas'], 'BE');
+  assert.deepEqual(con.preferidos['bruselas'], { pais: 'BE', id: 'gn:2800866' });
   const r = resolverDestino(cat, 'Bruselas');
   assert.equal(r.estado, 'reconocido');
   assert.equal((r as any).identidad.id, 'gn:2800866', 'la ciudad grande, no la homónima de Colombia');
@@ -262,7 +262,7 @@ test('límite de nombres por tamaño de ciudad y grupos curados sin ciudad se in
   assert.equal(maxNombresCiudad(8_000_000), 400);
   const r = asociarCuradas([{ id: '1', pais: 'ES', poblacion: 10, nombres: ['Madrid'] }], [{ consulta: 'Madrid', nombres: ['madrid'] }, { consulta: 'Atlantis', nombres: ['atlantida'] }]);
   assert.deepEqual(r.sinCiudad, ['Atlantis']);
-  assert.deepEqual(r.preferidos, { madrid: 'ES' });
+  assert.deepEqual(r.preferidos, { madrid: { pais: 'ES', id: 'gn:1' } });
 });
 
 test('consultas de 2 caracteres solo para chino, japonés y coreano', () => {
@@ -281,4 +281,21 @@ test('consultas de 2 caracteres solo para chino, japonés y coreano', () => {
   assert.ok((r.body as any).resultados.some((x: any) => x.id === 'gn:1850147'));
   const corta = respuesta(); h({ method: 'GET', query: { q: 'ab' } }, corta);
   assert.equal(corta.statusCode, 400);
+});
+
+test('varias entidades en el país preferido («London»/«City of London», «Venice»): se elige la ciudad curada, no se pregunta', () => {
+  const texto = [
+    geoNamesLinea('2643743', 'London', 'London', ['Londres'], 51.5, -0.12, 'GB', 8_900_000),
+    geoNamesLinea('2643741', 'City of London', 'City of London', ['London'], 51.51, -0.09, 'GB', 8_000), // también se llama «London»
+    geoNamesLinea('6058560', 'London', 'London', [], 42.98, -81.23, 'CA', 380_000),
+    geoNamesLinea('9100001', 'Londres', 'Londres', [], -27.7, -67.1, 'CL', 600),
+  ].join('\n');
+  const r = construirCatalogo({
+    geonames: parsearGeoNames(texto), paises: parsearCountryInfo(textoCountryInfo()), aeropuertos: [], regiones: [],
+    ciudadesCuradas: [{ consulta: 'London', nombres: ['london', 'londres'] }],
+  });
+  const cat = new Catalogo(fuenteEnMemoria(r, { regiones: () => [], destacados: () => ({ paises: {}, preferidos: {}, acceso: {} }) }));
+  for (const t of ['London', 'Londres', 'LONDON']) assert.equal((resolverDestino(cat, t) as any).identidad.id, 'gn:2643743', t);
+  // Con el país explícito se respeta lo pedido, aunque no sea la curada.
+  assert.equal((resolverDestino(cat, 'London', { pais: 'CA' }) as any).identidad.id, 'gn:6058560');
 });
