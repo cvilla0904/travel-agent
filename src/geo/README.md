@@ -14,7 +14,7 @@ Todavía no está conectado a `buscar_vuelos`, `buscar_hoteles` ni `buscar_activ
 `indice.json` y `paises/` **no están en el repositorio hasta que se genere el catálogo real** (requiere descargar GeoNames y OurAirports).
 Sin ellos, `fuenteEnDisco()` lanza `CatalogoNoDisponible`: nunca devuelve un catálogo vacío como si fuera válido.
 
-Generar: `npm run geo:descargar` y después `npm run geo:generar`. El descargador usa GeoNames cities1000, countryInfo y OurAirports; no requiere cuenta ni clave. `alternateNamesV2.txt` es opcional y no se descarga por defecto por su tamaño.
+Generar: `npm run geo:preparar` (o ejecutar `geo:descargar` y `geo:generar` por separado). El descargador usa GeoNames cities1000, countryInfo y OurAirports; no requiere cuenta ni clave. `alternateNamesV2.txt` es opcional y no se descarga por defecto por su tamaño.
 
 ## Criterios (mantenimiento)
 - **Aeropuerto comercial:** OurAirports `large_airport` o `medium_airport`, `scheduled_service = yes`, IATA de 3 letras.
@@ -35,7 +35,7 @@ GeoNames: CC BY 4.0 (atribución obligatoria; Mogavel debe mostrar atribución a
 - Devuelve países, ciudades, regiones y aeropuertos por nombre exacto o prefijo, con país, coordenadas y códigos IATA cuando existen.
 - No llama a Geoapify, SearchAPI ni Apify: consulta localmente el catálogo generado.
 - Si el catálogo no existe, responde HTTP 503 con `CATALOGO_NO_GENERADO`; no finge que no hay destinos.
-- Vercel incluye `src/geo/data/**` en la función. El catálogo debe generarse antes de considerar operativo el endpoint.
+- Vercel incluye `src/geo/data/**` en la función. El catálogo debe generarse antes de considerar operativo el endpoint. Añadir en la web una atribución visible a GeoNames antes de producción, conforme a CC BY 4.0.
 
 ## Alcance y límites conocidos
 
