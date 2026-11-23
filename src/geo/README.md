@@ -6,7 +6,7 @@ Todavía no está conectado a `buscar_vuelos`, `buscar_hoteles` ni `buscar_activ
 ## Datos
 | Archivo | Origen | Se edita a mano |
 |---|---|---|
-| `data/indice.json`, `data/paises.json`, `data/paises/<ISO>.json` | Generados por `scripts/construir-catalogo-geo.ts` desde GeoNames `cities15000` y OurAirports | No |
+| `data/indice.json`, `data/paises.json`, `data/paises/<ISO>.json` | Generados por `scripts/construir-catalogo-geo.ts` desde GeoNames `cities1000` y OurAirports | No |
 | `data/regiones.json` | Editorial (regiones turísticas, aeropuertos de acceso, centro aproximado) | Sí |
 | `data/destacados.json` | Editorial (ciudades por país, preferencias de nombres repetidos, accesos) | Sí |
 | `data/paises-curados.json` | Editorial (nombres de país en español/inglés) | Sí |
@@ -14,7 +14,7 @@ Todavía no está conectado a `buscar_vuelos`, `buscar_hoteles` ni `buscar_activ
 `indice.json` y `paises/` **no están en el repositorio hasta que se genere el catálogo real** (requiere descargar GeoNames y OurAirports).
 Sin ellos, `fuenteEnDisco()` lanza `CatalogoNoDisponible`: nunca devuelve un catálogo vacío como si fuera válido.
 
-Generar: `npx tsx scripts/construir-catalogo-geo.ts <carpeta con cities15000.txt, countryInfo.txt, airports.csv [, alternateNamesV2.txt]>`.
+Generar: `npm run geo:descargar` y después `npm run geo:generar`. El descargador usa GeoNames cities1000, countryInfo y OurAirports; no requiere cuenta ni clave. `alternateNamesV2.txt` es opcional y no se descarga por defecto por su tamaño.
 
 ## Criterios (mantenimiento)
 - **Aeropuerto comercial:** OurAirports `large_airport` o `medium_airport`, `scheduled_service = yes`, IATA de 3 letras.
@@ -26,4 +26,20 @@ Generar: `npx tsx scripts/construir-catalogo-geo.ts <carpeta con cities15000.txt
 - **Respaldo:** `respaldo-geoapify.ts` solo se usa si el catálogo no reconoce el destino; un fallo del servicio es `error_geocodificador`, no `no_encontrado`.
 
 ## Licencias
-GeoNames: CC BY 4.0 (atribución obligatoria). OurAirports: dominio público. Geoapify: servicio de terceros; revisar sus condiciones antes de cachear respuestas.
+GeoNames: CC BY 4.0 (atribución obligatoria; Mogavel debe mostrar atribución a GeoNames). OurAirports: dominio público. Geoapify: servicio de terceros; revisar sus condiciones antes de cachear respuestas.
+
+## API propia de Mogavel
+
+- Endpoint: `GET /api/geo?q=mad`.
+- Parámetros: `q` (2–100 caracteres), `pais` (ISO-2 opcional) y `limite` (1–12, por defecto 8).
+- Devuelve países, ciudades, regiones y aeropuertos por nombre exacto o prefijo, con país, coordenadas y códigos IATA cuando existen.
+- No llama a Geoapify, SearchAPI ni Apify: consulta localmente el catálogo generado.
+- Si el catálogo no existe, responde HTTP 503 con `CATALOGO_NO_GENERADO`; no finge que no hay destinos.
+- Vercel incluye `src/geo/data/**` en la función. El catálogo debe generarse antes de considerar operativo el endpoint.
+
+## Alcance y límites conocidos
+
+- `cities1000` amplía la cobertura frente a `cities15000`, pero no contiene todos los pueblos ni todos los puntos turísticos. Los destinos pequeños importantes deben añadirse editorialmente o mediante una fuente adicional revisada.
+- Se conservan nombres alternativos de GeoNames y se complementan nombres localizados de países mediante `Intl.DisplayNames`. `alternateNamesV2` no se descarga por defecto.
+- La asociación de aeropuertos usa proximidad y población; no demuestra que existan vuelos directos ni que sea el mejor acceso terrestre.
+- La generación escribe en `src/geo/data`. No subir los archivos originales ni `.cache/geo-source`.
