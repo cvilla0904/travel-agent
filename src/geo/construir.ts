@@ -98,19 +98,45 @@ export function aeropuertosComerciales(filas: Array<Record<string, string>>): Om
  * Así Medellín (2,5 M a ~28 km) gana a Rionegro (a ~8 km) y Düsseldorf a Colonia. Sin ciudad cercana, no se asocia.
  */
 export function asociarAeropuertos(ciudades: EntradaGeoNames[], aeropuertos: Omit<Aeropuerto, 'ciudadId'>[]) {
-  const porPais = new Map<string, EntradaGeoNames[]>();
-  for (const c of ciudades) (porPais.get(c.pais) ?? porPais.set(c.pais, []).get(c.pais)!).push(c);
+  // Índice espacial por país y celdas de 1°: evita comparar cada aeropuerto con todas las ciudades.
+  // La búsqueda amplía el rango longitudinal en latitudes altas y confirma siempre con Haversine.
+  const porPais = new Map<string, Map<string, EntradaGeoNames[]>>();
+  const celda = (lat: number, lon: number) => Math.floor(lat) + ':' + Math.floor(lon);
+  for (const c of ciudades) {
+    let rejilla = porPais.get(c.pais);
+    if (!rejilla) { rejilla = new Map(); porPais.set(c.pais, rejilla); }
+    const clave = celda(c.lat, c.lon);
+    const lista = rejilla.get(clave) ?? [];
+    lista.push(c);
+    rejilla.set(clave, lista);
+  }
+
   const asociados: Aeropuerto[] = [];
   const sinCiudad: string[] = [];
   for (const a of aeropuertos) {
-    let mejor: EntradaGeoNames | null = null, mejorP = -1;
-    for (const c of porPais.get(a.pais) ?? []) {
+    const rejilla = porPais.get(a.pais);
+    if (!rejilla) { sinCiudad.push(a.iata); continue; }
+    const rangoLat = RADIO_AEROPUERTO_KM / 110.5;
+    const cosLat = Math.max(Math.cos((a.lat * Math.PI) / 180), 0.1);
+    const rangoLon = Math.min(180, RADIO_AEROPUERTO_KM / (111.32 * cosLat));
+    const candidatos = new Set<EntradaGeoNames>();
+    for (let latCell = Math.floor(a.lat - rangoLat); latCell <= Math.floor(a.lat + rangoLat); latCell++) {
+      for (let lonCell = Math.floor(a.lon - rangoLon); lonCell <= Math.floor(a.lon + rangoLon); lonCell++) {
+        const lonNormalizada = ((lonCell + 180) % 360 + 360) % 360 - 180;
+        for (const c of rejilla.get(latCell + ':' + lonNormalizada) ?? []) candidatos.add(c);
+      }
+    }
+
+    let mejor: EntradaGeoNames | null = null;
+    let mejorP = -1;
+    for (const c of candidatos) {
       const d = distanciaKm(c, a);
       if (d > RADIO_AEROPUERTO_KM) continue;
-      const p = Math.max(c.poblacion, 1) / (1 + d / 15) ** 2;
-      if (p > mejorP) { mejorP = p; mejor = c; }
+      const puntuacion = Math.max(c.poblacion, 1) / (1 + d / 15) ** 2;
+      if (puntuacion > mejorP) { mejorP = puntuacion; mejor = c; }
     }
-    if (mejor) asociados.push({ ...a, ciudadId: `gn:${mejor.id}` }); else sinCiudad.push(a.iata);
+    if (mejor) asociados.push({ ...a, ciudadId: 'gn:' + mejor.id });
+    else sinCiudad.push(a.iata);
   }
   return { asociados, sinCiudad };
 }
