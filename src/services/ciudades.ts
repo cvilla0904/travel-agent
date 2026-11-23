@@ -56,7 +56,7 @@ export function normalizarTexto(valor: unknown): string {
  * `consulta` es el nombre habitual en inglés que se envía al proveedor.
  * `nombres` ya van normalizados (sin acentos, en minúsculas).
  */
-const CIUDADES_EQUIVALENTES: Array<{ consulta: string; nombres: string[] }> = [
+export const CIUDADES_EQUIVALENTES: Array<{ consulta: string; nombres: string[] }> = [
   { consulta: 'Amsterdam', nombres: ['amsterdam'] },
   { consulta: 'Florence', nombres: ['florencia', 'florence', 'firenze'] },
   { consulta: 'Venice', nombres: ['venecia', 'venice', 'venezia'] },
