@@ -1,4 +1,4 @@
-import type { Identidad, EntradaIndice, Pais, Region, Aeropuerto, Ciudad } from '../src/geo/tipos.js';
+import type { Identidad, EntradaIndice, Pais, Region } from '../src/geo/tipos.js';
 import { Catalogo, fuenteEnDisco } from '../src/geo/catalogo.js';
 import { normalizar } from '../src/geo/normalizar.js';
 
