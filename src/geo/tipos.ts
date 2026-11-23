@@ -13,7 +13,7 @@ export interface Aeropuerto {
 
 export interface Ciudad {
   /** Identidad estable reutilizable por vuelos, hoteles y actividades: «gn:<geonameid>». */
-  id: string; nombre: string; pais: string; admin1?: string;
+  id: string; nombre: string; nombreAscii?: string; pais: string; admin1?: string;
   poblacion: number; lat: number; lon: number;
   /** Nombres alternativos ya normalizados (sin acentos, minúsculas). */
   nombres: string[];
