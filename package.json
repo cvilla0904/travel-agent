@@ -28,16 +28,19 @@
   "homepage": "https://github.com/cvilla0904/travel-agent#readme",
   "dependencies": {
     "@openai/agents": "^0.17.0",
+    "@types/node": "^22.20.3",
     "@upstash/redis": "^1.39.0",
     "apify-client": "^2.25.0",
     "express": "^5.2.1",
-    "zod": "^4.5.4",
-    "@types/node": "^22.20.3"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "playwright": "^1.65.1",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "basic-ftp": "6.2.6"
   }
 }
