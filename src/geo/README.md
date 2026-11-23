@@ -51,7 +51,7 @@ GeoNames: CC BY 4.0 (atribución obligatoria; Mogavel debe mostrar atribución a
 ## API propia de Mogavel
 
 - Endpoint: `GET /api/geo?q=mad`.
-- Parámetros: `q` (3–100 caracteres, tras normalizar), `pais` (ISO-2 opcional) y `limite` (1–12, por defecto 8).
+- Parámetros: `q` (3–100 caracteres tras normalizar; 2 si son solo caracteres chinos, japoneses o coreanos), `pais` (ISO-2 opcional) y `limite` (1–12, por defecto 8).
 - Devuelve países, ciudades, regiones y aeropuertos por nombre exacto o prefijo, con país, coordenadas y códigos IATA cuando existen.
 - No llama a Geoapify, SearchAPI ni Apify: consulta localmente el catálogo generado (un bucket por petición).
 - Si el catálogo no existe, responde HTTP 503 con `CATALOGO_NO_GENERADO`; no finge que no hay destinos.
@@ -64,9 +64,41 @@ GeoNames: CC BY 4.0 (atribución obligatoria; Mogavel debe mostrar atribución a
 - La asociación de aeropuertos usa proximidad y población; no demuestra que existan vuelos directos ni que sea el mejor acceso terrestre.
 - La generación escribe en `src/geo/data`. No subir los archivos originales ni `.cache/geo-source`.
 
-## Despliegue del catálogo (decisión pendiente)
-`data/catalogo/` ocupa (con datos reales) del orden de decenas de MB y es un artefacto generado. Opciones:
-1. **Commit del catálogo v2** (sin el índice antiguo): simple y reproducible, pero cada regeneración añade MB al historial. Los archivos individuales son < 15 MB (por debajo del límite de GitHub).
-2. **Generarlo en el build**: exige que Vercel ejecute `npm run geo:preparar` (descarga ~20 MB de GeoNames/OurAirports en cada build) y pasar a un `buildCommand`; hoy `vercel.json` usa `builds`, que lo ignora.
-3. **Almacenamiento externo** (Vercel Blob / R2) con lectura por rangos: escala mejor, pero añade infraestructura.
-No se ha hecho commit de datos generados; la elección y el impacto de tamaño deben validarse con las cifras reales (`npm run geo:medir`).
+## Tamaños reales (GeoNames cities1000 + OurAirports, generado en GitHub Actions)
+| Elemento | Tamaño |
+|---|---|
+| `data/catalogo/` completo | **38,7 MB** en 254 archivos |
+| `indice.dat` (85.899 buckets gzip) | 14,8 MB; bucket mediano 0,1 KB, p99 2 KB, **máximo 132 KB** («san») |
+| `fichas.dat` + `fichas.idx` (172.063 ciudades) | 9,5 MB + 2,0 MB (58 bytes por ficha) |
+| `indice-dir.json` | 2,0 MB |
+| `paises/*.json.gz` (246 países) | 10 MB; el mayor, EE. UU., 1,5 MB |
+| `aeropuertos.json` | 0,5 MB (3.145 aeropuertos) |
+| Antes: `indice.json` | ~32 MB leídos y recorridos **en cada petición** |
+
+Rendimiento medido con el catálogo real: primera consulta de un proceso ~50–65 ms (carga del directorio y de la tabla de fichas),
+después 0,1–6 ms; respuesta de ~1,5 KB; memoria tras las consultas RSS ~150–180 MB (heap ~40–70 MB).
+`scripts/verificar-catalogo-real.ts` reproduce el informe completo (tamaños, buckets, endpoint, nombres curados).
+
+## Nombres curados
+GeoNames lista cientos de nombres por ciudad grande en orden arbitrario. Con el límite antiguo de 20 se perdían nombres como
+«Bruselas», «Nueva York», «Venezia» o «Москва» (y «Bruselas» resolvía a la homónima de Colombia). Ahora:
+- el límite depende de la población (20 / 100 / 400);
+- cada grupo de `CIUDADES_EQUIVALENTES` (`src/services/ciudades.ts`) se asocia a la ciudad más poblada que lleva su nombre de consulta y
+  sus nombres se indexan siempre; el catálogo guarda en `preferidos.json` la ciudad concreta, de modo que «London», «Londres» o
+  «Venice» resuelven sin preguntar. `destacados.json` (editorial) prevalece;
+- con el catálogo real, los 76 nombres curados se encuentran. `construir` avisa de los grupos sin ciudad.
+
+## Despliegue del catálogo
+Opciones comparadas con los tamaños reales (38,7 MB; ningún archivo supera 15 MB):
+| | 1. Commit del catálogo v2 | 2. Generarlo en el build de Vercel | 3. Almacenamiento externo (Blob/R2) |
+|---|---|---|---|
+| Tamaño de la función | 38,7 MB por función (límite 250 MB) | igual | ~0 (se lee por red) |
+| Latencia | disco local: 50–65 ms en frío, <6 ms después | igual | + una petición de red por bucket (decenas de ms) y por ficha |
+| Coste | ninguno | tiempo de build + ~25 MB de descarga por build | operaciones de lectura + token (variable de entorno nueva) |
+| Reproducibilidad | total (el Preview prueba exactamente lo revisado) | no: GeoNames cambia a diario; si cae el mirror, falla el build | depende de la subida |
+| Mantenimiento | regenerar y commitear de vez en cuando (+~38 MB al historial cada vez) | cero a mano, pero frágil | subir con cada regeneración |
+| Escalabilidad | suficiente (el CDN cachea 24 h) | igual | la mejor si el catálogo creciera ×10 |
+**Recomendación: opción 1** (commit de `src/geo/data/catalogo/`). Es la única determinista y sin dependencias externas ni variables
+de entorno; el coste es el historial de Git (~38 MB por regeneración, que se hace rara vez). Las opciones 2 y 3 solo compensarían
+si el catálogo superase con holgura los 250 MB o se regenerase con frecuencia.
+La rama `preview/catalogo-real` contiene el catálogo generado para probar el Preview; el PR #3 no lo contiene hasta que se decida.
