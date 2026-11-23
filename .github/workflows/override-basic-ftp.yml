@@ -1,0 +1,67 @@
+name: Experimento override basic-ftp (rama de revisión)
+
+# Comprueba si forzar basic-ftp >= 6.2.4 (corregido) bajo get-uri es compatible, con una prueba FTP real
+# (servidor local ftp-srv + get-uri) antes y después. Solo guarda el cambio si TODO pasa.
+on:
+  push:
+    branches: [chore/override-basic-ftp]
+    paths: [.github/workflows/override-basic-ftp.yml, scripts/tmp-ftp/**]
+
+permissions:
+  contents: write
+
+jobs:
+  experimento:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Información de paquetes
+        run: |
+          echo "basic-ftp latest: $(npm view basic-ftp version)"
+          echo "get-uri@6.0.5 depende de: $(npm view get-uri@6.0.5 dependencies --json | tr -d '\n ')"
+          echo "get-uri latest: $(npm view get-uri version) depende de: $(npm view get-uri dependencies --json | tr -d '\n ')"
+          npm view basic-ftp@5.3.1 engines --json | tr -d '\n '; echo
+          npm view basic-ftp@6.2.6 engines --json | tr -d '\n ' || true; echo
+          npm ls basic-ftp get-uri
+      - name: Servidor FTP local de prueba (fuera del proyecto)
+        run: |
+          mkdir -p /tmp/ftpsrv/raiz && cd /tmp/ftpsrv && npm init -y >/dev/null && npm i ftp-srv >/dev/null 2>&1
+          echo "contenido-de-prueba-mogavel" > raiz/hola.txt
+          cp $GITHUB_WORKSPACE/scripts/tmp-ftp/servidor.cjs . 
+          nohup node servidor.cjs > servidor.log 2>&1 &
+          sleep 3; cat servidor.log
+      - name: Prueba FTP con la versión actual (referencia)
+        run: node scripts/tmp-ftp/cliente.mjs
+      - name: Aplicar override basic-ftp
+        run: |
+          V=$(npm view basic-ftp version)
+          npm pkg set "overrides.basic-ftp=$V"
+          npm install --package-lock-only
+          npm install
+          npm ls basic-ftp
+      - name: Prueba FTP con el override
+        run: node scripts/tmp-ftp/cliente.mjs
+      - name: Auditoría tras el override
+        run: |
+          npm audit --json > audit.json || true
+          node -e "const a=require('./audit.json');console.log('DESPUÉS',JSON.stringify(a.metadata.vulnerabilities));for(const [n,v] of Object.entries(a.vulnerabilities||{}))console.log(n,v.severity)"
+      - run: npx playwright install --with-deps chromium
+      - run: npm run typecheck
+      - run: npm test
+      - name: Guardar si todo ha pasado
+        run: |
+          git config user.name "claude-code"
+          git config user.email "noreply@anthropic.com"
+          git add package.json package-lock.json
+          git diff --cached --stat
+          git commit -m "chore(deps): override basic-ftp (corregido) validado con prueba FTP real, typecheck y tests
+
+          Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+          Claude-Session: https://claude.ai/code/session_012f6So2Usi7ETaD95pxYyC7"
+          git push origin HEAD:chore/override-basic-ftp

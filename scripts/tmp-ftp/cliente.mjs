@@ -1,0 +1,10 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const { getUri } = require('get-uri');
+const { Client } = require('basic-ftp');
+const version = require('basic-ftp/package.json').version;
+const stream = await getUri(new URL('ftp://anonymous:anonymous@127.0.0.1:2121/hola.txt'), {});
+let texto = '';
+for await (const c of stream) texto += c;
+if (texto.trim() !== 'contenido-de-prueba-mogavel') throw new Error('contenido inesperado: ' + texto);
+console.log(`get-uri → basic-ftp ${version}: descarga FTP correcta (${typeof Client})`);
