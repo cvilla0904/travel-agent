@@ -78,19 +78,32 @@ export default function handler(req: any, res: any) {
       .filter((nombre) => nombre === clave || nombre.startsWith(clave))
       .sort((a, b) => (a === clave ? -1 : b === clave ? 1 : a.localeCompare(b, 'es')));
 
-    const vistos = new Set<string>();
-    const resultados: GeoResult[] = [];
+    const candidatos = new Map<string, { resultado: GeoResult; poblacion: number; prioridad: number }>();
     for (const nombre of claves) {
       const coincidencia = nombre === clave ? 'exacta' : 'prefijo';
       for (const entrada of nombres[nombre] ?? []) {
         const identidad = identidadDesdeEntrada(cat, entrada);
-        if (!identidad || (pais && identidad.pais !== pais) || vistos.has(identidad.id)) continue;
-        vistos.add(identidad.id);
-        resultados.push(respuestaGeo(cat, identidad, coincidencia));
-        if (resultados.length >= limite) break;
+        if (!identidad || (pais && identidad.pais !== pais)) continue;
+        const shardCity = identidad.tipo === 'ciudad' && identidad.pais ? cat.ciudad(identidad.id, identidad.pais) : undefined;
+        const prioridad = identidad.tipo === 'ciudad' ? 0 : identidad.tipo === 'pais' ? 1 : identidad.tipo === 'region' ? 2 : 3;
+        const anterior = candidatos.get(identidad.id);
+        const puntuacionCoincidencia = coincidencia === 'exacta' ? 0 : 1;
+        if (!anterior || puntuacionCoincidencia < (anterior.resultado.coincidencia === 'exacta' ? 0 : 1)) {
+          candidatos.set(identidad.id, {
+            resultado: respuestaGeo(cat, identidad, coincidencia),
+            poblacion: shardCity?.poblacion ?? 0,
+            prioridad,
+          });
+        }
       }
-      if (resultados.length >= limite) break;
     }
+    const ordenados = [...candidatos.values()].sort((a, b) =>
+      (a.resultado.coincidencia === 'exacta' ? 0 : 1) - (b.resultado.coincidencia === 'exacta' ? 0 : 1) ||
+      a.prioridad - b.prioridad ||
+      b.poblacion - a.poblacion ||
+      a.resultado.nombre.localeCompare(b.resultado.nombre, 'es')
+    );
+    const resultados = ordenados.slice(0, limite).map((item) => item.resultado);
 
     res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=604800');
     return res.status(200).json({
