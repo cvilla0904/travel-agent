@@ -117,7 +117,7 @@ export function asociarAeropuertos(ciudades: EntradaGeoNames[], aeropuertos: Omi
     const rejilla = porPais.get(a.pais);
     if (!rejilla) { sinCiudad.push(a.iata); continue; }
     const rangoLat = RADIO_AEROPUERTO_KM / 110.5;
-    const cosLat = Math.max(Math.cos((a.lat * Math.PI) / 180), 0.1);
+    const cosLat = Math.max(Math.cos((a.lat * Math.PI) / 180), 0.01);
     const rangoLon = Math.min(180, RADIO_AEROPUERTO_KM / (111.32 * cosLat));
     const candidatos = new Set<EntradaGeoNames>();
     for (let latCell = Math.floor(a.lat - rangoLat); latCell <= Math.floor(a.lat + rangoLat); latCell++) {
