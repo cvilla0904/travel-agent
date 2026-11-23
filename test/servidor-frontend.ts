@@ -4,7 +4,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const TIPOS: Record<string, string> = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml' };
+const TIPOS: Record<string, string> = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg' };
 
 export type ApiExtra = (url: URL, q: http.IncomingMessage, r: http.ServerResponse) => boolean;
 
@@ -15,6 +15,7 @@ export async function servirFrontend(root: string, api?: ApiExtra): Promise<{ ba
     const archivo = url === '/' ? 'index.html'
       : /^\/[\w-]+\.html$/.test(url) ? url.slice(1)
       : /^\/[\w-]+\.(js|css)$/.test(url) ? 'public' + url
+      : url === '/travel-agent-illustration.jpg' ? 'travel-agent-illustration.jpg'
       : /^\/destinos\/[\w-]+\.svg$/.test(url) ? 'public' + url
       : '';
     const ruta = archivo ? path.join(root, archivo) : '';
