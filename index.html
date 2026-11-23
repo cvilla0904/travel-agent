@@ -538,27 +538,73 @@
       if (!input || !panel) return;
       let opciones = [];
       let activo = -1;
+      let secuencia = 0;
+      let temporizador = null;
       function cerrar() { panel.classList.remove('is-open'); input.setAttribute('aria-expanded','false'); activo = -1; }
-      function elegir(opcion) { input.value = opcion.ciudad; input.dataset.codigoCiudad = opcion.codigo; input.dataset.paisCiudad = opcion.pais; cerrar(); input.dispatchEvent(new Event('change',{bubbles:true})); }
-      function pintar() {
-        const consulta = normalizarCiudad(input.value);
-        if (consulta.length < 3) { cerrar(); return; }
-        opciones = ciudadesMogavel.map(ciudad => ({...ciudad,puntuacion: ciudad.aliases.some(alias => normalizarCiudad(alias).startsWith(consulta)) ? 0 : normalizarCiudad(ciudad.ciudad + ' ' + ciudad.pais).includes(consulta) ? 1 : 2}))
-          .filter(ciudad => ciudad.puntuacion < 2)
-          .sort((a,b)=>a.puntuacion-b.puntuacion || a.ciudad.localeCompare(b.ciudad,'es'))
-          .slice(0,7);
-        if (!opciones.length) {
-          panel.innerHTML = '<div class="city-suggestion-empty">No hay coincidencias en la selección inicial. Puedes continuar escribiendo el destino completo.</div>';
-        } else {
-          panel.innerHTML = opciones.map((ciudad,index) => '<button type="button" class="city-suggestion" role="option" aria-selected="'+(index===activo)+'" data-index="'+index+'"><span class="city-suggestion-icon" aria-hidden="true">⌖</span><span class="city-suggestion-copy"><strong>'+escaparHtmlCiudad(ciudad.ciudad)+'</strong><small>'+escaparHtmlCiudad(ciudad.pais)+'</small></span><span class="city-suggestion-code">'+escaparHtmlCiudad(ciudad.codigo)+'</span></button>').join('');
-        }
-        panel.classList.add('is-open'); input.setAttribute('aria-expanded','true');
+      function elegir(opcion) {
+        input.value = opcion.ciudad;
+        input.dataset.codigoCiudad = opcion.codigo || '';
+        input.dataset.paisCiudad = opcion.pais || '';
+        if (opcion.id) input.dataset.geoId = opcion.id; else delete input.dataset.geoId;
+        if (opcion.tipo) input.dataset.geoTipo = opcion.tipo; else delete input.dataset.geoTipo;
+        cerrar();
+        input.dispatchEvent(new Event('change',{bubbles:true}));
       }
-      input.addEventListener('input',()=>{delete input.dataset.codigoCiudad; delete input.dataset.paisCiudad; activo=-1; pintar();});
+      function mostrar() {
+        if (!opciones.length) {
+          panel.innerHTML = '<div class="city-suggestion-empty">No hay coincidencias. Puedes continuar escribiendo el destino completo.</div>';
+        } else {
+          panel.innerHTML = opciones.map((ciudad,index) => {
+            const etiqueta = ciudad.codigo || (ciudad.tipo === 'pais' ? 'PAÍS' : ciudad.tipo === 'region' ? 'REGIÓN' : ciudad.tipo === 'aeropuerto' ? 'AEROPUERTO' : 'DESTINO');
+            return '<button type="button" class="city-suggestion" role="option" aria-selected="'+(index===activo)+'" data-index="'+index+'"><span class="city-suggestion-icon" aria-hidden="true">⌖</span><span class="city-suggestion-copy"><strong>'+escaparHtmlCiudad(ciudad.ciudad)+'</strong><small>'+escaparHtmlCiudad(ciudad.pais)+'</small></span><span class="city-suggestion-code">'+escaparHtmlCiudad(etiqueta)+'</span></button>';
+          }).join('');
+        }
+        panel.classList.add('is-open');
+        input.setAttribute('aria-expanded','true');
+      }
+      async function pintar() {
+        const consultaTexto = input.value.trim();
+        const consulta = normalizarCiudad(consultaTexto);
+        const token = ++secuencia;
+        if (consulta.length < 3) { cerrar(); return; }
+        try {
+          const response = await fetch('/api/geo?q=' + encodeURIComponent(consultaTexto) + '&limite=7', { headers: { 'Accept': 'application/json' } });
+          const data = await response.json();
+          if (token !== secuencia) return;
+          if (response.ok && data && data.ok && Array.isArray(data.resultados)) {
+            opciones = data.resultados.map(item => ({
+              ciudad: item.nombre,
+              pais: item.nombrePais || item.codigoPais || '',
+              codigo: Array.isArray(item.aeropuertos) && item.aeropuertos.length ? item.aeropuertos[0] : '',
+              id: item.id,
+              tipo: item.tipo
+            }));
+          } else {
+            throw new Error('Catálogo todavía no disponible');
+          }
+        } catch (_) {
+          opciones = ciudadesMogavel
+            .map(ciudad => ({...ciudad,puntuacion: ciudad.aliases.some(alias => normalizarCiudad(alias).startsWith(consulta)) ? 0 : normalizarCiudad(ciudad.ciudad + ' ' + ciudad.pais).includes(consulta) ? 1 : 2}))
+            .filter(ciudad => ciudad.puntuacion < 2)
+            .sort((a,b)=>a.puntuacion-b.puntuacion || a.ciudad.localeCompare(b.ciudad,'es'))
+            .slice(0,7)
+            .map(ciudad => ({...ciudad,tipo:'ciudad'}));
+        }
+        if (token === secuencia) mostrar();
+      }
+      input.addEventListener('input',()=>{
+        delete input.dataset.codigoCiudad;
+        delete input.dataset.paisCiudad;
+        delete input.dataset.geoId;
+        delete input.dataset.geoTipo;
+        activo=-1;
+        clearTimeout(temporizador);
+        temporizador=setTimeout(pintar,180);
+      });
       input.addEventListener('keydown',event=>{
         if (!panel.classList.contains('is-open')) return;
-        if (event.key==='ArrowDown') {event.preventDefault();activo=Math.min(activo+1,opciones.length-1);pintar();}
-        else if (event.key==='ArrowUp') {event.preventDefault();activo=Math.max(activo-1,0);pintar();}
+        if (event.key==='ArrowDown') {event.preventDefault();activo=Math.min(activo+1,opciones.length-1);mostrar();}
+        else if (event.key==='ArrowUp') {event.preventDefault();activo=Math.max(activo-1,0);mostrar();}
         else if (event.key==='Enter' && activo>=0 && opciones[activo]) {event.preventDefault();elegir(opciones[activo]);}
         else if (event.key==='Escape') cerrar();
       });
