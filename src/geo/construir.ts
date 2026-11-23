@@ -141,7 +141,7 @@ export function construirCatalogo(e: EntradaConstruccion): CatalogoConstruido {
 
   const paisesOut: Pais[] = e.paises.map((p) => {
     const extra = [...(e.nombresAlternos?.get(p.geonameid) ?? []), ...(e.nombresPaisCurados?.[p.iso] ?? [])];
-    const todos = [...new Set([p.nombre, ...extra].filter((n) => SOLO_LATINO.test(n)))];
+    const todos = [...new Set([p.nombre, ...extra].filter((n) => NOMBRE_VALIDO.test(n)))];
     const nombre = e.nombresPaisCurados?.[p.iso]?.[0] ?? p.nombre;
     todos.forEach((n) => poner(n, ['p', `pais:${p.iso}`, p.iso]));
     return { iso: p.iso, nombre, nombres: todos.map(normalizar) };
@@ -150,8 +150,8 @@ export function construirCatalogo(e: EntradaConstruccion): CatalogoConstruido {
   for (const c of e.geonames) {
     const iso = c.pais;
     const shard = shards[iso] ?? (shards[iso] = { iso, ciudades: {}, aeropuertos: {} });
-    const alternos = [c.ascii, ...(e.nombresAlternos?.get(c.id) ?? c.alternos)]
-      .filter((n) => n && n.length <= 40 && SOLO_LATINO.test(n));
+    const alternos = [c.ascii, ...c.alternos, ...(e.nombresAlternos?.get(c.id) ?? [])]
+      .filter((n) => n && n.length <= 40 && NOMBRE_VALIDO.test(n));
     const unicos = [...new Set(alternos.map(normalizar).filter((n) => n && n !== normalizar(c.nombre)))].slice(0, MAX_NOMBRES_CIUDAD);
     const id = `gn:${c.id}`;
     const ciudad: Ciudad = { id, nombre: c.nombre, pais: iso, poblacion: c.poblacion, lat: c.lat, lon: c.lon, nombres: unicos, aeropuertos: [] };
