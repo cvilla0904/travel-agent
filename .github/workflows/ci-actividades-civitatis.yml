@@ -1,0 +1,23 @@
+name: CI (rama actividades solo Civitatis)
+
+# Mismos pasos que ci.yml (npm ci, Chromium, typecheck, suite completa) para esta rama. No usa secretos, ni tokens, ni proveedores:
+# las pruebas del actor de Apify usan un cliente falso.
+on:
+  push:
+    branches:
+      - feat/actividades-solo-civitatis
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run typecheck
+      - run: npm test
