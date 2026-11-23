@@ -88,6 +88,8 @@ const sha = (b: Buffer | string) => crypto.createHash('sha256').update(b).digest
 
 export interface DatosEscritura {
   indice: Indice; paises: Pais[]; shards: Record<string, ShardPais>;
+  /** nombre normalizado → ISO (derivado de las ciudades curadas). */
+  preferidos?: Record<string, string>;
 }
 
 /** Escribe el catálogo v2 en `dir` (normalmente src/geo/data/catalogo). No toca otros archivos de src/geo/data. */
@@ -111,6 +113,7 @@ export function escribirCatalogo(dir: string, c: DatosEscritura, ahora = new Dat
   for (const s of Object.values(c.shards)) for (const a of Object.values(s.aeropuertos)) aeropuertos[a.iata] = a;
   escribir('aeropuertos.json', JSON.stringify(aeropuertos));
   escribir('paises.json', JSON.stringify(c.paises));
+  escribir('preferidos.json', JSON.stringify(c.preferidos ?? {}));
   for (const [iso, shard] of Object.entries(c.shards)) escribir(`paises/${iso}.json.gz`, zlib.gzipSync(Buffer.from(JSON.stringify(shard), 'utf8')));
 
   const meta: MetaCatalogo = {

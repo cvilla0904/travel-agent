@@ -1,5 +1,5 @@
 import { Catalogo, fuenteEnDisco } from '../src/geo/catalogo.js';
-import { LONGITUD_MAX_CONSULTA, LONGITUD_MIN_CONSULTA, buscarDestinos } from '../src/geo/buscar.js';
+import { LONGITUD_MAX_CONSULTA, LONGITUD_MIN_CONSULTA, buscarDestinos, consultaValida } from '../src/geo/buscar.js';
 import { normalizar } from '../src/geo/normalizar.js';
 
 let catalogo: Catalogo | undefined;
@@ -15,8 +15,8 @@ export function crearHandler(obtener: () => Catalogo) {
 
     const q = typeof req.query?.q === 'string' ? req.query.q.trim() : '';
     const clave = normalizar(q);
-    if (clave.length < LONGITUD_MIN_CONSULTA || clave.length > LONGITUD_MAX_CONSULTA) {
-      return res.status(400).json({ ok: false, error: `El parámetro q debe contener entre ${LONGITUD_MIN_CONSULTA} y ${LONGITUD_MAX_CONSULTA} caracteres.` });
+    if (!consultaValida(clave)) {
+      return res.status(400).json({ ok: false, error: `El parámetro q debe contener entre ${LONGITUD_MIN_CONSULTA} y ${LONGITUD_MAX_CONSULTA} caracteres (2 en chino, japonés y coreano).` });
     }
 
     const pais = typeof req.query?.pais === 'string' && /^[a-z]{2}$/i.test(req.query.pais) ? req.query.pais.toUpperCase() : undefined;

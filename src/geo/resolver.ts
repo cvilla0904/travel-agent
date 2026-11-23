@@ -67,7 +67,7 @@ export function resolverDestino(cat: Catalogo, texto: string, opciones: { pais?:
   if (unicas.length === 0) return { estado: 'no_encontrado' };
   if (unicas.length === 1) return { estado: 'reconocido', origen: 'catalogo', identidad: unicas[0]! };
 
-  const preferido = cat.destacados().preferidos[clave];
+  const preferido = cat.preferido(clave);
   if (preferido) {
     const p = unicas.filter((i) => i.pais === preferido);
     if (p.length === 1) return { estado: 'reconocido', origen: 'catalogo', identidad: p[0]! };

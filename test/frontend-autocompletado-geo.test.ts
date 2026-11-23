@@ -85,6 +85,10 @@ test('autocompletado: endpoint real, aeropuertos, selección, sin resultados, er
     await escribir(p, 'destino', 'москв');
     await p.waitForFunction(() => [...document.querySelectorAll('#destino-suggestions strong')].some((e) => e.textContent === 'Moscow'));
 
+    // 3b) Consulta CJK de solo 2 caracteres (東京): el frontend ya la envía y el endpoint la acepta.
+    await escribir(p, 'destino', '東京');
+    await p.waitForFunction(() => [...document.querySelectorAll('#destino-suggestions strong')].some((e) => e.textContent === 'Tokyo'));
+
     // 4) Aeropuerto por código IATA.
     await escribir(p, 'destino', 'nrt');
     await p.waitForFunction(() => [...document.querySelectorAll('#destino-suggestions .city-suggestion-code')].some((e) => e.textContent === 'NRT'));

@@ -17,6 +17,10 @@ import type { Aeropuerto, Ciudad, EntradaIndice, Indice, Pais, Region, ShardPais
 
 export const RADIO_AEROPUERTO_KM = 80;
 export const MAX_NOMBRES_CIUDAD = 20;
+/** Las ciudades grandes tienen cientos de nombres en GeoNames (en orden arbitrario): se les deja más margen. */
+export function maxNombresCiudad(poblacion: number): number {
+  return poblacion >= 1_000_000 ? 400 : poblacion >= 100_000 ? 100 : MAX_NOMBRES_CIUDAD;
+}
 
 const NOMBRE_VALIDO = /^[\p{L}\p{M}\p{N}\s'’. \-]+$/u;
 
@@ -141,6 +145,44 @@ export function asociarAeropuertos(ciudades: EntradaGeoNames[], aeropuertos: Omi
   return { asociados, sinCiudad };
 }
 
+export interface GrupoCurado { consulta: string; nombres: string[] }
+
+/**
+ * Asocia cada grupo curado a la ciudad más poblada que lleva el nombre `consulta` (en cualquiera de sus nombres).
+ * Devuelve los nombres extra por ciudad (id GeoNames sin prefijo), el país preferido de cada nombre y los grupos sin ciudad.
+ */
+export function asociarCuradas(
+  ciudades: Array<{ id: string; pais: string; poblacion: number; nombres: string[] }>, grupos: GrupoCurado[],
+): { extraPorCiudad: Map<string, string[]>; preferidos: Record<string, string>; sinCiudad: string[] } {
+  const anclas = new Map<string, number[]>();
+  grupos.forEach((g, i) => { const k = normalizar(g.consulta); anclas.set(k, [...(anclas.get(k) ?? []), i]); });
+  const mejor = new Map<number, { id: string; pais: string; poblacion: number }>();
+  if (anclas.size) {
+    for (const c of ciudades) {
+      const vistos = new Set<number>();
+      for (const n of c.nombres) {
+        for (const gi of anclas.get(normalizar(n)) ?? []) {
+          if (vistos.has(gi)) continue;
+          vistos.add(gi);
+          const previo = mejor.get(gi);
+          if (!previo || c.poblacion > previo.poblacion) mejor.set(gi, c);
+        }
+      }
+    }
+  }
+  const preferidos: Record<string, string> = {};
+  const sinCiudad: string[] = [];
+  const extraPorCiudad = new Map<string, string[]>();
+  grupos.forEach((g, gi) => {
+    const c = mejor.get(gi);
+    if (!c) { sinCiudad.push(g.consulta); return; }
+    const nombres = [g.consulta, ...g.nombres].map(normalizar).filter(Boolean);
+    extraPorCiudad.set(c.id, [...(extraPorCiudad.get(c.id) ?? []), ...nombres]);
+    for (const n of nombres) preferidos[n] ??= c.pais;
+  });
+  return { extraPorCiudad, preferidos, sinCiudad };
+}
+
 export interface EntradaConstruccion {
   geonames: EntradaGeoNames[]; paises: InfoPais[]; aeropuertos: Omit<Aeropuerto, 'ciudadId'>[];
   /** Nombres de países y ciudades en español/otros idiomas, si se dispone de alternateNamesV2. */
@@ -148,10 +190,20 @@ export interface EntradaConstruccion {
   /** Nombres de país curados (ISO → nombres), usados si faltan los alternos. */
   nombresPaisCurados?: Record<string, string[]>;
   regiones: Region[];
+  /**
+   * Grupos de nombres equivalentes editoriales (p. ej. Brussels = bruselas, bruxelles). Cada grupo se asocia a la ciudad
+   * más poblada cuyo nombre (en cualquier idioma de GeoNames) coincide con `consulta`; esos nombres se indexan siempre
+   * (no los recorta el límite por ciudad) y resuelven sin preguntar al país de esa ciudad.
+   */
+  ciudadesCuradas?: Array<{ consulta: string; nombres: string[] }>;
 }
 
 export interface CatalogoConstruido {
   indice: Indice; paises: Pais[]; shards: Record<string, ShardPais>; sinCiudad: string[];
+  /** nombre normalizado → ISO del país, derivado de ciudadesCuradas (el archivo editorial destacados.json prevalece). */
+  preferidos: Record<string, string>;
+  /** Grupos editoriales para los que no se halló ninguna ciudad (a revisar). */
+  curadasSinCiudad: string[];
 }
 
 export function construirCatalogo(e: EntradaConstruccion): CatalogoConstruido {
@@ -173,12 +225,20 @@ export function construirCatalogo(e: EntradaConstruccion): CatalogoConstruido {
     return { iso: p.iso, nombre, nombres: todos.map(normalizar) };
   });
 
+  const curadas = asociarCuradas(
+    e.geonames.map((c) => ({ id: c.id, pais: c.pais, poblacion: c.poblacion, nombres: [c.nombre, c.ascii, ...c.alternos, ...(e.nombresAlternos?.get(c.id) ?? [])] })),
+    e.ciudadesCuradas ?? [],
+  );
+  const { preferidos, sinCiudad: curadasSinCiudad, extraPorCiudad } = curadas;
+
   for (const c of e.geonames) {
     const iso = c.pais;
     const shard = shards[iso] ?? (shards[iso] = { iso, ciudades: {}, aeropuertos: {} });
     const alternos = [c.ascii, ...c.alternos, ...(e.nombresAlternos?.get(c.id) ?? [])]
       .filter((n) => n && n.length <= 40 && NOMBRE_VALIDO.test(n));
-    const unicos = [...new Set(alternos.map(normalizar).filter((n) => n && n !== normalizar(c.nombre)))].slice(0, MAX_NOMBRES_CIUDAD);
+    const curados = extraPorCiudad.get(c.id) ?? [];
+    const unicos = [...new Set([...curados, ...alternos.map(normalizar).filter((n) => n && n !== normalizar(c.nombre))])]
+      .filter((n) => n !== normalizar(c.nombre)).slice(0, Math.max(maxNombresCiudad(c.poblacion), curados.length));
     const id = `gn:${c.id}`;
     const ciudad: Ciudad = { id, nombre: c.nombre, nombreAscii: c.ascii, pais: iso, poblacion: c.poblacion, lat: c.lat, lon: c.lon, nombres: unicos, aeropuertos: [] };
     if (c.admin1) ciudad.admin1 = c.admin1;
@@ -196,5 +256,5 @@ export function construirCatalogo(e: EntradaConstruccion): CatalogoConstruido {
   }
 
   for (const r of e.regiones) { [r.nombre, ...r.nombres].forEach((n) => poner(n, ['r', r.id, r.pais])); }
-  return { indice: { v: 1, nombres }, paises: paisesOut, shards, sinCiudad };
+  return { indice: { v: 1, nombres }, paises: paisesOut, shards, sinCiudad, preferidos, curadasSinCiudad };
 }

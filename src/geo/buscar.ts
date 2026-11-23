@@ -16,6 +16,13 @@ export interface ResultadoBusqueda {
 }
 
 export const LONGITUD_MIN_CONSULTA = 3;
+/** Los nombres chinos, japoneses y coreanos son cortos (東京, 서울): con dos caracteres ya son una consulta útil. */
+const CJK = /^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]+$/u;
+export function longitudMinimaConsulta(clave: string): number { return CJK.test(clave) ? 2 : LONGITUD_MIN_CONSULTA; }
+export function consultaValida(clave: string): boolean {
+  const n = Array.from(clave).length;
+  return n >= longitudMinimaConsulta(clave) && n <= LONGITUD_MAX_CONSULTA;
+}
 export const LONGITUD_MAX_CONSULTA = 100;
 const PRIORIDAD_TIPO = { c: 0, p: 1, r: 2, a: 3 } as const;
 

@@ -567,7 +567,7 @@
         const consultaTexto = input.value.trim();
         const consulta = normalizarCiudad(consultaTexto);
         const token = ++secuencia;
-        if (consulta.length < 3) { cerrar(); return; }
+        if (consulta.length < (/^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]+$/u.test(consulta) ? 2 : 3)) { cerrar(); return; }
         try {
           const response = await fetch('/api/geo?q=' + encodeURIComponent(consultaTexto) + '&limite=7', { headers: { 'Accept': 'application/json' } });
           const data = await response.json();

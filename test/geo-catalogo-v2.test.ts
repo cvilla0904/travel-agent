@@ -207,3 +207,78 @@ test('reempaquetar: convierte el catálogo antiguo (indice.json + paises/XX.json
     assert.equal(buscarDestinos(cat, 'london')[0]!.codigoPais, 'GB');
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+// ── Hallazgos del catálogo REAL (GeoNames cities1000): nombres perdidos por el límite y consultas CJK de 2 caracteres ──
+import { aeropuertosComerciales, asociarCuradas, construirCatalogo, maxNombresCiudad, parsearCountryInfo, parsearCsv, parsearGeoNames } from '../src/geo/construir.ts';
+import { fuenteEnMemoria } from '../src/geo/catalogo.ts';
+import { consultaValida, longitudMinimaConsulta } from '../src/geo/buscar.ts';
+import { normalizar } from '../src/geo/normalizar.ts';
+import { textoAeropuertos, textoCountryInfo } from './geo-fixture.ts';
+
+function geoNamesLinea(id: string, nombre: string, ascii: string, alt: string[], lat: number, lon: number, cc: string, pop: number) {
+  return [id, nombre, ascii, alt.join(','), lat, lon, 'P', 'PPL', cc, '', '00', '', '', '', pop, '', 100, 'Etc/UTC', '2024-01-01'].join('\t');
+}
+
+test('ciudad grande con cientos de nombres: «Bruselas» no se pierde por el límite y resuelve sin preguntar', () => {
+  // Réplica del caso real: más nombres de relleno que el límite, antes de los curados (orden arbitrario de GeoNames).
+  const relleno = Array.from({ length: 500 }, (_, i) => `Bxl${i}`);
+  const texto = [
+    geoNamesLinea('2800866', 'Brussels', 'Brussels', [...relleno, 'Bruxelles', 'Bruselas'], 50.85, 4.35, 'BE', 1_100_000),
+    geoNamesLinea('9000001', 'Brussels', 'Brussels', [], 44.6, -87.6, 'US', 1200), // homónima pequeña
+    geoNamesLinea('9000002', 'Bruselas', 'Bruselas', [], 4.0, -75.0, 'CO', 3000), // «Bruselas» real en otro país
+  ].join('\n');
+  const base = {
+    geonames: parsearGeoNames(texto), paises: parsearCountryInfo(textoCountryInfo()),
+    aeropuertos: aeropuertosComerciales(parsearCsv(textoAeropuertos())), regiones: [],
+  };
+  const grupos = [{ consulta: 'Brussels', nombres: ['brussels', 'bruselas', 'bruxelles', 'brussel'] }];
+  const editorial = { regiones: () => [], destacados: () => ({ paises: {}, preferidos: {}, acceso: {} }) };
+
+  // Sin curadas, con el límite antiguo de 20 nombres, «bruselas» se perdería en Bruselas/BE; con curadas, no.
+  const con = construirCatalogo({ ...base, ciudadesCuradas: grupos });
+  assert.deepEqual(con.curadasSinCiudad, []);
+  const cat = new Catalogo(fuenteEnMemoria(con, editorial));
+  assert.equal(con.preferidos['bruselas'], 'BE');
+  const r = resolverDestino(cat, 'Bruselas');
+  assert.equal(r.estado, 'reconocido');
+  assert.equal((r as any).identidad.id, 'gn:2800866', 'la ciudad grande, no la homónima de Colombia');
+  assert.equal((resolverDestino(cat, 'bruxelles') as any).identidad.pais, 'BE');
+  assert.equal((resolverDestino(cat, 'Brussels') as any).identidad.id, 'gn:2800866');
+  assert.equal(buscarDestinos(cat, 'brusel')[0]!.id, 'gn:2800866');
+
+  // El editorial (destacados.json) prevalece sobre lo derivado.
+  const ed = { ...editorial, destacados: () => ({ paises: {}, preferidos: { bruselas: 'CO' }, acceso: {} }) };
+  assert.equal((resolverDestino(new Catalogo(fuenteEnMemoria(con, ed)), 'Bruselas') as any).identidad.pais, 'CO');
+
+  // Sin grupos curados se reproduce el fallo real: el límite recorta «bruselas» de la ciudad belga y, peor aún,
+  // «Bruselas» se resuelve a la homónima de Colombia.
+  const sin = new Catalogo(fuenteEnMemoria(construirCatalogo(base), editorial));
+  assert.equal((resolverDestino(sin, 'Bruselas') as any).identidad.pais, 'CO');
+});
+
+test('límite de nombres por tamaño de ciudad y grupos curados sin ciudad se informan', () => {
+  assert.equal(maxNombresCiudad(5_000), 20);
+  assert.equal(maxNombresCiudad(250_000), 100);
+  assert.equal(maxNombresCiudad(8_000_000), 400);
+  const r = asociarCuradas([{ id: '1', pais: 'ES', poblacion: 10, nombres: ['Madrid'] }], [{ consulta: 'Madrid', nombres: ['madrid'] }, { consulta: 'Atlantis', nombres: ['atlantida'] }]);
+  assert.deepEqual(r.sinCiudad, ['Atlantis']);
+  assert.deepEqual(r.preferidos, { madrid: 'ES' });
+});
+
+test('consultas de 2 caracteres solo para chino, japonés y coreano', () => {
+  assert.equal(longitudMinimaConsulta(normalizar('東京')), 2);
+  assert.equal(longitudMinimaConsulta(normalizar('서울')), 2);
+  assert.equal(longitudMinimaConsulta(normalizar('とうきょう')), 2);
+  assert.equal(longitudMinimaConsulta('ma'), 3);
+  assert.equal(longitudMinimaConsulta('мо'), 3);
+  assert.equal(consultaValida('東京'), true);
+  assert.equal(consultaValida('東'), false);
+  assert.equal(consultaValida('ma'), false);
+  assert.equal(consultaValida('x'.repeat(101)), false);
+  const h = crearHandler(() => disco.cat);
+  const r = respuesta(); h({ method: 'GET', query: { q: '東京' } }, r);
+  assert.equal(r.statusCode, 200, 'ya no es un 400');
+  assert.ok((r.body as any).resultados.some((x: any) => x.id === 'gn:1850147'));
+  const corta = respuesta(); h({ method: 'GET', query: { q: 'ab' } }, corta);
+  assert.equal(corta.statusCode, 400);
+});

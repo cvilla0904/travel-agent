@@ -3,6 +3,7 @@
 // Archivos esperados: cities1000.txt, countryInfo.txt, airports.csv y (opcional) alternateNamesV2.txt.
 import fs from 'node:fs';
 import path from 'node:path';
+import { CIUDADES_EQUIVALENTES } from '../src/services/ciudades.ts';
 import { escribirCatalogo, verificarIntegridad } from '../src/geo/empaquetar.ts';
 import {
   aeropuertosComerciales, construirCatalogo, parsearCountryInfo, parsearCsv, parsearGeoNames, parsearNombresAlternos,
@@ -45,7 +46,7 @@ if (v2) {
   });
 }
 
-const r = construirCatalogo({ geonames, paises, aeropuertos, nombresPaisCurados: curados, regiones, ...(nombresAlternos ? { nombresAlternos } : {}) });
+const r = construirCatalogo({ geonames, paises, aeropuertos, nombresPaisCurados: curados, regiones, ciudadesCuradas: CIUDADES_EQUIVALENTES, ...(nombresAlternos ? { nombresAlternos } : {}) });
 const dirCatalogo = path.join(dirDatos, 'catalogo');
 const meta = escribirCatalogo(dirCatalogo, r);
 const problemas = verificarIntegridad(dirCatalogo);
@@ -54,4 +55,5 @@ if (problemas.length) throw new Error('El catálogo escrito no supera la verific
 const tam = (f: string) => fs.statSync(path.join(dirCatalogo, f)).size;
 console.log(`Ciudades (GeoNames cities1000): ${meta.ciudades} · aeropuertos comerciales: ${meta.aeropuertos} · sin ciudad cercana: ${r.sinCiudad.length}`);
 console.log(`catalogo/: ${meta.buckets} buckets · indice.dat ${(tam('indice.dat') / 1024).toFixed(0)} KB · fichas.dat ${(tam('fichas.dat') / 1024).toFixed(0)} KB · ${meta.paises} países`);
+if (r.curadasSinCiudad.length) console.log('Grupos de ciudades curadas SIN ciudad en el catálogo (revisar):', r.curadasSinCiudad.join(', '));
 if (r.sinCiudad.length) console.log('Aeropuertos sin ciudad (revisar):', r.sinCiudad.join(' '));
