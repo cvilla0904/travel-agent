@@ -1,3 +1,4 @@
+import { consultaProveedorParaCiudad } from './ciudades.js';
 /**
  * Vuelos (Apify / Google Flights): normalización y orquestación de la búsqueda.
  *
@@ -233,6 +234,9 @@ export async function buscarVuelosConEstado(
 ): Promise<ResultadoVuelos> {
   const buscar = dependencias.buscar ?? buscarVuelosApify;
   const destinoBusqueda = p.aeropuertoDestino?.trim() || p.destino;
+  const origenProveedor = consultaProveedorParaCiudad(p.origen);
+  const destinoProveedor = consultaProveedorParaCiudad(destinoBusqueda);
+  const regresoProveedor = consultaProveedorParaCiudad(p.destinoRegreso || destinoBusqueda);
   const hayVuelta = Boolean(p.fechaVuelta);
   const abierto = Boolean(p.destinoRegreso);
   const origenVuelta = p.destinoRegreso || destinoBusqueda;
@@ -250,9 +254,9 @@ export async function buscarVuelosConEstado(
 
   // Las dos direcciones son independientes: se lanzan a la vez y un fallo de una no cancela la otra.
   const [rIda, rVuelta] = await Promise.allSettled([
-    buscar({ origen: p.origen, destino: destinoBusqueda, fechaIda: p.fechaIda, pasajeros: p.pasajeros }),
+    buscar({ origen: origenProveedor, destino: destinoProveedor, fechaIda: p.fechaIda, pasajeros: p.pasajeros }),
     hayVuelta
-      ? buscar({ origen: origenVuelta, destino: p.origen, fechaIda: p.fechaVuelta, pasajeros: p.pasajeros })
+      ? buscar({ origen: regresoProveedor, destino: origenProveedor, fechaIda: p.fechaVuelta, pasajeros: p.pasajeros })
       : Promise.resolve([] as Record<string, any>[]),
   ]);
 
