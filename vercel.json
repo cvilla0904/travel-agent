@@ -2,8 +2,18 @@
   "version": 2,
   "builds": [
     {
+      "src": "api/geo.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": "src/geo/data/{catalogo/**,regiones.json,destacados.json}"
+      }
+    },
+    {
       "src": "api/chat.ts",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": "src/geo/data/{catalogo/**,regiones.json,destacados.json}"
+      }
     },
     {
       "src": "index.html",
@@ -110,6 +120,10 @@
     {
       "src": "/api/chat",
       "dest": "/api/chat.ts"
+    },
+    {
+      "src": "/api/geo",
+      "dest": "/api/geo.ts"
     },
     {
       "src": "/travel-agent-illustration.jpg",

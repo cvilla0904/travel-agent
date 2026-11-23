@@ -7,7 +7,12 @@
     "test": "tsx --test test/*.test.ts",
     "probar:hoteles": "tsx scripts/probar-hoteles.ts",
     "start": "tsx src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "geo:descargar": "bash scripts/descargar-datos-geo.sh",
+    "geo:generar": "tsx scripts/construir-catalogo-geo.ts .cache/geo-source",
+    "geo:preparar": "npm run geo:descargar && npm run geo:generar",
+    "geo:reempaquetar": "tsx scripts/reempaquetar-catalogo-geo.ts",
+    "geo:medir": "tsx scripts/medir-catalogo-geo.ts"
   },
   "repository": {
     "type": "git",
@@ -23,6 +28,7 @@
   "homepage": "https://github.com/cvilla0904/travel-agent#readme",
   "dependencies": {
     "@openai/agents": "^0.17.0",
+    "@types/node": "^22.20.3",
     "@upstash/redis": "^1.39.0",
     "apify-client": "^2.25.0",
     "express": "^5.2.1",
@@ -30,9 +36,11 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/node": "^22.20.3",
     "playwright": "^1.65.1",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "basic-ftp": "6.2.6"
   }
 }
