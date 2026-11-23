@@ -55,7 +55,11 @@ export class Catalogo {
   /** País preferido para un nombre repetido: primero el editorial (destacados.json), luego el derivado de las ciudades curadas. */
   preferido(clave: string): { pais: string; id?: string } | undefined {
     const editorial = this.fuente.destacados().preferidos[clave];
-    return editorial ? { pais: editorial } : this.fuente.preferidos()[clave];
+    const curada = this.fuente.preferidos()[clave];
+    // El país editorial prevalece; si la ciudad curada es de ese mismo país, se aprovecha su id para desempatar
+    // entre varias entidades del país («London» y «City of London»).
+    if (editorial) return curada && curada.pais === editorial ? { pais: editorial, id: curada.id } : { pais: editorial };
+    return curada;
   }
   shard(iso: string): ShardPais | undefined { return this.fuente.pais(iso.toUpperCase()); }
   /** Ciudad completa (con nombres alternativos). Carga el archivo del país: para una ficha ligera usa ficha(). */

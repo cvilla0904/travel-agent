@@ -298,4 +298,7 @@ test('varias entidades en el país preferido («London»/«City of London», «V
   for (const t of ['London', 'Londres', 'LONDON']) assert.equal((resolverDestino(cat, t) as any).identidad.id, 'gn:2643743', t);
   // Con el país explícito se respeta lo pedido, aunque no sea la curada.
   assert.equal((resolverDestino(cat, 'London', { pais: 'CA' }) as any).identidad.id, 'gn:6058560');
+  // Preferencia editorial solo de país (destacados.json): la ciudad curada del mismo país desempata entre entidades.
+  const conEditorial = new Catalogo(fuenteEnMemoria(r, { regiones: () => [], destacados: () => ({ paises: {}, preferidos: { london: 'GB', londres: 'GB' }, acceso: {} }) }));
+  for (const t of ['London', 'Londres']) assert.equal((resolverDestino(conEditorial, t) as any).identidad.id, 'gn:2643743', t);
 });
