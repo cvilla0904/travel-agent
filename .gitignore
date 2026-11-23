@@ -2,3 +2,6 @@
 .env*
 
 node_modules/
+
+# Datos fuente descargados para construir el catálogo geográfico
+.cache/geo-source/
