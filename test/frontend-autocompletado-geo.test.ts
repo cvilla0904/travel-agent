@@ -60,8 +60,9 @@ test('autocompletado: endpoint real, aeropuertos, selección, sin resultados, er
   try {
     const p = await b.newPage();
     const consola: string[] = [], errores: string[] = [];
-    // Los recursos externos (fuentes, etc.) se abortan a propósito: solo cuentan los errores de la propia página.
-    p.on('console', (m: any) => { if (m.type() === 'error' && String(m.location()?.url ?? '').startsWith(base)) consola.push(m.text()); });
+    // Los recursos externos (fuentes, etc.) se abortan a propósito y el servidor de pruebas no sirve /favicon.ico (Chrome lo pide solo):
+    // solo cuentan los demás errores de la propia página, con su URL para poder diagnosticarlos.
+    p.on('console', (m: any) => { if (m.type() === 'error' && String(m.location()?.url ?? '').startsWith(base) && !String(m.location().url).endsWith('/favicon.ico')) consola.push(m.text() + ' ' + m.location().url); });
     p.on('pageerror', (e: any) => errores.push(String(e)));
     await p.route((u: URL) => !u.href.startsWith(base), (r: any) => r.abort());
     await p.goto(base + '/');
