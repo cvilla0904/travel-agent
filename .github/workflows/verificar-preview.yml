@@ -1,0 +1,25 @@
+name: Verificar endpoint del Preview
+
+# Consulta SOLO la URL de Preview indicada (nunca producción) y publica en el log estado, tiempos y tamaño.
+on:
+  push:
+    branches: [preview/catalogo-real]
+    paths: [.github/workflows/verificar-preview.yml]
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASE: https://mogavel-24omworz2-travel-agent9.vercel.app
+    steps:
+      - name: Consultas al endpoint del Preview
+        run: |
+          for q in "mad" "san" "san%20seb" "s%C3%A3o" "%D0%BC%D0%BE%D1%81%D0%BA" "%E6%9D%B1%E4%BA%AC" "bog" "bruselas" "nueva%20york" "zzzzqx"; do
+            curl -sS -o /tmp/r.json -D /tmp/h.txt -w "q=$q http=%{http_code} t=%{time_total}s size=%{size_download}B\n" "$BASE/api/geo?q=$q" || true
+            head -c 330 /tmp/r.json; echo
+            grep -i "^cache-control\|^x-vercel-cache\|^x-vercel-id\|^www-authenticate\|^set-cookie" /tmp/h.txt | head -4 || true
+          done
+          echo "--- con filtro de país"; curl -sS -w "\nhttp=%{http_code} t=%{time_total}s\n" "$BASE/api/geo?q=san&pais=CO" | head -c 600
+          echo; echo "--- segunda llamada (caché)"; curl -sS -o /dev/null -D - "$BASE/api/geo?q=mad" | grep -i "^HTTP\|x-vercel-cache\|^age"
+          echo "--- portada"; curl -sS -o /tmp/i.html -w "http=%{http_code} size=%{size_download}B\n" "$BASE/"; grep -c "GeoNames" /tmp/i.html || true
