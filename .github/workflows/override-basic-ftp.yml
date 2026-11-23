@@ -43,8 +43,10 @@ jobs:
           V=$(npm view basic-ftp version)
           npm pkg set "overrides.basic-ftp=$V"
           npm install --package-lock-only
-          npm install
+          rm -rf node_modules
+          npm ci
           npm ls basic-ftp
+          node -e "console.log('basic-ftp en disco:',require('basic-ftp/package.json').version)"
       - name: Prueba FTP con el override
         run: node scripts/tmp-ftp/cliente.mjs
       - name: Auditoría tras el override
