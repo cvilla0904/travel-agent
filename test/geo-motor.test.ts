@@ -191,7 +191,7 @@ test('respaldo Geoapify: errores distintos de «no encontrado», un resultado, v
 
 test('catálogo real ausente: error explícito, no un resultado vacío', () => {
   const vacio = fs.mkdtempSync(path.join(os.tmpdir(), 'geo-'));
-  assert.throws(() => new Catalogo(fuenteEnDisco(vacio)).indice(), CatalogoNoDisponible);
+  assert.throws(() => new Catalogo(fuenteEnDisco(vacio)).entradas('madrid'), CatalogoNoDisponible);
 });
 
 test('datos editoriales coherentes: IATA de 3 letras, preferidos con país válido, regiones y destacados completos', () => {

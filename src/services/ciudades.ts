@@ -6,16 +6,34 @@ let catalogoGeo: Catalogo | undefined;
 function obtenerCatalogoGeo(): Catalogo {
   return (catalogoGeo ??= new Catalogo(fuenteEnDisco()));
 }
+/** Solo para pruebas: inyecta un catálogo (o undefined para volver al de disco) y vacía la memoria de resultados. */
+export function establecerCatalogoGeo(cat: Catalogo | undefined): void {
+  catalogoGeo = cat;
+  memoriaCatalogo.clear();
+}
+
+// Memoria de resoluciones por texto (incluidas las no concluyentes). Los errores de catálogo no se memorizan:
+// si el catálogo se genera después, se empieza a usar sin reiniciar.
+const memoriaCatalogo = new Map<string, Ciudad | null>();
+const MEMORIA_MAX = 500;
+
 function ciudadCatalogada(texto: string): Ciudad | null {
+  const clave = String(texto ?? '').trim().toLowerCase();
+  if (!clave) return null;
+  if (memoriaCatalogo.has(clave)) return memoriaCatalogo.get(clave) ?? null;
   try {
     const cat = obtenerCatalogoGeo();
     const partes = String(texto ?? '').split(',').map((p) => p.trim()).filter(Boolean);
     const pais = partes.length > 1 ? paisDesdeTexto(cat, partes[partes.length - 1]!) : undefined;
     const resultado = resolverDestino(cat, nombreBaseCiudad(texto), pais ? { pais } : {});
-    if (resultado.estado !== 'reconocido' || resultado.identidad.tipo !== 'ciudad' || !resultado.identidad.pais) return null;
-    return cat.ciudad(resultado.identidad.id, resultado.identidad.pais) ?? null;
+    const ciudad = resultado.estado === 'reconocido' && resultado.identidad.tipo === 'ciudad' && resultado.identidad.pais
+      ? cat.ciudad(resultado.identidad.id, resultado.identidad.pais) ?? null
+      : null;
+    if (memoriaCatalogo.size >= MEMORIA_MAX) memoriaCatalogo.delete(memoriaCatalogo.keys().next().value as string);
+    memoriaCatalogo.set(clave, ciudad);
+    return ciudad;
   } catch {
-    // Mientras no exista el catálogo generado, se conserva el diccionario anterior como fallback.
+    // Catálogo no generado o ilegible: se conserva el diccionario curado como respaldo.
     return null;
   }
 }
@@ -122,12 +140,13 @@ const CENTROS_CIUDAD: Record<string, { es: string; lat: number; lng: number }> =
 
 /** Nombre en español, nombre en inglés y centro de la ciudad, o null si no está en la tabla. */
 export function datosCiudad(ciudad: string): { es: string; en: string; lat: number; lng: number } | null {
-  const catalogada = ciudadCatalogada(ciudad);
-  if (catalogada) return { es: catalogada.nombre, en: catalogada.nombreAscii || catalogada.nombre, lat: catalogada.lat, lng: catalogada.lon };
+  // La tabla curada manda (nombres en español revisados a mano); el catálogo cubre el resto de ciudades.
   const clave = normalizarTexto(nombreBaseCiudad(ciudad));
   const grupo = CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave));
   const centro = grupo ? CENTROS_CIUDAD[grupo.consulta] : undefined;
-  return grupo && centro ? { es: centro.es, en: grupo.consulta, lat: centro.lat, lng: centro.lng } : null;
+  if (grupo && centro) return { es: centro.es, en: grupo.consulta, lat: centro.lat, lng: centro.lng };
+  const catalogada = ciudadCatalogada(ciudad);
+  return catalogada ? { es: catalogada.nombre, en: catalogada.nombreAscii || catalogada.nombre, lat: catalogada.lat, lng: catalogada.lon } : null;
 }
 
 /** "Florencia, Italia" -> "Florencia". */
@@ -137,22 +156,23 @@ export function nombreBaseCiudad(ciudad: string): string {
 
 /** Nombre que se envía al proveedor (inglés habitual si se conoce). */
 export function consultaProveedorParaCiudad(ciudad: string): string {
-  const catalogada = ciudadCatalogada(ciudad);
-  if (catalogada) return catalogada.nombreAscii || catalogada.nombre;
   const base = nombreBaseCiudad(ciudad);
   const clave = normalizarTexto(base);
   const grupo = CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave));
-  return grupo ? grupo.consulta : base;
+  if (grupo) return grupo.consulta;
+  const catalogada = ciudadCatalogada(ciudad);
+  return catalogada ? catalogada.nombreAscii || catalogada.nombre : base;
 }
 
 /** Todos los nombres normalizados aceptables para esa ciudad. */
 export function variantesCiudad(ciudad: string): string[] {
-  const catalogada = ciudadCatalogada(ciudad);
-  if (catalogada) return [...new Set([normalizarTexto(catalogada.nombre), normalizarTexto(catalogada.nombreAscii), ...catalogada.nombres].filter(Boolean))];
   const clave = normalizarTexto(nombreBaseCiudad(ciudad));
   if (!clave) return [];
   const grupo = CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave));
-  return grupo ? [...grupo.nombres] : [clave];
+  const catalogada = ciudadCatalogada(ciudad);
+  // Unión de ambas fuentes: ninguna variante curada se pierde por tener el catálogo disponible.
+  const todas = [...(grupo?.nombres ?? []), ...(catalogada ? [catalogada.nombre, catalogada.nombreAscii, ...catalogada.nombres].map(normalizarTexto) : [])].filter(Boolean);
+  return todas.length ? [...new Set(todas)] : [clave];
 }
 
 /** Países habituales (nombres normalizados, en español e inglés) -> código ISO en minúsculas. */

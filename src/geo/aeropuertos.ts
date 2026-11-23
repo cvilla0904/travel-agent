@@ -36,7 +36,7 @@ export function accesoAereoDeCiudad(cat: Catalogo, ciudad: Ciudad): AccesoAereo 
 
 /** Aeropuertos de acceso de una región (editorial, validada contra el catálogo) con distancia al centro. */
 export function accesoAereoDeRegion(cat: Catalogo, regionId: string): { aeropuertos: AeropuertoAcceso[]; sinCatalogo: string[] } {
-  const r = cat.regiones().find((x) => x.id === regionId);
+  const r = cat.region(regionId);
   if (!r) return { aeropuertos: [], sinCatalogo: [] };
   const aeropuertos: AeropuertoAcceso[] = [];
   const sinCatalogo: string[] = [];

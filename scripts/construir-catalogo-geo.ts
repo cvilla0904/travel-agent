@@ -3,6 +3,7 @@
 // Archivos esperados: cities1000.txt, countryInfo.txt, airports.csv y (opcional) alternateNamesV2.txt.
 import fs from 'node:fs';
 import path from 'node:path';
+import { escribirCatalogo, verificarIntegridad } from '../src/geo/empaquetar.ts';
 import {
   aeropuertosComerciales, construirCatalogo, parsearCountryInfo, parsearCsv, parsearGeoNames, parsearNombresAlternos,
 } from '../src/geo/construir.ts';
@@ -45,12 +46,12 @@ if (v2) {
 }
 
 const r = construirCatalogo({ geonames, paises, aeropuertos, nombresPaisCurados: curados, regiones, ...(nombresAlternos ? { nombresAlternos } : {}) });
-fs.mkdirSync(path.join(dirDatos, 'paises'), { recursive: true });
-fs.writeFileSync(path.join(dirDatos, 'indice.json'), JSON.stringify(r.indice));
-fs.writeFileSync(path.join(dirDatos, 'paises.json'), JSON.stringify(r.paises));
-for (const [iso, shard] of Object.entries(r.shards)) fs.writeFileSync(path.join(dirDatos, 'paises', `${iso}.json`), JSON.stringify(shard));
+const dirCatalogo = path.join(dirDatos, 'catalogo');
+const meta = escribirCatalogo(dirCatalogo, r);
+const problemas = verificarIntegridad(dirCatalogo);
+if (problemas.length) throw new Error('El catálogo escrito no supera la verificación: ' + problemas.join('; '));
 
-const tam = (f: string) => fs.statSync(path.join(dirDatos, f)).size;
-console.log(`Ciudades (GeoNames cities1000): ${geonames.length} · aeropuertos comerciales: ${aeropuertos.length} · sin ciudad cercana: ${r.sinCiudad.length}`);
-console.log(`indice.json: ${(tam('indice.json') / 1024).toFixed(0)} KB · países: ${Object.keys(r.shards).length} archivos`);
+const tam = (f: string) => fs.statSync(path.join(dirCatalogo, f)).size;
+console.log(`Ciudades (GeoNames cities1000): ${meta.ciudades} · aeropuertos comerciales: ${meta.aeropuertos} · sin ciudad cercana: ${r.sinCiudad.length}`);
+console.log(`catalogo/: ${meta.buckets} buckets · indice.dat ${(tam('indice.dat') / 1024).toFixed(0)} KB · fichas.dat ${(tam('fichas.dat') / 1024).toFixed(0)} KB · ${meta.paises} países`);
 if (r.sinCiudad.length) console.log('Aeropuertos sin ciudad (revisar):', r.sinCiudad.join(' '));

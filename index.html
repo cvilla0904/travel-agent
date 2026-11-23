@@ -555,7 +555,7 @@
           panel.innerHTML = '<div class="city-suggestion-empty">No hay coincidencias. Puedes continuar escribiendo el destino completo.</div>';
         } else {
           panel.innerHTML = opciones.map((ciudad,index) => {
-            const etiqueta = ciudad.codigo || (ciudad.tipo === 'pais' ? 'PAÍS' : ciudad.tipo === 'region' ? 'REGIÓN' : ciudad.tipo === 'aeropuerto' ? 'AEROPUERTO' : 'DESTINO');
+            const etiqueta = ciudad.codigos || ciudad.codigo || (ciudad.tipo === 'pais' ? 'PAÍS' : ciudad.tipo === 'region' ? 'REGIÓN' : ciudad.tipo === 'aeropuerto' ? 'AEROPUERTO' : 'DESTINO');
             return '<button type="button" class="city-suggestion" role="option" aria-selected="'+(index===activo)+'" data-index="'+index+'"><span class="city-suggestion-icon" aria-hidden="true">⌖</span><span class="city-suggestion-copy"><strong>'+escaparHtmlCiudad(ciudad.ciudad)+'</strong><small>'+escaparHtmlCiudad(ciudad.pais)+'</small></span><span class="city-suggestion-code">'+escaparHtmlCiudad(etiqueta)+'</span></button>';
           }).join('');
         }
@@ -576,6 +576,7 @@
               ciudad: item.nombre,
               pais: item.nombrePais || item.codigoPais || '',
               codigo: Array.isArray(item.aeropuertos) && item.aeropuertos.length ? item.aeropuertos[0] : '',
+              codigos: Array.isArray(item.aeropuertos) ? item.aeropuertos.slice(0, 3).join(' · ') : '',
               id: item.id,
               tipo: item.tipo
             }));

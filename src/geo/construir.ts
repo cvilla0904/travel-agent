@@ -183,8 +183,8 @@ export function construirCatalogo(e: EntradaConstruccion): CatalogoConstruido {
     const ciudad: Ciudad = { id, nombre: c.nombre, nombreAscii: c.ascii, pais: iso, poblacion: c.poblacion, lat: c.lat, lon: c.lon, nombres: unicos, aeropuertos: [] };
     if (c.admin1) ciudad.admin1 = c.admin1;
     shard.ciudades[id] = ciudad;
-    poner(c.nombre, ['c', id, iso]);
-    unicos.forEach((n) => poner(n, ['c', id, iso]));
+    poner(c.nombre, ['c', id, iso, c.poblacion]);
+    unicos.forEach((n) => poner(n, ['c', id, iso, c.poblacion]));
   }
 
   for (const a of asociados) {

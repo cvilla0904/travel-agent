@@ -5,12 +5,15 @@
       "src": "api/geo.ts",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": "src/geo/data/**"
+        "includeFiles": "src/geo/data/{catalogo/**,regiones.json,destacados.json}"
       }
     },
     {
       "src": "api/chat.ts",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": "src/geo/data/{catalogo/**,regiones.json,destacados.json}"
+      }
     },
     {
       "src": "index.html",

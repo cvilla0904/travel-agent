@@ -21,10 +21,25 @@ export interface Ciudad {
   aeropuertos: string[];
 }
 
+/** Ficha mínima de una ciudad para mostrar y resolver destinos (sin lista de nombres alternativos). */
+export interface FichaCiudad {
+  id: string; nombre: string; nombreAscii: string; pais: string; poblacion: number; lat: number; lon: number;
+  aeropuertos: string[];
+}
+
+export interface MetaCatalogo {
+  formato: 2; generado: string; ciudades: number; aeropuertos: number; paises: number; buckets: number;
+  /** SHA-256 de cada archivo generado, para detectar catálogos incompletos o alterados. */
+  sha256: Record<string, string>;
+}
+
 export interface ShardPais { iso: string; ciudades: Record<string, Ciudad>; aeropuertos: Record<string, Aeropuerto> }
 
-/** Entrada del índice: [tipo, id, país ISO]. t: p=país, c=ciudad, r=región, a=aeropuerto. */
-export type EntradaIndice = ['p' | 'c' | 'r' | 'a', string, string];
+/**
+ * Entrada del índice: [tipo, id, país ISO, población?]. t: p=país, c=ciudad, r=región, a=aeropuerto.
+ * La población (solo ciudades) permite ordenar las coincidencias sin abrir ninguna ficha.
+ */
+export type EntradaIndice = ['p' | 'c' | 'r' | 'a', string, string] | ['p' | 'c' | 'r' | 'a', string, string, number];
 export interface Indice { v: 1; nombres: Record<string, EntradaIndice[]> }
 
 export interface Region {

@@ -1,11 +1,13 @@
 // DATOS DE PRUEBA (no son el catálogo real): fragmentos en el formato original de GeoNames y OurAirports,
 // con coordenadas y poblaciones aproximadas, solo para ejercitar el motor. Sin red ni proveedores.
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
-import { Catalogo, type Fuente } from '../src/geo/catalogo.ts';
+import { Catalogo, fuenteEnDisco, fuenteEnMemoria } from '../src/geo/catalogo.ts';
 import {
   aeropuertosComerciales, construirCatalogo, parsearCountryInfo, parsearCsv, parsearGeoNames,
 } from '../src/geo/construir.ts';
+import { escribirCatalogo } from '../src/geo/empaquetar.ts';
 import type { Destacados, Region } from '../src/geo/tipos.ts';
 
 const root = path.resolve(import.meta.dirname, '..');
@@ -50,6 +52,10 @@ const C: Array<[string, string, string, string, number, number, string, number]>
   ['3164603', 'Venice', 'Venice', 'Venezia,Venecia', 45.4375, 12.3358, 'IT', 260000],
   ['3172394', 'Naples', 'Naples', 'Napoli,Nápoles', 40.8522, 14.2681, 'IT', 960000],
   ['3176959', 'Florence', 'Florence', 'Firenze,Florencia', 43.7667, 11.25, 'IT', 370000],
+  ['3110044', 'San Sebastián', 'San Sebastian', 'Donostia,San Sebastian,Donostia-San Sebastian', 43.3183, -1.9812, 'ES', 186000],
+  ['4568138', 'San Sebastián', 'San Sebastian', '', 18.3361, -66.9908, 'PR', 38000],
+  ['3448439', 'São Paulo', 'Sao Paulo', 'Sao Paulo,San Pablo', -23.5475, -46.6361, 'BR', 10000000],
+  ['524901', 'Moscow', 'Moscow', 'Moskva,Москва,Moscú', 55.7522, 37.6156, 'RU', 10381222],
   ['3170647', 'Pisa', 'Pisa', '', 43.7167, 10.4, 'IT', 90000],
 ];
 const A: Array<[string, string, string, number, number, string, string, string]> = [
@@ -82,6 +88,9 @@ const A: Array<[string, string, string, number, number, string, string, string]>
   ['FLR', 'Florence Airport, Peretola', 'medium_airport', 43.81, 11.2051, 'IT', 'Florence', 'yes'],
   ['PSA', 'Pisa International Airport', 'medium_airport', 43.6839, 10.3927, 'IT', 'Pisa', 'yes'],
   ['MAD', 'Adolfo Suárez Madrid–Barajas Airport', 'large_airport', 40.4936, -3.5668, 'ES', 'Madrid', 'yes'],
+  ['EAS', 'San Sebastián Airport', 'medium_airport', 43.3565, -1.7906, 'ES', 'Hondarribia', 'yes'],
+  ['GRU', 'São Paulo/Guarulhos International Airport', 'large_airport', -23.4356, -46.4731, 'BR', 'Guarulhos', 'yes'],
+  ['SVO', 'Sheremetyevo International Airport', 'large_airport', 55.9726, 37.4146, 'RU', 'Moscow', 'yes'],
   ['XXS', 'Pequeño aeródromo', 'small_airport', 4.8, -74.1, 'CO', 'Bogotá', 'yes'],
   ['XXN', 'Aeropuerto sin servicio regular', 'medium_airport', 3.5, -76.4, 'CO', 'Cali', 'no'],
 ];
@@ -90,7 +99,7 @@ const PAISES: Array<[string, string, string, string, string]> = [
   ['VE', 'Venezuela', 'es-VE', '3625428', ''], ['GB', 'United Kingdom', 'en-GB', '2635167', ''], ['CA', 'Canada', 'en-CA,fr-CA', '6251999', ''],
   ['CL', 'Chile', 'es-CL', '3895114', ''], ['CU', 'Cuba', 'es-CU', '3562981', ''], ['BE', 'Belgium', 'nl-BE,fr-BE,de-BE', '2802361', ''],
   ['BA', 'Bosnia and Herzegovina', 'bs,hr-BA,sr-BA', '3277605', ''], ['HR', 'Croatia', 'hr-HR', '3202326', ''], ['IN', 'India', 'en-IN,hi', '1269750', ''],
-  ['IT', 'Italy', 'it-IT', '3175395', ''],
+  ['IT', 'Italy', 'it-IT', '3175395', ''], ['BR', 'Brazil', 'pt-BR', '3469034', ''], ['RU', 'Russia', 'ru', '2017370', ''], ['PR', 'Puerto Rico', 'en-PR,es-PR', '4566966', ''],
 ];
 
 export const textoGeoNames = () => C.map(([id, n, a, alt, lat, lon, cc, pop]) =>
@@ -100,19 +109,33 @@ export const textoCountryInfo = () => '# comentario\n' + PAISES.map(([iso, nom, 
 export const textoAeropuertos = () => 'id,ident,type,name,latitude_deg,longitude_deg,elevation_ft,continent,iso_country,iso_region,municipality,scheduled_service,icao_code,iata_code,gps_code,local_code\n' +
   A.map(([iata, n, t, lat, lon, cc, m, s], i) => `${i},X${i},${t},"${n}",${lat},${lon},0,XX,${cc},${cc}-X,"${m}",${s},,${iata},,`).join('\n');
 
-export function catalogoDePrueba(opciones: { destacados?: Destacados } = {}): Catalogo {
-  const r = construirCatalogo({
+export function construidoDePrueba() {
+  return construirCatalogo({
     geonames: parsearGeoNames(textoGeoNames()),
     paises: parsearCountryInfo(textoCountryInfo()),
     aeropuertos: aeropuertosComerciales(parsearCsv(textoAeropuertos())),
     nombresPaisCurados: dato('paises-curados.json'),
     regiones: dato<Region[]>('regiones.json'),
   });
-  const fuente: Fuente = {
-    indice: () => r.indice, paises: () => r.paises, pais: (iso) => r.shards[iso],
-    regiones: () => dato<Region[]>('regiones.json'),
-    destacados: () => opciones.destacados ?? dato<Destacados>('destacados.json'),
-  };
-  return new Catalogo(fuente);
+}
+
+const editorial = (destacados?: Destacados) => ({
+  regiones: () => dato<Region[]>('regiones.json'),
+  destacados: () => destacados ?? dato<Destacados>('destacados.json'),
+});
+
+/** Catálogo en memoria (misma semántica que el de disco, sin empaquetar). */
+export function catalogoDePrueba(opciones: { destacados?: Destacados } = {}): Catalogo {
+  return new Catalogo(fuenteEnMemoria(construidoDePrueba(), editorial(opciones.destacados)));
+}
+
+/** Catálogo v2 escrito en un directorio temporal y leído desde disco: ejercita el formato empaquetado real. */
+export function catalogoEnDiscoDePrueba(opciones: { destacados?: Destacados } = {}): { cat: Catalogo; dir: string; limpiar: () => void } {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'geo-v2-'));
+  escribirCatalogo(dir, construidoDePrueba());
+  const ed = editorial(opciones.destacados);
+  const fuente = fuenteEnDisco(dir, path.join(root, 'src/geo/data'));
+  if (opciones.destacados) fuente.destacados = ed.destacados;
+  return { cat: new Catalogo(fuente), dir, limpiar: () => fs.rmSync(dir, { recursive: true, force: true }) };
 }
 export const sinDestacados: Destacados = { paises: {}, preferidos: {}, acceso: {} };
