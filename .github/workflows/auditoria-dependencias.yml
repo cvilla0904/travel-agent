@@ -1,0 +1,62 @@
+name: Auditoría de dependencias (rama de revisión)
+
+# Aplica SOLO correcciones compatibles (npm audit fix, sin --force), valida con typecheck y tests y deja el resultado
+# en esta rama para revisarlo. No toca la rama de trabajo ni main.
+on:
+  push:
+    branches: [chore/auditoria-dependencias]
+    paths: [.github/workflows/auditoria-dependencias.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  auditoria:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Estado inicial
+        run: |
+          npm audit --json > audit-antes.json || true
+          node -e "const a=require('./audit-antes.json');console.log('ANTES',JSON.stringify(a.metadata.vulnerabilities))"
+      - name: Qué haría npm audit fix (simulación)
+        run: npm audit fix --dry-run 2>&1 | tail -40 || true
+      - name: Versiones disponibles de los paquetes sin corrección compatible
+        run: |
+          for p in basic-ftp proxy-agent pac-proxy-agent get-uri apify-client; do echo "== $p: $(npm view $p version) (dist-tags: $(npm view $p dist-tags --json | tr -d '\n '))"; done
+          echo "apify-client depende de:"; npm view apify-client@latest dependencies --json | tr -d '\n '; echo
+          echo "proxy-agent latest depende de:"; npm view proxy-agent@latest dependencies --json | tr -d '\n '; echo
+          echo "basic-ftp versiones recientes:"; npm view basic-ftp versions --json | tr -d '\n ' | tail -c 200; echo
+      - name: Aplicar correcciones compatibles (sin --force)
+        run: npm audit fix
+      - name: Cambios en package.json y package-lock.json
+        run: |
+          git diff --stat -- package.json package-lock.json
+          git diff -- package.json || true
+          npm ls zod qs body-parser follow-redirects ip-address @modelcontextprotocol/client basic-ftp proxy-agent 2>&1 | head -60 || true
+      - name: Estado final
+        run: |
+          npm audit --json > audit-despues.json || true
+          node -e "const a=require('./audit-despues.json');console.log('DESPUÉS',JSON.stringify(a.metadata.vulnerabilities));for(const [n,v] of Object.entries(a.vulnerabilities||{}))console.log([n,v.severity,v.isDirect?'directa':'transitiva','fix='+(v.fixAvailable&&v.fixAvailable.name?v.fixAvailable.name+'@'+v.fixAvailable.version+(v.fixAvailable.isSemVerMajor?' (MAJOR)':''):v.fixAvailable)].join(' | '))"
+      - run: npx playwright install --with-deps chromium
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Tests
+        run: npm test
+      - name: Guardar el resultado en esta rama
+        run: |
+          git config user.name "claude-code"
+          git config user.email "noreply@anthropic.com"
+          git add package.json package-lock.json
+          git diff --cached --quiet && { echo "Sin cambios que guardar"; exit 0; }
+          git commit -m "chore(deps): npm audit fix compatible (sin --force), validado con typecheck y tests
+
+          Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+          Claude-Session: https://claude.ai/code/session_012f6So2Usi7ETaD95pxYyC7"
+          git push origin HEAD:chore/auditoria-dependencias
