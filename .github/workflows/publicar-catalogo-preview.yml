@@ -1,0 +1,35 @@
+name: Catálogo real en rama de Preview (desechable)
+
+# Genera el catálogo real y lo commitea SOLO en la rama preview/catalogo-real para que Vercel despliegue un Preview con datos.
+# No toca la rama del PR ni main. La rama se puede borrar sin consecuencias.
+on:
+  push:
+    branches: [preview/catalogo-real]
+    paths: [.github/workflows/publicar-catalogo-preview.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run geo:preparar
+      - run: npx tsx scripts/verificar-catalogo-real.ts | head -40
+      - name: Commit del catálogo generado (solo en esta rama)
+        run: |
+          git config user.name "claude-code"
+          git config user.email "noreply@anthropic.com"
+          git add -f src/geo/data/catalogo
+          git commit -m "chore(preview): catálogo geográfico real generado desde GeoNames/OurAirports
+
+          Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+          Claude-Session: https://claude.ai/code/session_012f6So2Usi7ETaD95pxYyC7"
+          git push origin HEAD:preview/catalogo-real
