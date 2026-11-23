@@ -9,7 +9,8 @@
     "start": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
     "geo:descargar": "bash scripts/descargar-datos-geo.sh",
-    "geo:generar": "tsx scripts/construir-catalogo-geo.ts .cache/geo-source"
+    "geo:generar": "tsx scripts/construir-catalogo-geo.ts .cache/geo-source",
+    "geo:preparar": "npm run geo:descargar && npm run geo:generar"
   },
   "repository": {
     "type": "git",
