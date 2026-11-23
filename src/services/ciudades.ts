@@ -1,3 +1,25 @@
+import { Catalogo, fuenteEnDisco } from '../geo/catalogo.js';
+import { resolverDestino, paisDesdeTexto } from '../geo/resolver.js';
+import type { Ciudad } from '../geo/tipos.js';
+
+let catalogoGeo: Catalogo | undefined;
+function obtenerCatalogoGeo(): Catalogo {
+  return (catalogoGeo ??= new Catalogo(fuenteEnDisco()));
+}
+function ciudadCatalogada(texto: string): Ciudad | null {
+  try {
+    const cat = obtenerCatalogoGeo();
+    const partes = String(texto ?? '').split(',').map((p) => p.trim()).filter(Boolean);
+    const pais = partes.length > 1 ? paisDesdeTexto(cat, partes[partes.length - 1]!) : undefined;
+    const resultado = resolverDestino(cat, nombreBaseCiudad(texto), pais ? { pais } : {});
+    if (resultado.estado !== 'reconocido' || resultado.identidad.tipo !== 'ciudad' || !resultado.identidad.pais) return null;
+    return cat.ciudad(resultado.identidad.id, resultado.identidad.pais) ?? null;
+  } catch {
+    // Mientras no exista el catálogo generado, se conserva el diccionario anterior como fallback.
+    return null;
+  }
+}
+
 /**
  * Nombres equivalentes de una misma ciudad (español / inglés / local).
  * Módulo sin dependencias, compartido por las integraciones de proveedores
@@ -100,6 +122,8 @@ const CENTROS_CIUDAD: Record<string, { es: string; lat: number; lng: number }> =
 
 /** Nombre en español, nombre en inglés y centro de la ciudad, o null si no está en la tabla. */
 export function datosCiudad(ciudad: string): { es: string; en: string; lat: number; lng: number } | null {
+  const catalogada = ciudadCatalogada(ciudad);
+  if (catalogada) return { es: catalogada.nombre, en: catalogada.nombreAscii || catalogada.nombre, lat: catalogada.lat, lng: catalogada.lon };
   const clave = normalizarTexto(nombreBaseCiudad(ciudad));
   const grupo = CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave));
   const centro = grupo ? CENTROS_CIUDAD[grupo.consulta] : undefined;
@@ -113,6 +137,8 @@ export function nombreBaseCiudad(ciudad: string): string {
 
 /** Nombre que se envía al proveedor (inglés habitual si se conoce). */
 export function consultaProveedorParaCiudad(ciudad: string): string {
+  const catalogada = ciudadCatalogada(ciudad);
+  if (catalogada) return catalogada.nombreAscii || catalogada.nombre;
   const base = nombreBaseCiudad(ciudad);
   const clave = normalizarTexto(base);
   const grupo = CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave));
@@ -121,6 +147,8 @@ export function consultaProveedorParaCiudad(ciudad: string): string {
 
 /** Todos los nombres normalizados aceptables para esa ciudad. */
 export function variantesCiudad(ciudad: string): string[] {
+  const catalogada = ciudadCatalogada(ciudad);
+  if (catalogada) return [...new Set([normalizarTexto(catalogada.nombre), normalizarTexto(catalogada.nombreAscii), ...catalogada.nombres].filter(Boolean))];
   const clave = normalizarTexto(nombreBaseCiudad(ciudad));
   if (!clave) return [];
   const grupo = CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave));
@@ -155,6 +183,10 @@ const CODIGOS_PAIS: Record<string, string> = {
 
 /** "Italia" / "Italy" / "IT" -> "it". undefined si no se reconoce. */
 export function codigoPaisDesdeNombre(pais: unknown): string | undefined {
+  try {
+    const iso = paisDesdeTexto(obtenerCatalogoGeo(), String(pais ?? ''));
+    if (iso) return iso.toLowerCase();
+  } catch { /* usa el diccionario de respaldo hasta generar el catálogo */ }
   const clave = normalizarTexto(pais);
   if (!clave) return undefined;
   if (/^[a-z]{2}$/.test(clave)) return clave;
