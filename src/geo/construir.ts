@@ -4,7 +4,7 @@
  * scripts/construir-catalogo-geo.ts solo lee/escribe archivos.
  *
  * Formatos (documentación de cada fuente):
- *  - cities15000.txt (GeoNames, TSV 19 columnas): id, name, asciiname, alternatenames, lat, lon, fclass, fcode, país, cc2,
+ *  - cities1000.txt (GeoNames, TSV 19 columnas): id, name, asciiname, alternatenames, lat, lon, fclass, fcode, país, cc2,
  *    admin1, admin2, admin3, admin4, población, elevación, dem, zona horaria, modificación.
  *  - countryInfo.txt (TSV; líneas «#» son comentarios): ISO, ISO3, num, fips, país, capital, área, población, continente,
  *    tld, moneda, nombre moneda, teléfono, formato postal, regex postal, idiomas, geonameid, vecinos, fips equivalente.
