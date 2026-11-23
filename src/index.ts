@@ -6,7 +6,7 @@ import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { z } from 'zod';
 import { buscarLugaresGeoapify } from './services/geoapify.js';
-import { buscarActividadesApifyMultidestino } from './services/apify.js';
+import { buscarActividadesApifyMultidestino, etiquetaPlataformas } from './services/apify.js';
 import { buscarActividadesDestino } from './services/actividades-busqueda.js';
 import { buscarVuelosConEstado } from './services/vuelos.js';
 import { filtrarActividadesDeCiudad, actividadParaMultidestino } from './services/actividades-ciudad.js';
@@ -456,7 +456,7 @@ const buscarActividades = tool({
   name: 'buscar_actividades',
 
   description:
-    'Busca actividades y tours reales y reservables en el destino mediante Civitatis y Tiqets.',
+    `Busca actividades y tours reales y reservables en el destino mediante ${etiquetaPlataformas()}.`,
 
   parameters: {
     type: 'object',
@@ -589,7 +589,7 @@ const activitiesAgent =
 
       Utiliza SIEMPRE la herramienta buscar_actividades.
 
-      Los resultados proceden de Civitatis y Tiqets
+      Los resultados proceden de ${etiquetaPlataformas()}
       mediante Apify y pueden incluir actividades
       reservables, precios, valoraciones, reseñas,
       duración y URL de reserva.
@@ -1301,7 +1301,7 @@ export const travelAgent = new Agent({
     utiliza activities_agent.
 
     Los resultados de activities_agent son actividades y tours reales
-    obtenidos de Civitatis y Tiqets mediante Apify.
+    obtenidos de ${etiquetaPlataformas()} mediante Apify.
 
     Pueden incluir precio, valoracion, resenas, duracion y URL de reserva.
 

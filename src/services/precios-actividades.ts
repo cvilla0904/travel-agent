@@ -1,5 +1,5 @@
 /**
- * Normalización de precios de actividades (Apify: Civitatis / Tiqets).
+ * Normalización de precios de actividades (Apify: Civitatis; Tiqets está desactivado, ver PLATAFORMAS_ACTIVAS en apify.ts).
  *
  * Lógica movida desde la herramienta buscar_actividades para poder probarla
  * sin cargar el SDK de agentes. La única diferencia de comportamiento es que
