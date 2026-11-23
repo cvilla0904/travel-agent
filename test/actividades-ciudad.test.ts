@@ -4,6 +4,13 @@ import assert from 'node:assert/strict';
 import {
   actividadEsDeCiudad, filtrarActividadesDeCiudad, actividadParaMultidestino, consultasActividadesParaDestino,
 } from '../src/services/actividades-ciudad.ts';
+import { establecerCatalogoGeo } from '../src/services/ciudades.ts';
+import { sinCatalogoGeo } from './geo-fixture.ts';
+
+let restaurarCatalogo: () => void = () => {};
+// Estos tests miden la tabla curada: se aíslan del catálogo versionado.
+test.before(() => { restaurarCatalogo = sinCatalogoGeo(establecerCatalogoGeo); });
+test.after(() => restaurarCatalogo());
 
 const act = (city: string | undefined, title = 'Tour de prueba', extra: Record<string, unknown> = {}) =>
   ({ title, city, url: 'https://www.civitatis.com/es/x/', ...extra });

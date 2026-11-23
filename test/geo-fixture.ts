@@ -139,3 +139,10 @@ export function catalogoEnDiscoDePrueba(opciones: { destacados?: Destacados } = 
   return { cat: new Catalogo(fuente), dir, limpiar: () => fs.rmSync(dir, { recursive: true, force: true }) };
 }
 export const sinDestacados: Destacados = { paises: {}, preferidos: {}, acceso: {} };
+
+/** Fija un catálogo vacío (solo manda la tabla curada) y devuelve la función que lo restaura. Aísla los tests del catálogo versionado. */
+export function sinCatalogoGeo(establecer: (c: Catalogo | undefined) => void): () => void {
+  const vacio = fs.mkdtempSync(path.join(os.tmpdir(), 'geo-vacio-'));
+  establecer(new Catalogo(fuenteEnDisco(vacio)));
+  return () => { establecer(undefined); fs.rmSync(vacio, { recursive: true, force: true }); };
+}

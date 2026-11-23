@@ -64,3 +64,11 @@ test('vercel.json incluye el catálogo en api/geo.ts y en api/chat.ts, y solo lo
     assert.equal(archivos.length, 254 + 2 + 0, `${fn}: archivos incluidos`);
   }
 });
+
+test('con el catálogo real, ciudades fuera de la tabla curada se resuelven (Sarajevo, Tallin) y no se rompe la curada', async () => {
+  const { datosCiudad, establecerCatalogoGeo, consultaProveedorParaCiudad } = await import('../src/services/ciudades.ts');
+  establecerCatalogoGeo(undefined);
+  assert.equal(datosCiudad('Sarajevo')?.es, 'Sarajevo');
+  assert.equal(consultaProveedorParaCiudad('Bruselas'), 'Brussels');
+  assert.equal(datosCiudad('Bruselas')?.es, 'Bruselas');
+});

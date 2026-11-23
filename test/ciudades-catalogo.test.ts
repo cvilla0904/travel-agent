@@ -5,13 +5,15 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { Catalogo, fuenteEnDisco } from '../src/geo/catalogo.ts';
-import { catalogoDePrueba } from './geo-fixture.ts';
+import { catalogoDePrueba, sinCatalogoGeo } from './geo-fixture.ts';
 import { codigoPaisDesdeNombre, consultaProveedorParaCiudad, datosCiudad, establecerCatalogoGeo, variantesCiudad } from '../src/services/ciudades.ts';
 
 test.afterEach(() => establecerCatalogoGeo(undefined));
 
 test('Bruselas con catálogo disponible sigue dando nombre en español, consulta en inglés y las variantes curadas', () => {
+  const restaurar = sinCatalogoGeo(establecerCatalogoGeo);
   const sin = { datos: datosCiudad('Bruselas'), consulta: consultaProveedorParaCiudad('Bruselas'), variantes: variantesCiudad('Bruselas') };
+  restaurar();
   establecerCatalogoGeo(catalogoDePrueba());
   const con = { datos: datosCiudad('Bruselas'), consulta: consultaProveedorParaCiudad('Bruselas'), variantes: variantesCiudad('Bruselas') };
   assert.equal(con.datos?.es, 'Bruselas');
