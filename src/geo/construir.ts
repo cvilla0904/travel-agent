@@ -18,7 +18,7 @@ import type { Aeropuerto, Ciudad, EntradaIndice, Indice, Pais, Region, ShardPais
 export const RADIO_AEROPUERTO_KM = 80;
 export const MAX_NOMBRES_CIUDAD = 20;
 
-const SOLO_LATINO = /^[\p{Script=Latin}\p{M}\s'’.\-]+$/u;
+const NOMBRE_VALIDO = /^[\\p{L}\\p{M}\\p{N}\\s'’.\\-]+$/u;
 
 export interface EntradaGeoNames { id: string; nombre: string; ascii: string; alternos: string[]; lat: number; lon: number; pais: string; admin1: string; poblacion: number }
 
