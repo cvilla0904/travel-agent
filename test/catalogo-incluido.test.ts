@@ -1,4 +1,4 @@
-// El catálogo v2 versionado en src/geo/data/catalogo: formato, integridad, contenido y disponibilidad en las dos funciones de Vercel.
+// El catálogo v3 versionado en src/geo/data/catalogo: formato, integridad, contenido y disponibilidad en las dos funciones de Vercel.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -11,7 +11,7 @@ import { resolverDestino } from '../src/geo/resolver.ts';
 const raiz = path.resolve(import.meta.dirname, '..');
 const datos = path.join(raiz, 'src/geo/data');
 
-test('el catálogo versionado es v2, íntegro y completo', () => {
+test('el catálogo versionado es v3, íntegro y completo', () => {
   assert.equal(path.resolve(DIR_CATALOGO), path.join(datos, 'catalogo'));
   assert.deepEqual(verificarIntegridad(DIR_CATALOGO), []);
   const meta = JSON.parse(fs.readFileSync(path.join(DIR_CATALOGO, 'meta.json'), 'utf8'));
@@ -42,6 +42,23 @@ test('el catálogo real resuelve los casos clave sin red', () => {
   assert.equal(buscarDestinos(cat, 'москва')[0]?.codigoPais, 'RU');
   assert.ok(buscarDestinos(cat, 'bog').some((r) => r.tipo === 'aeropuerto'));
   assert.equal(buscarDestinos(cat, 'zzzzqx').length, 0);
+});
+
+test('el catálogo real ordena por relevancia: los alias no desplazan a nombres propios, pero siguen siendo buscables', () => {
+  const cat = new Catalogo(fuenteEnDisco());
+  const san = buscarDestinos(cat, 'san', { limite: 12 });
+  const nombresSan = san.map((r) => r.nombre);
+  for (const n of ['Shanghai', 'Chengdu', 'São Paulo']) assert.ok(!nombresSan.slice(0, 8).includes(n), `${n} no debe aparecer entre los 8 primeros de «san»`);
+  assert.equal(san[0]!.nombre, 'San Diego');
+  assert.ok(san.slice(0, 8).every((r) => r.via === 'nombre'), 'los 8 primeros de «san» coinciden por un nombre propio');
+  assert.equal(buscarDestinos(cat, 'mad')[0]?.nombre, 'Madrid');
+  assert.equal(buscarDestinos(cat, 'bog')[0]?.nombre, 'Bogotá');
+  assert.equal(buscarDestinos(cat, 'bruselas')[0]?.via, 'nombre');
+  assert.equal(buscarDestinos(cat, 'seul')[0]?.nombre, 'Seoul');
+  const sh = buscarDestinos(cat, 'sanghaj').find((r) => r.nombre === 'Shanghai');
+  assert.ok(sh, 'el alias sigue siendo buscable');
+  assert.equal(sh.via, 'alias'); assert.equal(sh.alias, 'sanghaj');
+  assert.equal(buscarDestinos(cat, '東京')[0]?.nombre, 'Tokyo');
 });
 
 test('vercel.json incluye el catálogo en api/geo.ts y en api/chat.ts, y solo lo necesario', () => {

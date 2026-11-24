@@ -3,6 +3,7 @@
 // Uso: npx tsx scripts/reempaquetar-catalogo-geo.ts [carpeta-de-datos]   (por defecto src/geo/data)
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { asociarCuradas } from '../src/geo/construir.ts';
 import { CIUDADES_EQUIVALENTES } from '../src/services/ciudades.ts';
 import { escribirCatalogo, verificarIntegridad } from '../src/geo/empaquetar.ts';
@@ -41,3 +42,5 @@ const meta = escribirCatalogo(path.join(dir, 'catalogo'), { indice, paises, shar
 const problemas = verificarIntegridad(path.join(dir, 'catalogo'));
 if (problemas.length) throw new Error('Verificación fallida: ' + problemas.join('; '));
 console.log(`Reempaquetado: ${meta.ciudades} ciudades, ${meta.aeropuertos} aeropuertos, ${meta.paises} países, ${meta.buckets} buckets (${completadas} entradas con población añadida).`);
+// El formato v3 necesita saber qué claves son nombres propios y cuáles alias: se clasifican a continuación.
+execFileSync(process.execPath, ['--import', 'tsx', path.join(import.meta.dirname, 'reclasificar-catalogo-geo.ts'), path.join(dir, 'catalogo')], { stdio: 'inherit' });

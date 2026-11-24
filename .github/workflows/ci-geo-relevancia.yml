@@ -1,0 +1,57 @@
+name: CI geo-relevancia-alias
+
+# Validación de la rama feat/geo-relevancia-alias (formato v3: nombre propio frente a alias en el índice).
+# `validate` corre en cada push; `reconstruir` solo a mano: descarga GeoNames/OurAirports, reconstruye el catálogo y lo compara
+# con el versionado (reclasificado). No despliega nada ni usa claves ni proveedores.
+on:
+  push:
+    branches: [feat/geo-relevancia-alias]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run typecheck
+      - run: npm test
+      - name: Relevancia sobre el catálogo versionado
+        run: npx tsx scripts/medir-relevancia-geo.ts
+
+  reconstruir:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Guardar el catálogo versionado
+        run: cp -r src/geo/data/catalogo "$RUNNER_TEMP/versionado"
+      - name: Reconstruir desde las fuentes
+        run: npm run geo:preparar
+      - name: Comparar reconstruido y versionado
+        run: npx tsx scripts/comparar-catalogos-geo.ts "$RUNNER_TEMP/versionado" src/geo/data/catalogo | tee comparacion.txt
+      - name: Relevancia y búsqueda sobre el catálogo reconstruido
+        run: |
+          npx tsx scripts/medir-relevancia-geo.ts | tee relevancia-reconstruido.txt
+          npx tsx scripts/medir-busqueda-geo.ts | tee busqueda-reconstruido.txt
+      - name: Suite sobre el catálogo reconstruido
+        run: npm test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: geo-relevancia-reconstruido
+          path: |
+            comparacion.txt
+            relevancia-reconstruido.txt
+            busqueda-reconstruido.txt

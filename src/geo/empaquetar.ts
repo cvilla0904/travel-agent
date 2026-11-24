@@ -1,5 +1,5 @@
 /**
- * Formato v2 del catálogo en disco (se genera en desarrollo; en ejecución solo se lee).
+ * Formato v3 del catálogo en disco (v2 + entradas de índice con indicador de nombre propio) (se genera en desarrollo; en ejecución solo se lee).
  *
  *   catalogo/indice-dir.json     prefijo de 3 caracteres → [desplazamiento, longitud] dentro de indice.dat
  *   catalogo/indice.dat          buckets JSON {clave normalizada → entradas}, cada uno comprimido con gzip por separado
@@ -18,7 +18,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import type { Aeropuerto, FichaCiudad, Indice, MetaCatalogo, Pais, PreferidoCatalogo, ShardPais } from './tipos.js';
 
-export const FORMATO_CATALOGO = 2;
+export const FORMATO_CATALOGO = 3;
 export const LONGITUD_PREFIJO = 3;
 
 export type DirIndice = Record<string, [number, number]>;
@@ -92,7 +92,7 @@ export interface DatosEscritura {
   preferidos?: Record<string, PreferidoCatalogo>;
 }
 
-/** Escribe el catálogo v2 en `dir` (normalmente src/geo/data/catalogo). No toca otros archivos de src/geo/data. */
+/** Escribe el catálogo v3 en `dir` (normalmente src/geo/data/catalogo). No toca otros archivos de src/geo/data. */
 export function escribirCatalogo(dir: string, c: DatosEscritura, ahora = new Date()): MetaCatalogo {
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(path.join(dir, 'paises'), { recursive: true });
@@ -136,4 +136,46 @@ export function verificarIntegridad(dir: string): string[] {
     catch { problemas.push(`${nombre}: no se puede leer`); }
   }
   return problemas;
+}
+
+/** Lee el índice completo de un catálogo en disco (solo para herramientas de mantenimiento: carga todos los buckets). */
+export function leerIndiceCompleto(dir: string): Indice {
+  const directorio = JSON.parse(fs.readFileSync(path.join(dir, 'indice-dir.json'), 'utf8')) as DirIndice;
+  const dat = fs.readFileSync(path.join(dir, 'indice.dat'));
+  const nombres: Indice['nombres'] = {};
+  for (const [off, len] of Object.values(directorio)) {
+    Object.assign(nombres, JSON.parse(zlib.gunzipSync(dat.subarray(off, off + len)).toString('utf8')));
+  }
+  return { v: 1, nombres };
+}
+
+/** Lee todas las fichas de ciudad de un catálogo en disco (herramientas de mantenimiento). */
+export function leerFichasCompletas(dir: string): FichaCiudad[] {
+  const idx = fs.readFileSync(path.join(dir, 'fichas.idx'));
+  const dat = fs.readFileSync(path.join(dir, 'fichas.dat'));
+  const r: FichaCiudad[] = [];
+  for (let i = 0; i < idx.length; i += 12) {
+    const off = idx.readUInt32LE(i + 4), len = idx.readUInt32LE(i + 8);
+    r.push(fichaDesdeFila(`gn:${idx.readUInt32LE(i)}`, JSON.parse(dat.subarray(off, off + len).toString('utf8')) as unknown[]));
+  }
+  return r;
+}
+
+/**
+ * Copia un catálogo cambiando solo el índice (indice.dat, indice-dir.json), preferidos.json y meta.json (formato y SHA-256).
+ * Las fichas, aeropuertos, países y preferidos no cambian: sus SHA-256 se conservan y se vuelven a verificar.
+ */
+export function reescribirIndice(origen: string, destino: string, indice: Indice, preferidos: Record<string, PreferidoCatalogo>, ahora = new Date()): MetaCatalogo {
+  const meta = JSON.parse(fs.readFileSync(path.join(origen, 'meta.json'), 'utf8')) as MetaCatalogo;
+  if (path.resolve(origen) !== path.resolve(destino)) {
+    fs.rmSync(destino, { recursive: true, force: true });
+    fs.cpSync(origen, destino, { recursive: true });
+  }
+  const { dir: dirIdx, datos } = empaquetarIndice(indice);
+  fs.writeFileSync(path.join(destino, 'indice.dat'), datos);
+  fs.writeFileSync(path.join(destino, 'indice-dir.json'), JSON.stringify(dirIdx));
+  fs.writeFileSync(path.join(destino, 'preferidos.json'), JSON.stringify(preferidos));
+  const nuevo: MetaCatalogo = { ...meta, formato: FORMATO_CATALOGO, generado: ahora.toISOString(), buckets: Object.keys(dirIdx).length, sha256: { ...meta.sha256, 'preferidos.json': sha(JSON.stringify(preferidos)), 'indice.dat': sha(datos), 'indice-dir.json': sha(JSON.stringify(dirIdx)) } };
+  fs.writeFileSync(path.join(destino, 'meta.json'), JSON.stringify(nuevo, null, 1));
+  return nuevo;
 }

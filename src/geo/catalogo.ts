@@ -29,7 +29,7 @@ export interface Fuente {
 
 export class CatalogoNoDisponible extends Error {
   constructor(detalle: string) {
-    super(`El catálogo geográfico no está generado (${detalle}). Ejecuta «npm run geo:preparar» (o reempaqueta los datos existentes con «npm run geo:reempaquetar»).`);
+    super(`El catálogo geográfico no está generado (${detalle}). Ejecuta «npm run geo:preparar» (o convierte un catálogo v2 con «npm run geo:reclasificar»).`);
     this.name = 'CatalogoNoDisponible';
   }
 }
@@ -111,7 +111,7 @@ function leerTrozo(fd: number, desde: number, longitud: number): Buffer {
 }
 
 /**
- * Fuente real: lee src/geo/data/catalogo (formato v2).
+ * Fuente real: lee src/geo/data/catalogo (formato v3).
  * Al arrancar solo se cargan el directorio de buckets y la tabla de fichas; cada consulta lee un bucket.
  */
 export function fuenteEnDisco(dir = DIR_CATALOGO, dirEditorial = DIR_DATOS): Fuente {

@@ -164,7 +164,8 @@ test('API: forma de la respuesta que consume index.html (id, tipo, nombre, nombr
     assert.equal(res.statusCode, 200); assert.equal(b.ok, true); assert.equal(b.consulta, 'mad'); assert.equal(b.total, b.resultados.length);
     assert.match(res.headers['Cache-Control']!, /s-maxage=86400/);
     const madrid = b.resultados.find((x: any) => x.nombre === 'Madrid');
-    assert.deepEqual(Object.keys(madrid).sort(), ['aeropuertos', 'coincidencia', 'codigoPais', 'id', 'latitud', 'longitud', 'nombre', 'nombrePais', 'tipo'].sort());
+    assert.deepEqual(Object.keys(madrid).sort(), ['aeropuertos', 'coincidencia', 'codigoPais', 'id', 'latitud', 'longitud', 'nombre', 'nombrePais', 'tipo', 'via'].sort());
+    assert.equal(madrid.via, 'nombre');
     assert.equal(madrid.nombrePais, 'España'); assert.deepEqual(madrid.aeropuertos, ['MAD']);
   }
 });

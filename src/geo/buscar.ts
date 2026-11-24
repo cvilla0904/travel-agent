@@ -13,6 +13,10 @@ export interface ResultadoBusqueda {
   longitud?: number;
   aeropuertos?: string[];
   coincidencia: 'exacta' | 'prefijo';
+  /** 'nombre': coincide con un nombre propio de la entidad (nombre, ASCII, curado, IATA); 'alias': con una traducción, transliteración o nombre histórico. */
+  via: 'nombre' | 'alias';
+  /** Solo si via = 'alias': el alias (normalizado) que ha coincidido, distinto del nombre mostrado. */
+  alias?: string;
 }
 
 export const LONGITUD_MIN_CONSULTA = 3;
@@ -26,12 +30,16 @@ export function consultaValida(clave: string): boolean {
 export const LONGITUD_MAX_CONSULTA = 100;
 const PRIORIDAD_TIPO = { c: 0, p: 1, r: 2, a: 3 } as const;
 
-interface Candidato { entrada: EntradaIndice; clave: string; exacta: boolean }
+interface Candidato { entrada: EntradaIndice; clave: string; exacta: boolean; propio: boolean }
+/** 0 nombre propio exacto · 1 nombre propio por prefijo · 2 alias exacto · 3 alias por prefijo. */
+const nivel = (c: { exacta: boolean; propio: boolean }) => (c.propio ? 0 : 2) + (c.exacta ? 0 : 1);
 
 /**
  * Autocompletado: nombres que empiezan por `texto` (o coinciden exactamente), sin recorrer el índice completo.
  * Solo se lee el bucket del prefijo; las fichas se consultan únicamente para los `limite` resultados mostrados.
- * Orden: coincidencia exacta, ciudad > país > región > aeropuerto, población, nombre normalizado.
+ * Orden: 1) nombre propio exacto, 2) nombre propio por prefijo, 3) alias exacto, 4) alias por prefijo; dentro de cada nivel,
+ * ciudad > país > región > aeropuerto, población y nombre normalizado. Los alias siguen siendo buscables: solo se ordenan después.
+ * Cada entidad aparece una vez, con su mejor coincidencia (un nombre propio siempre gana a un alias).
  */
 export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: string; limite?: number } = {}): ResultadoBusqueda[] {
   const clave = normalizar(texto);
@@ -42,17 +50,19 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
   for (const [nombre, entradas] of cat.buscarPrefijo(clave)) {
     const exacta = nombre === clave;
     for (const entrada of entradas) {
+      const propio = entrada[4] === 1;
       if (pais && entrada[2] !== pais) continue;
       const id = `${entrada[0]}:${entrada[1]}`;
       const previo = mejores.get(id);
-      if (!previo || (exacta && !previo.exacta) || (exacta === previo.exacta && nombre.length < previo.clave.length)) {
-        mejores.set(id, { entrada, clave: nombre, exacta });
+      const nuevo = { exacta, propio };
+      if (!previo || nivel(nuevo) < nivel(previo) || (nivel(nuevo) === nivel(previo) && nombre.length < previo.clave.length)) {
+        mejores.set(id, { entrada, clave: nombre, exacta, propio });
       }
     }
   }
 
   const ordenados = [...mejores.values()].sort((a, b) =>
-    Number(b.exacta) - Number(a.exacta) ||
+    nivel(a) - nivel(b) ||
     PRIORIDAD_TIPO[a.entrada[0]] - PRIORIDAD_TIPO[b.entrada[0]] ||
     (b.entrada[3] ?? 0) - (a.entrada[3] ?? 0) ||
     a.clave.length - b.clave.length ||
@@ -70,6 +80,8 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
       ...(typeof identidad.lon === 'number' ? { longitud: identidad.lon } : {}),
       ...(identidad.aeropuertos?.length ? { aeropuertos: identidad.aeropuertos } : {}),
       coincidencia: c.exacta ? 'exacta' : 'prefijo',
+      via: c.propio ? 'nombre' : 'alias',
+      ...(c.propio ? {} : { alias: c.clave }),
     });
   }
   return out;

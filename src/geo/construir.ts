@@ -156,16 +156,22 @@ export function asociarCuradas(
 ): { extraPorCiudad: Map<string, string[]>; preferidos: Record<string, PreferidoCatalogo>; sinCiudad: string[] } {
   const anclas = new Map<string, number[]>();
   grupos.forEach((g, i) => { const k = normalizar(g.consulta); anclas.set(k, [...(anclas.get(k) ?? []), i]); });
-  const mejor = new Map<number, { id: string; pais: string; poblacion: number }>();
+  // Entre las ciudades que llevan el nombre ancla, gana la que reúne MÁS nombres del grupo (Venecia, Italia lleva venecia, venice y
+  // venezia; Dayton solo alguno) y, a igualdad, la más poblada.
+  const nombresGrupo = grupos.map((g) => new Set([g.consulta, ...g.nombres].map(normalizar)));
+  const mejor = new Map<number, { id: string; pais: string; poblacion: number; aciertos: number }>();
   if (anclas.size) {
     for (const c of ciudades) {
+      const claves = new Set(c.nombres.map(normalizar));
       const vistos = new Set<number>();
-      for (const n of c.nombres) {
-        for (const gi of anclas.get(normalizar(n)) ?? []) {
+      for (const k of claves) {
+        for (const gi of anclas.get(k) ?? []) {
           if (vistos.has(gi)) continue;
           vistos.add(gi);
+          let aciertos = 0;
+          for (const n of nombresGrupo[gi]!) if (claves.has(n)) aciertos++;
           const previo = mejor.get(gi);
-          if (!previo || c.poblacion > previo.poblacion) mejor.set(gi, c);
+          if (!previo || aciertos > previo.aciertos || (aciertos === previo.aciertos && c.poblacion > previo.poblacion)) mejor.set(gi, { id: c.id, pais: c.pais, poblacion: c.poblacion, aciertos });
         }
       }
     }
@@ -181,6 +187,11 @@ export function asociarCuradas(
     for (const n of nombres) preferidos[n] ??= { pais: c.pais, id: `gn:${c.id}` };
   });
   return { extraPorCiudad, preferidos, sinCiudad };
+}
+
+/** Devuelve la entrada marcada como nombre propio (quinto elemento = 1; las no ciudades llevan población 0). */
+export function marcarPropio(e: EntradaIndice): EntradaIndice {
+  return [e[0], e[1], e[2], e[3] ?? 0, 1];
 }
 
 export interface EntradaConstruccion {
@@ -210,18 +221,23 @@ export function construirCatalogo(e: EntradaConstruccion): CatalogoConstruido {
   const { asociados, sinCiudad } = asociarAeropuertos(e.geonames, e.aeropuertos);
   const shards: Record<string, ShardPais> = {};
   const nombres: Record<string, EntradaIndice[]> = {};
-  const poner = (nombre: string, ent: EntradaIndice) => {
+  // `propio`: la clave es un nombre propio de la entidad (nombre, ASCII, curado, IATA); si no, es un alias (traducción,
+  // transliteración, nombre histórico…). Si una misma clave llega como alias y como propio, prevalece el propio.
+  const poner = (nombre: string, ent: EntradaIndice, propio = false) => {
     const k = normalizar(nombre);
     if (!k) return;
     const l = nombres[k] ?? (nombres[k] = []);
-    if (!l.some((x) => x[0] === ent[0] && x[1] === ent[1])) l.push(ent);
+    const i = l.findIndex((x) => x[0] === ent[0] && x[1] === ent[1]);
+    if (i < 0) l.push(propio ? marcarPropio(ent) : ent);
+    else if (propio && l[i]![4] !== 1) l[i] = marcarPropio(l[i]!);
   };
 
   const paisesOut: Pais[] = e.paises.map((p) => {
     const extra = [...(e.nombresAlternos?.get(p.geonameid) ?? []), ...(e.nombresPaisCurados?.[p.iso] ?? [])];
     const todos = [...new Set([p.nombre, ...extra].filter((n) => NOMBRE_VALIDO.test(n)))];
     const nombre = e.nombresPaisCurados?.[p.iso]?.[0] ?? p.nombre;
-    todos.forEach((n) => poner(n, ['p', `pais:${p.iso}`, p.iso]));
+    const propios = new Set([p.nombre, ...(e.nombresPaisCurados?.[p.iso] ?? [])].map(normalizar));
+    todos.forEach((n) => poner(n, ['p', `pais:${p.iso}`, p.iso], propios.has(normalizar(n))));
     return { iso: p.iso, nombre, nombres: todos.map(normalizar) };
   });
 
@@ -243,8 +259,9 @@ export function construirCatalogo(e: EntradaConstruccion): CatalogoConstruido {
     const ciudad: Ciudad = { id, nombre: c.nombre, nombreAscii: c.ascii, pais: iso, poblacion: c.poblacion, lat: c.lat, lon: c.lon, nombres: unicos, aeropuertos: [] };
     if (c.admin1) ciudad.admin1 = c.admin1;
     shard.ciudades[id] = ciudad;
-    poner(c.nombre, ['c', id, iso, c.poblacion]);
-    unicos.forEach((n) => poner(n, ['c', id, iso, c.poblacion]));
+    const propios = new Set([normalizar(c.nombre), normalizar(c.ascii), ...curados]);
+    poner(c.nombre, ['c', id, iso, c.poblacion], true);
+    unicos.forEach((n) => poner(n, ['c', id, iso, c.poblacion], propios.has(n)));
   }
 
   for (const a of asociados) {
@@ -252,9 +269,18 @@ export function construirCatalogo(e: EntradaConstruccion): CatalogoConstruido {
     shard.aeropuertos[a.iata] = a;
     const c = a.ciudadId ? shard.ciudades[a.ciudadId] : undefined;
     if (c && !c.aeropuertos.includes(a.iata)) c.aeropuertos.push(a.iata);
-    poner(a.iata, ['a', a.iata, a.pais]);
+    poner(a.iata, ['a', a.iata, a.pais], true);
   }
 
-  for (const r of e.regiones) { [r.nombre, ...r.nombres].forEach((n) => poner(n, ['r', r.id, r.pais])); }
+  // El código IATA de un aeropuerto también identifica a su ciudad («mad» → Madrid, «san» → San Diego). Solo se reclasifica como
+  // propia una clave que ya existe para la ciudad (como alias de GeoNames): no se crean coincidencias nuevas.
+  for (const a of asociados) {
+    const k = normalizar(a.iata);
+    const l = nombres[k];
+    const i = l?.findIndex((x) => x[0] === 'c' && x[1] === a.ciudadId) ?? -1;
+    if (l && i >= 0 && l[i]![4] !== 1) l[i] = marcarPropio(l[i]!);
+  }
+
+  for (const r of e.regiones) { [r.nombre, ...r.nombres].forEach((n) => poner(n, ['r', r.id, r.pais], true)); }
   return { indice: { v: 1, nombres }, paises: paisesOut, shards, sinCiudad, preferidos, curadasSinCiudad };
 }

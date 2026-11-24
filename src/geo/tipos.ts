@@ -28,7 +28,7 @@ export interface FichaCiudad {
 }
 
 export interface MetaCatalogo {
-  formato: 2; generado: string; ciudades: number; aeropuertos: number; paises: number; buckets: number;
+  formato: 3; generado: string; ciudades: number; aeropuertos: number; paises: number; buckets: number;
   /** SHA-256 de cada archivo generado, para detectar catálogos incompletos o alterados. */
   sha256: Record<string, string>;
 }
@@ -36,10 +36,17 @@ export interface MetaCatalogo {
 export interface ShardPais { iso: string; ciudades: Record<string, Ciudad>; aeropuertos: Record<string, Aeropuerto> }
 
 /**
- * Entrada del índice: [tipo, id, país ISO, población?]. t: p=país, c=ciudad, r=región, a=aeropuerto.
+ * Entrada del índice: [tipo, id, país ISO, población?, propio?]. t: p=país, c=ciudad, r=región, a=aeropuerto.
  * La población (solo ciudades) permite ordenar las coincidencias sin abrir ninguna ficha.
+ * El quinto elemento vale 1 cuando la clave que la contiene es un NOMBRE PROPIO de la entidad (su nombre, su nombre ASCII, un
+ * nombre editorial/curado o su código IATA) y falta cuando es un alias (traducción, transliteración, nombre histórico…).
+ * Se calcula al construir el índice, de modo que la búsqueda ordena por relevancia sin abrir fichas.
  */
-export type EntradaIndice = ['p' | 'c' | 'r' | 'a', string, string] | ['p' | 'c' | 'r' | 'a', string, string, number];
+export type TipoIndice = 'p' | 'c' | 'r' | 'a';
+export type EntradaIndice =
+  | [TipoIndice, string, string]
+  | [TipoIndice, string, string, number]
+  | [TipoIndice, string, string, number, 1];
 export interface Indice { v: 1; nombres: Record<string, EntradaIndice[]> }
 
 export interface Region {
