@@ -11,7 +11,7 @@ import { aFormatoV2, clasificarIndice } from '../src/geo/clasificar.ts';
 import { aeropuertosComerciales, construirCatalogo, parsearCountryInfo, parsearCsv, parsearGeoNames } from '../src/geo/construir.ts';
 import { escribirCatalogo, leerFichasCompletas, leerIndiceCompleto, reescribirIndice, verificarIntegridad } from '../src/geo/empaquetar.ts';
 import { resolverDestino } from '../src/geo/resolver.ts';
-import { catalogoDePrueba, construidoDePrueba } from './geo-fixture.ts';
+import { construidoDePrueba } from './geo-fixture.ts';
 import type { Destacados, Region } from '../src/geo/tipos.ts';
 
 // id, nombre, ascii, alternos, lat, lon, país, población
@@ -178,9 +178,8 @@ test('catálogo v3 en disco: se escribe, verifica, reclasifica y se lee igual; e
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('el resolver y los destinos curados no cambian: «bruselas» sigue resolviendo a Brussels y London/Valencia siguen siendo ambiguos', () => {
+test('el resolver no cambia: «bruselas» sigue resolviendo a Brussels', () => {
   const r = resolverDestino(cat, 'bruselas');
   assert.equal(r.estado, 'reconocido');
-  const fx = catalogoDePrueba();
-  assert.equal(resolverDestino(fx, 'London').estado === 'reconocido' || resolverDestino(fx, 'London').estado === 'ambiguo', true);
+  assert.equal(r.estado === 'reconocido' && r.identidad.nombre, 'Brussels');
 });
