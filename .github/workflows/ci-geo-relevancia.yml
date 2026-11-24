@@ -27,6 +27,8 @@ jobs:
 
   reconstruir:
     if: github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -59,3 +61,12 @@ jobs:
             relevancia-reconstruido.txt
             busqueda-reconstruido.txt
             src/geo/data/catalogo
+      - name: Publicar el catálogo reconstruido en una rama aparte (no toca la rama de trabajo)
+        if: success()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout -b data/geo-catalogo-v3-reconstruido
+          git add -f src/geo/data/catalogo
+          git commit -m "data(geo): catálogo v3 reconstruido desde GeoNames/OurAirports (run ${{ github.run_id }})"
+          git push -f origin data/geo-catalogo-v3-reconstruido
