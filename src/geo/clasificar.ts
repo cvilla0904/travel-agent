@@ -12,6 +12,7 @@
 import { asociarCuradas, marcarPropio, type GrupoCurado } from './construir.js';
 import { normalizar } from './normalizar.js';
 import type { EntradaIndice, Indice, Pais, PreferidoCatalogo, Region } from './tipos.js';
+import type { CorreccionesAsociacion } from './construir.js';
 
 export interface ContextoClasificacion {
   /** id de ciudad («gn:123») → nombre y nombre ASCII. */
@@ -21,6 +22,10 @@ export interface ContextoClasificacion {
   nombresPaisCurados: Record<string, string[]>;
   regiones: Region[];
   curadas: GrupoCurado[];
+  /** Correcciones deliberadas de asociación (pines de grupos curados y entradas a retirar). Opcional. */
+  correcciones?: CorreccionesAsociacion;
+  /** Si es true, las correcciones que no aplican a este catálogo (ciudad o entrada inexistente) se omiten en vez de fallar (catálogos de prueba). */
+  tolerante?: boolean;
 }
 
 /** Entrada en la forma v3 sin indicador (para comparar catálogos v2 y v3). */
@@ -41,13 +46,21 @@ export function aFormatoV2(indice: Indice): Indice {
  */
 export function clasificarIndice(indice: Indice, ctx: ContextoClasificacion): { indice: Indice; preferidos: Record<string, PreferidoCatalogo> } {
   const base = aFormatoV2(indice);
+  let correcciones = ctx.correcciones;
+  if (correcciones && ctx.tolerante) {
+    const existe = (id: string) => ctx.ciudades.has(id.startsWith('gn:') ? id : `gn:${id}`);
+    correcciones = {
+      pines: Object.fromEntries(Object.entries(correcciones.pines).filter(([, id]) => existe(id))),
+      retirar: correcciones.retirar.filter((r) => existe(r.ciudad) && base.nombres[normalizar(r.clave)]?.some((x) => x[1] === r.ciudad)),
+    };
+  }
   // Nombres normalizados de cada ciudad, recuperados del índice (necesarios para asociar las ciudades curadas).
   const nombresDe = new Map<string, string[]>();
   for (const [k, l] of Object.entries(base.nombres)) {
     for (const e of l) if (e[0] === 'c') { const a = nombresDe.get(e[1]); if (a) a.push(k); else nombresDe.set(e[1], [k]); }
   }
   const lista = [...ctx.ciudades].map(([id, c]) => ({ id: id.replace(/^gn:/, ''), pais: c.pais, poblacion: c.poblacion, nombres: nombresDe.get(id) ?? [c.nombre, c.ascii] }));
-  const { extraPorCiudad, preferidos } = asociarCuradas(lista, ctx.curadas);
+  const { extraPorCiudad, preferidos } = asociarCuradas(lista, ctx.curadas, correcciones?.pines ?? {});
 
   const propiosCiudad = new Map<string, Set<string>>();
   for (const [id, c] of ctx.ciudades) {
@@ -55,6 +68,16 @@ export function clasificarIndice(indice: Indice, ctx: ContextoClasificacion): { 
   }
   const propiosPais = new Map(ctx.paises.map((p) => [`pais:${p.iso}`, new Set([normalizar(p.nombres[0] ?? p.nombre), ...(ctx.nombresPaisCurados[p.iso] ?? []).map(normalizar)])]));
   const propiosRegion = new Map(ctx.regiones.map((r) => [r.id, new Set([r.nombre, ...r.nombres].map(normalizar))]));
+
+  // Correcciones deliberadas: entradas inyectadas por una asociación anterior errónea. Se retiran solo las indicadas y solo si existen.
+  for (const r of correcciones?.retirar ?? []) {
+    const k = normalizar(r.clave);
+    const l = base.nombres[k];
+    if (!l) throw new Error(`Corrección a retirar «${r.clave}»: la clave no existe en el índice`);
+    const resto = l.filter((x) => !(x[0] === 'c' && x[1] === r.ciudad));
+    if (resto.length === l.length) throw new Error(`Corrección a retirar «${r.clave}» → ${r.ciudad}: la entrada no existe`);
+    if (resto.length) base.nombres[k] = resto; else delete base.nombres[k];
+  }
 
   // Los nombres curados se garantizan en el índice de su ciudad (como hace el constructor).
   for (const [id, curados] of extraPorCiudad) {

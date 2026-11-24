@@ -43,4 +43,4 @@ const problemas = verificarIntegridad(path.join(dir, 'catalogo'));
 if (problemas.length) throw new Error('Verificación fallida: ' + problemas.join('; '));
 console.log(`Reempaquetado: ${meta.ciudades} ciudades, ${meta.aeropuertos} aeropuertos, ${meta.paises} países, ${meta.buckets} buckets (${completadas} entradas con población añadida).`);
 // El formato v3 necesita saber qué claves son nombres propios y cuáles alias: se clasifican a continuación.
-execFileSync(process.execPath, ['--import', 'tsx', path.join(import.meta.dirname, 'reclasificar-catalogo-geo.ts'), path.join(dir, 'catalogo')], { stdio: 'inherit' });
+execFileSync(process.execPath, ['--import', 'tsx', path.join(import.meta.dirname, 'reclasificar-catalogo-geo.ts'), path.join(dir, 'catalogo'), '--tolerante'], { stdio: 'inherit' });

@@ -148,34 +148,50 @@ export function asociarAeropuertos(ciudades: EntradaGeoNames[], aeropuertos: Omi
 export interface GrupoCurado { consulta: string; nombres: string[] }
 
 /**
- * Asocia cada grupo curado a la ciudad más poblada que lleva el nombre `consulta` (en cualquiera de sus nombres).
- * Devuelve los nombres extra por ciudad (id GeoNames sin prefijo), el país preferido de cada nombre y los grupos sin ciudad.
+ * Correcciones deliberadas de asociación (src/geo/data/correcciones-asociacion.json), revisadas a mano:
+ *  - pines: grupo curado (consulta normalizada) → ciudad concreta, en lugar de «la más poblada que lleve el nombre»;
+ *  - retirar: entradas de índice concretas (clave → ciudad) que una asociación anterior inyectó por error.
+ * Nada más cambia: el resto del catálogo se conserva tal cual.
+ */
+export interface CorreccionesAsociacion {
+  pines: Record<string, string>;
+  retirar: Array<{ clave: string; ciudad: string; motivo?: string }>;
+}
+
+/**
+ * Asocia cada grupo curado a la ciudad más poblada que lleva el nombre `consulta` (en cualquiera de sus nombres), salvo que
+ * un pin explícito la fije. Devuelve los nombres extra por ciudad (id GeoNames sin prefijo), el país preferido de cada nombre
+ * y los grupos sin ciudad.
  */
 export function asociarCuradas(
   ciudades: Array<{ id: string; pais: string; poblacion: number; nombres: string[] }>, grupos: GrupoCurado[],
+  pines: Record<string, string> = {},
 ): { extraPorCiudad: Map<string, string[]>; preferidos: Record<string, PreferidoCatalogo>; sinCiudad: string[] } {
   const anclas = new Map<string, number[]>();
   grupos.forEach((g, i) => { const k = normalizar(g.consulta); anclas.set(k, [...(anclas.get(k) ?? []), i]); });
-  // Entre las ciudades que llevan el nombre ancla, gana la que reúne MÁS nombres del grupo (Venecia, Italia lleva venecia, venice y
-  // venezia; Dayton solo alguno) y, a igualdad, la más poblada.
-  const nombresGrupo = grupos.map((g) => new Set([g.consulta, ...g.nombres].map(normalizar)));
-  const mejor = new Map<number, { id: string; pais: string; poblacion: number; aciertos: number }>();
+  const mejor = new Map<number, { id: string; pais: string; poblacion: number }>();
   if (anclas.size) {
     for (const c of ciudades) {
-      const claves = new Set(c.nombres.map(normalizar));
       const vistos = new Set<number>();
-      for (const k of claves) {
-        for (const gi of anclas.get(k) ?? []) {
+      for (const n of c.nombres) {
+        for (const gi of anclas.get(normalizar(n)) ?? []) {
           if (vistos.has(gi)) continue;
           vistos.add(gi);
-          let aciertos = 0;
-          for (const n of nombresGrupo[gi]!) if (claves.has(n)) aciertos++;
           const previo = mejor.get(gi);
-          if (!previo || aciertos > previo.aciertos || (aciertos === previo.aciertos && c.poblacion > previo.poblacion)) mejor.set(gi, { id: c.id, pais: c.pais, poblacion: c.poblacion, aciertos });
+          if (!previo || c.poblacion > previo.poblacion) mejor.set(gi, c);
         }
       }
     }
   }
+  // Pines: prevalecen sobre la heurística. Un pin a una ciudad que no existe es un error, no se ignora en silencio.
+  const porId = new Map(ciudades.map((c) => [c.id.replace(/^gn:/, ''), c]));
+  grupos.forEach((g, gi) => {
+    const pin = pines[normalizar(g.consulta)];
+    if (!pin) return;
+    const c = porId.get(pin.replace(/^gn:/, ''));
+    if (!c) throw new Error(`Pin de «${g.consulta}» a una ciudad inexistente: ${pin}`);
+    mejor.set(gi, c);
+  });
   const preferidos: Record<string, PreferidoCatalogo> = {};
   const sinCiudad: string[] = [];
   const extraPorCiudad = new Map<string, string[]>();
@@ -207,6 +223,8 @@ export interface EntradaConstruccion {
    * (no los recorta el límite por ciudad) y resuelven sin preguntar al país de esa ciudad.
    */
   ciudadesCuradas?: Array<{ consulta: string; nombres: string[] }>;
+  /** Pines de asociación de grupos curados (ver CorreccionesAsociacion). */
+  pinesCuradas?: Record<string, string>;
 }
 
 export interface CatalogoConstruido {
@@ -244,6 +262,7 @@ export function construirCatalogo(e: EntradaConstruccion): CatalogoConstruido {
   const curadas = asociarCuradas(
     e.geonames.map((c) => ({ id: c.id, pais: c.pais, poblacion: c.poblacion, nombres: [c.nombre, c.ascii, ...c.alternos, ...(e.nombresAlternos?.get(c.id) ?? [])] })),
     e.ciudadesCuradas ?? [],
+    e.pinesCuradas ?? {},
   );
   const { preferidos, sinCiudad: curadasSinCiudad, extraPorCiudad } = curadas;
 

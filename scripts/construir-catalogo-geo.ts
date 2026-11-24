@@ -46,7 +46,7 @@ if (v2) {
   });
 }
 
-const r = construirCatalogo({ geonames, paises, aeropuertos, nombresPaisCurados: curados, regiones, ciudadesCuradas: CIUDADES_EQUIVALENTES, ...(nombresAlternos ? { nombresAlternos } : {}) });
+const r = construirCatalogo({ geonames, paises, aeropuertos, nombresPaisCurados: curados, regiones, ciudadesCuradas: CIUDADES_EQUIVALENTES, pinesCuradas: (JSON.parse(fs.readFileSync(path.join(dirDatos, 'correcciones-asociacion.json'), 'utf8')) as { pines: Record<string, string> }).pines, ...(nombresAlternos ? { nombresAlternos } : {}) });
 const dirCatalogo = path.join(dirDatos, 'catalogo');
 const meta = escribirCatalogo(dirCatalogo, r);
 const problemas = verificarIntegridad(dirCatalogo);
