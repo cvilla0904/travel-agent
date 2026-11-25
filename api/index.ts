@@ -3,6 +3,7 @@ import { run, MemorySession, type AgentInputItem } from '@openai/agents';
 import { Redis } from '@upstash/redis';
 import { travelAgent } from '../src/index.js';
 import { mensajeConDestinoSeleccionado } from '../src/services/destino-seleccionado.js';
+import { conDestinoFijado } from '../src/services/destino-fijado.js';
 
 const app = express();
 
@@ -36,13 +37,14 @@ app.post('/api/chat', async (req, res) => {
       initialItems: history ?? [],
     });
 
-    const result = await run(
+    // El destino elegido (validado por el servidor) se fija para toda la ejecución: la herramienta de hoteles no puede reemplazarlo.
+    const result = await conDestinoFijado(req.body?.destinoSeleccionado, () => run(
       travelAgent,
       mensajeAgente,
       {
         session,
       },
-    );
+    ));
 
     await redis.set(
       `chat:session:${sessionId}`,
