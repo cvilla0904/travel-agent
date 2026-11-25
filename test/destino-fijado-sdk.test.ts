@@ -115,6 +115,11 @@ function crearModelo(registro: Registro[]) {
   };
 }
 
+/** Registro de llamadas al modelo, compartido por todas las pruebas del fichero. */
+const registro: Registro[] = [];
+const modeloUnico = sdk ? crearModelo(registro) : null;
+let proveedorInstalado = false;
+
 /* ---------- entorno simulado (sin red, sin credenciales reales) ---------- */
 
 const ENTORNO = {
@@ -156,9 +161,13 @@ async function prepararEntorno(opciones: { barrera?: number } = {}) {
   }) as typeof fetch;
 
   sdk.setTracingDisabled(true);
-  const registro: Registro[] = [];
-  const modelo = crearModelo(registro);
-  sdk.setDefaultModelProvider({ getModel: () => modelo });
+  // El Runner por defecto del SDK memoriza el primer proveedor que usa (LazyDefaultModelProvider en run.ts): el modelo y su proveedor
+  // se crean una sola vez y el registro compartido se vacía antes de cada prueba.
+  registro.length = 0;
+  if (!proveedorInstalado) {
+    sdk.setDefaultModelProvider({ getModel: () => modeloUnico });
+    proveedorInstalado = true;
+  }
   const { travelAgent } = await import('../src/index.js');
 
   return {
