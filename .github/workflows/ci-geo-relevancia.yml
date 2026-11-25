@@ -1,0 +1,72 @@
+name: CI geo-relevancia-alias
+
+# Validación de la rama feat/geo-relevancia-alias (formato v3: nombre propio frente a alias en el índice).
+# `validate` corre en cada push; `reconstruir` solo a mano: descarga GeoNames/OurAirports, reconstruye el catálogo y lo compara
+# con el versionado (reclasificado). No despliega nada ni usa claves ni proveedores.
+on:
+  push:
+    branches: [feat/geo-relevancia-alias]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run typecheck
+      - run: npm test
+      - name: Relevancia sobre el catálogo versionado
+        run: npx tsx scripts/medir-relevancia-geo.ts
+
+  reconstruir:
+    if: github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Guardar el catálogo versionado
+        run: cp -r src/geo/data/catalogo "$RUNNER_TEMP/versionado"
+      - name: Reconstruir desde las fuentes
+        run: npm run geo:preparar
+      - name: Comparar reconstruido y versionado
+        run: npx tsx scripts/comparar-catalogos-geo.ts "$RUNNER_TEMP/versionado" src/geo/data/catalogo | tee comparacion.txt
+      - name: Relevancia y búsqueda sobre el catálogo reconstruido
+        run: |
+          npx tsx scripts/medir-relevancia-geo.ts | tee relevancia-reconstruido.txt
+          npx tsx scripts/medir-busqueda-geo.ts | tee busqueda-reconstruido.txt
+      - run: npx playwright install --with-deps chromium
+      - name: Suite sobre el catálogo reconstruido
+        timeout-minutes: 12
+        run: npm test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: geo-relevancia-reconstruido
+          path: |
+            comparacion.txt
+            relevancia-reconstruido.txt
+            busqueda-reconstruido.txt
+            src/geo/data/catalogo
+      - name: Publicar el catálogo reconstruido en una rama aparte (no toca la rama de trabajo)
+        if: success()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout -b data/geo-catalogo-v3-reconstruido
+          git add -f src/geo/data/catalogo
+          git commit -m "data(geo): catálogo v3 reconstruido desde GeoNames/OurAirports (run ${{ github.run_id }})"
+          git push -f origin data/geo-catalogo-v3-reconstruido

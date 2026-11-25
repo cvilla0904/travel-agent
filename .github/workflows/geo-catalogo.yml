@@ -1,0 +1,42 @@
+name: Catálogo geográfico (medición)
+
+# Genera el catálogo real desde GeoNames/OurAirports y publica en el log tamaños, rendimiento y comprobaciones.
+# No despliega nada ni usa claves ni proveedores.
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/integracion-catalogo-geografico]
+    paths:
+      - .github/workflows/geo-catalogo.yml
+      - scripts/verificar-catalogo-real.ts
+      - scripts/construir-catalogo-geo.ts
+      - src/geo/**
+
+jobs:
+  catalogo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Descargar fuentes y generar el catálogo
+        run: npm run geo:preparar
+      - name: Informe del catálogo real
+        run: npx tsx scripts/verificar-catalogo-real.ts | tee informe-catalogo.txt
+      - name: Medición de rendimiento (catálogo real)
+        run: npm run geo:medir | tee -a informe-catalogo.txt
+      - name: Auditoría de dependencias (solo informe)
+        run: |
+          npm audit --json > audit.json || true
+          node -e "const a=require('./audit.json');console.log(JSON.stringify(a.metadata&&a.metadata.vulnerabilities));for(const [n,v] of Object.entries(a.vulnerabilities||{}))console.log([n,v.severity,v.isDirect?'directa':'transitiva','range='+v.range,'fix='+(v.fixAvailable&&v.fixAvailable.name?v.fixAvailable.name+'@'+v.fixAvailable.version+(v.fixAvailable.isSemVerMajor?' (MAJOR)':''):v.fixAvailable),'via='+(v.via||[]).map(x=>typeof x==='string'?x:x.title+' '+(x.url||'')).join(' ; ')].join(' | '))"
+          npm outdated || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: informe-catalogo
+          path: |
+            informe-catalogo.txt
+            audit.json

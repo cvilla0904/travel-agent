@@ -5,7 +5,13 @@ import assert from 'node:assert/strict';
 import {
   evaluarUbicacionActividad, filtrarActividadesDeCiudad, coordenadasActividad, distanciaKm, consultasActividadesParaDestino,
 } from '../src/services/actividades-ciudad.ts';
-import { datosCiudad } from '../src/services/ciudades.ts';
+import { datosCiudad, establecerCatalogoGeo } from '../src/services/ciudades.ts';
+import { sinCatalogoGeo } from './geo-fixture.ts';
+
+let restaurarCatalogo: () => void = () => {};
+// Estos tests miden la tabla curada: se aíslan del catálogo versionado.
+test.before(() => { restaurarCatalogo = sinCatalogoGeo(establecerCatalogoGeo); });
+test.after(() => restaurarCatalogo());
 
 const URL_BXL = 'https://www.civitatis.com/es/bruselas/visita-guiada-bruselas/';
 const reg = (extra: Record<string, unknown>) => ({ title: 'Actividad', url: URL_BXL, platform: 'civitatis', ...extra });

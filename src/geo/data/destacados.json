@@ -1,0 +1,55 @@
+{
+ "paises": {
+  "CO": {
+   "ciudades": [
+    "Bogotá",
+    "Medellín",
+    "Cartagena",
+    "Cali",
+    "Barranquilla"
+   ],
+   "motivo": "Capital y principales polos aéreos y turísticos (Andes, Caribe y Valle del Cauca)."
+  },
+  "JP": {
+   "ciudades": [
+    "Tokio",
+    "Osaka",
+    "Fukuoka",
+    "Sapporo",
+    "Nagoya"
+   ],
+   "motivo": "Principales accesos internacionales; Kioto y Nara se alcanzan por Osaka (KIX/ITM)."
+  },
+  "IN": {
+   "ciudades": [
+    "Delhi",
+    "Mumbai",
+    "Jaipur",
+    "Bengaluru",
+    "Kolkata"
+   ],
+   "motivo": "Grandes hubs más Jaipur como puerta del Rajastán, aunque su población sea menor."
+  },
+  "IT": {
+   "ciudades": [
+    "Roma",
+    "Milán",
+    "Venecia",
+    "Nápoles",
+    "Florencia"
+   ],
+   "motivo": "Principales destinos turísticos con aeropuerto comercial propio."
+  }
+ },
+ "preferidos": {
+  "londres": "GB",
+  "london": "GB",
+  "paris": "FR",
+  "roma": "IT",
+  "rome": "IT",
+  "madrid": "ES",
+  "berlin": "DE",
+  "barcelona": "ES"
+ },
+ "acceso": {}
+}
