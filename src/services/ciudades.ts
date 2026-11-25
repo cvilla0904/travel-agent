@@ -66,6 +66,8 @@ export interface GrupoCiudadCurada {
   regiones?: string[];
   /** Región tal como se muestra y se envía a los proveedores (p. ej. «Quindío»): se conserva en las consultas. */
   region?: string;
+  /** Nombre del país (español) para completar el destino cuando no se indica: «Salento» → «Salento, Quindío, Colombia». */
+  paisNombre?: string;
 }
 export const CIUDADES_EQUIVALENTES: GrupoCiudadCurada[] = [
   { consulta: 'Amsterdam', nombres: ['amsterdam'], pais: 'nl' },
@@ -102,15 +104,15 @@ export const CIUDADES_EQUIVALENTES: GrupoCiudadCurada[] = [
   { consulta: 'Saint Petersburg', nombres: ['san petersburgo', 'saint petersburg', 'st petersburg', 'st. petersburg'], pais: 'ru' },
   { consulta: 'New York', nombres: ['nueva york', 'new york', 'new york city'], pais: 'us' },
   { consulta: 'Mexico City', nombres: ['ciudad de mexico', 'mexico city'], pais: 'mx' },
-  { consulta: 'Cartagena de Indias', nombres: ['cartagena', 'cartagena de indias'], pais: 'co' },
-  { consulta: 'Bogota', nombres: ['bogota', 'bogota d.c.'], pais: 'co' },
-  { consulta: 'Medellin', nombres: ['medellin'], pais: 'co' },
+  { consulta: 'Cartagena de Indias', nombres: ['cartagena', 'cartagena de indias'], pais: 'co', paisNombre: 'Colombia' },
+  { consulta: 'Bogota', nombres: ['bogota', 'bogota d.c.'], pais: 'co', paisNombre: 'Colombia' },
+  { consulta: 'Medellin', nombres: ['medellin'], pais: 'co', paisNombre: 'Colombia' },
   { consulta: 'Paris', nombres: ['paris'], pais: 'fr' },
   { consulta: 'Barcelona', nombres: ['barcelona'], pais: 'es' },
   { consulta: 'Madrid', nombres: ['madrid'], pais: 'es' },
   { consulta: 'Budapest', nombres: ['budapest'], pais: 'hu' },
   // Nombre ambiguo (Salento, Italia): el país y la región acotan la entrada.
-  { consulta: 'Salento', nombres: ['salento'], pais: 'co', regiones: ['quindio', 'departamento del quindio'], region: 'Quindío' },
+  { consulta: 'Salento', nombres: ['salento'], pais: 'co', regiones: ['quindio', 'departamento del quindio'], region: 'Quindío', paisNombre: 'Colombia' },
 ];
 
 /**

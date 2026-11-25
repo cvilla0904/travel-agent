@@ -3,6 +3,7 @@
  * fechas (entrada/salida de esa ciudad). Extraído de index.ts para poder probarlo sin el SDK.
  */
 import { buscarHotelesConEstado, type DependenciasHoteles } from './hoteles.js';
+import { codigoPaisDesdeNombre, grupoCurado, nombreBaseCiudad } from './ciudades.js';
 
 export function obtenerCodigoPais(pais: string): string | undefined {
   const clave = pais
@@ -30,25 +31,33 @@ export function obtenerCodigoPais(pais: string): string | undefined {
   return codigos[clave];
 }
 
+/**
+ * Destino que se envía al proveedor para un tramo: «Ciudad[, Región], País».
+ * - Conserva la región de las ciudades curadas que la tienen («Salento» de Colombia → «Salento, Quindío, Colombia»).
+ * - La ciudad curada solo se aplica si el país del itinerario es el suyo: «Cartagena» en un itinerario por España es
+ *   «Cartagena, España», nunca Cartagena de Indias.
+ * - Si el nombre ya llega calificado («Salento, Quindío», «Salento, Quindío, Colombia») no se duplica nada.
+ */
 export function normalizarCiudadBusquedaMultidestino(ciudad: string, pais?: string): string {
   const valor = ciudad.trim();
+  const partes = valor.split(',').map((p) => p.trim()).filter(Boolean);
+  const paisEscrito = partes.length > 1 ? codigoPaisDesdeNombre(partes[partes.length - 1]) : undefined;
+  const nombrePais = pais?.trim() || '';
 
-  const equivalencias: Record<string, string> = {
-    'cartagena': 'Cartagena de Indias, Colombia',
-    'cartagena de indias': 'Cartagena de Indias, Colombia',
-    'bogota': 'Bogotá, Colombia',
-    'bogotá': 'Bogotá, Colombia',
-    'medellin': 'Medellín, Colombia',
-    'medellín': 'Medellín, Colombia',
-  };
+  // Texto con país para decidir si la entrada curada es la de ese país.
+  const conPais = paisEscrito || !nombrePais ? valor : `${valor}, ${nombrePais}`;
+  const grupo = grupoCurado(conPais);
 
-  const clave = valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-
-  if (equivalencias[clave]) {
-    return equivalencias[clave];
+  if (grupo) {
+    const base = grupo.consulta === 'Cartagena de Indias' ? grupo.consulta : nombreBaseCiudad(valor);
+    const region = grupo.region ?? '';
+    const paisFinal = paisEscrito ? partes[partes.length - 1]! : nombrePais || grupo.paisNombre || '';
+    const intermedias = partes.slice(1, paisEscrito ? -1 : undefined);
+    const regionFinal = intermedias.length ? intermedias.join(', ') : region;
+    return [base, regionFinal, paisFinal].filter(Boolean).join(', ');
   }
-
-  return pais ? `${valor}, ${pais}` : valor;
+  if (paisEscrito || !nombrePais) return valor;
+  return `${valor}, ${nombrePais}`;
 }
 
 export interface TramoHoteles { ciudad: string; fechaEntrada: string; fechaSalida: string }
@@ -64,7 +73,7 @@ export function buscarHotelesTramo(
       fechaEntrada: tramo.fechaEntrada,
       fechaSalida: tramo.fechaSalida,
       adultos: contexto.adultos,
-      paisCodigo: obtenerCodigoPais(contexto.pais),
+      paisCodigo: obtenerCodigoPais(contexto.pais) ?? codigoPaisDesdeNombre(contexto.pais),
     },
     deps,
   );

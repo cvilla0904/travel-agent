@@ -227,7 +227,7 @@ test('multidestino: cada ciudad recibe SUS fechas y su consulta (Bogotá, Medell
     ['hotels in Bogotá, Colombia', '2027-01-04', '2027-01-07', 3],
     ['hotels in Medellín, Colombia', '2027-01-07', '2027-01-11', 3],
     ['hotels in Cartagena de Indias, Colombia', '2027-01-11', '2027-01-15', 3],
-    ['hotels in Salento, Colombia', '2027-01-15', '2027-01-17', 3],
+    ['hotels in Salento, Quindío, Colombia', '2027-01-15', '2027-01-17', 3],
   ]);
 });
 
@@ -258,7 +258,7 @@ test('multidestino: con proveedor searchapi no se toca Apify', async () => {
 
 test('multidestino: normalización de ciudad (Cartagena de Indias, ciudades sin equivalencia llevan el país)', () => {
   assert.equal(normalizarCiudadBusquedaMultidestino('Cartagena', 'Colombia'), 'Cartagena de Indias, Colombia');
-  assert.equal(normalizarCiudadBusquedaMultidestino('Salento', 'Colombia'), 'Salento, Colombia');
+  assert.equal(normalizarCiudadBusquedaMultidestino('Salento', 'Colombia'), 'Salento, Quindío, Colombia', 'Quindío se conserva en el tramo');
 });
 
 /* ===================== 4. AGENTE Y FRONTEND ===================== */
