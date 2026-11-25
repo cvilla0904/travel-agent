@@ -20,14 +20,14 @@ test('CASO REAL Bruselas: 10 registros «Atracciones Paris» → sin_resultados 
   assert.equal(r.motivo, 'descartadas_por_ubicacion');
   assert.match(r.mensaje!, /10 resultados.*Atracciones Paris/);
   assert.equal(r.actividades.length, 0);
-  assert.deepEqual(r.proveedor, { runId: 'bj6wLcAd7EEhXEpGl', status: 'SUCCEEDED' });
+  assert.deepEqual(r.proveedor, { runId: 'bj6wLcAd7EEhXEpGl', status: 'SUCCEEDED', completa: true });
   assert.equal(r.diagnosticoBusqueda.resultadosProveedor, 10);
   assert.equal(r.diagnosticoBusqueda.descartadasPorCiudad, 10);
 });
 
 test('mezcla Bruselas + París: solo salen las de Bruselas, con ciudad del proveedor y plataforma', async () => {
   const datos = [
-    item({ title: 'Atomium', city: 'Brussels', ...BXL, platform: 'tiqets' }),
+    item({ title: 'Atomium', city: 'Brussels', ...BXL, platform: 'civitatis' }),
     item({ title: 'Torre Eiffel', city: 'Atracciones Paris', ...PARIS }),
     item({ title: 'Chocolate', city: 'Atracciones Paris', ...BXL }), // etiqueta mala, coordenadas de Bruselas
   ];
@@ -35,7 +35,7 @@ test('mezcla Bruselas + París: solo salen las de Bruselas, con ciudad del prove
   assert.equal(r.estado, 'ok');
   assert.deepEqual(r.actividades.map((a) => a.nombre).sort(), ['Atomium', 'Chocolate']);
   const atomium = r.actividades.find((a) => a.nombre === 'Atomium')!;
-  assert.deepEqual([atomium.plataforma, atomium.ciudadProveedor, atomium.verificacionUbicacion, atomium.latitud], ['tiqets', 'Brussels', 'ciudad', BXL.latitude]);
+  assert.deepEqual([atomium.plataforma, atomium.ciudadProveedor, atomium.verificacionUbicacion, atomium.latitud], ['civitatis', 'Brussels', 'ciudad', BXL.latitude]);
   const choco = r.actividades.find((a) => a.nombre === 'Chocolate')!;
   assert.deepEqual([choco.ciudadProveedor, choco.verificacionUbicacion], ['Atracciones Paris', 'coordenadas']);
   assert.equal(r.diagnosticoBusqueda.aceptadasPorCoordenadas, 1);
@@ -70,4 +70,15 @@ test('precios: se conservan y la ausencia de precio no es gratis', async () => {
   assert.equal(por('Con precio').precio, 32.5);
   assert.equal(por('Sin precio').precio, null);
   assert.equal(por('Sin precio').esGratis, false);
+});
+
+test('solo Civitatis: un resultado de otra plataforma (Tiqets) que llegara del actor se descarta y no se muestra', async () => {
+  const datos = [
+    item({ title: 'Atomium (Civitatis)', city: 'Brussels', ...BXL, platform: 'civitatis' }),
+    item({ title: 'Museo (Tiqets)', city: 'Brussels', ...BXL, platform: 'tiqets' }),
+    item({ title: 'Otro (GetYourGuide)', city: 'Brussels', ...BXL, platform: 'getyourguide' }),
+  ];
+  const r = await buscarActividadesDestino({ destino: 'Bruselas', tipos: [] }, quien(ejec(datos)));
+  assert.deepEqual(r.actividades.map((a) => a.nombre), ['Atomium (Civitatis)']);
+  assert.ok(r.actividades.every((a) => a.plataforma === 'civitatis'));
 });
