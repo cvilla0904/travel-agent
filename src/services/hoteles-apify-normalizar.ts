@@ -132,6 +132,22 @@ function claveTexto(valor: string): string {
   return valor.toLocaleLowerCase('es').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
 }
 
+/** Texto en palabras (minúsculas, sin acentos ni signos), rodeado de espacios: «Vereda Cocora, Salento» -> « vereda cocora salento ». */
+function enPalabras(valor: string): string {
+  const t = valor.toLocaleLowerCase('es').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  return t ? ` ${t} ` : '';
+}
+
+/**
+ * ¿La dirección nombra la ciudad como PALABRA(S) completas? Evita las coincidencias accidentales de los alias cortos
+ * («bud» dentro de «Budapest», «mad» en «Madison», «bog» en «Bogor»). Las variantes largas o con espacios («el cairo») siguen valiendo.
+ */
+export function direccionNombraCiudad(direccion: string, nombre: string): boolean {
+  const d = enPalabras(direccion);
+  const n = enPalabras(nombre);
+  return !!d && !!n && d.includes(n);
+}
+
 function redondear(n: number): number {
   return Math.round(n * 100) / 100;
 }
@@ -214,8 +230,8 @@ export function validarUbicacion(
   const d = redondear(distanciaKm(lat, lon, centro.lat, centro.lng));
   if (d <= RADIO_SEGURO_KM) return { ok: true, motivo: 'ok', distanciaKm: d };
   if (d <= RADIO_MAXIMO_KM) {
-    const direccion = claveTexto(texto(fila.address));
-    const nombra = (opciones.nombresCiudad ?? []).map(claveTexto).filter(Boolean).some((n) => direccion.includes(n));
+    const direccion = texto(fila.address);
+    const nombra = (opciones.nombresCiudad ?? []).some((n) => direccionNombraCiudad(direccion, n));
     if (nombra) return { ok: true, motivo: 'ok', distanciaKm: d };
   }
   return { ok: false, motivo: 'lejos', distanciaKm: d };
