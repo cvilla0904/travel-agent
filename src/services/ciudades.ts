@@ -209,15 +209,21 @@ export function consultaProveedorParaCiudad(ciudad: string): string {
   const grupo = grupoCurado(ciudad);
   if (grupo) return grupo.consulta;
   const catalogada = ciudadCatalogada(ciudad);
-  return catalogada ? catalogada.nombreAscii || catalogada.nombre : base;
+  if (catalogada) return catalogada.nombreAscii || catalogada.nombre;
+  // El texto nombra otro país y el catálogo no resuelve ese homónimo: se conserva el nombre inglés habitual de la tabla
+  // (comportamiento anterior; p. ej. «Florencia, Estados Unidos» → «Florence»). El país lo validan los proveedores.
+  const clave = normalizarTexto(base);
+  return CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave))?.consulta ?? base;
 }
 
 /** Todos los nombres normalizados aceptables para esa ciudad. */
 export function variantesCiudad(ciudad: string): string[] {
   const clave = normalizarTexto(nombreBaseCiudad(ciudad));
   if (!clave) return [];
-  const grupo = grupoCurado(ciudad);
   const catalogada = ciudadCatalogada(ciudad);
+  // Con otro país en el texto y sin resolución del catálogo se conservan los nombres de la tabla (comportamiento anterior):
+  // los proveedores validan el país por su cuenta y buscan por esos nombres. Si el catálogo sí lo resuelve, manda el catálogo.
+  const grupo = grupoCurado(ciudad) ?? (catalogada ? undefined : CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave)));
   // Unión de ambas fuentes: ninguna variante curada se pierde por tener el catálogo disponible.
   const todas = [...(grupo?.nombres ?? []), ...(catalogada ? [catalogada.nombre, catalogada.nombreAscii, ...catalogada.nombres].map(normalizarTexto) : [])].filter(Boolean);
   return todas.length ? [...new Set(todas)] : [clave];

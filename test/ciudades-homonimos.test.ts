@@ -60,3 +60,13 @@ test('sin país en el texto la tabla manda (Madrid, Venecia, Sevilla)', () => {
   assert.equal(datosCiudad('Sevilla')!.en, 'Seville');
   assert.equal(datosCiudad('Madrid')!.en, 'Madrid');
 });
+
+test('si el catálogo no resuelve el homónimo, el nombre inglés y las variantes de la tabla se conservan (ruta SearchAPI con paisCodigo explícito)', () => {
+  // «Florencia, Estados Unidos» con paisCodigo «it» explícito: el proveedor sigue buscando «Florence» y valida el país por su cuenta.
+  assert.equal(consultaProveedorParaCiudad('Florencia, Estados Unidos'), 'Florence');
+  assert.ok(variantesCiudad('Florencia, Estados Unidos').includes('florence'));
+  assert.equal(datosCiudad('Florencia, Estados Unidos'), null, 'pero ya no se le atribuye el centro de Florencia (Italia)');
+  // Si el catálogo SÍ lo resuelve, manda el catálogo.
+  assert.equal(consultaProveedorParaCiudad('Cartagena, España'), 'Cartagena');
+  assert.ok(!variantesCiudad('Cartagena, España').includes('cartagena de indias'));
+});
