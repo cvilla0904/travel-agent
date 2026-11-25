@@ -3,7 +3,7 @@ import { run, MemorySession, type AgentInputItem } from '@openai/agents';
 import { Redis } from '@upstash/redis';
 import { travelAgent } from '../src/index.js';
 import { mensajeConDestinoSeleccionado } from '../src/services/destino-seleccionado.js';
-import { conDestinoFijado } from '../src/services/destino-fijado.js';
+import { turnoChat } from '../src/services/chat-contrato.js';
 
 const app = express();
 
@@ -37,8 +37,9 @@ app.post('/api/chat', async (req, res) => {
       initialItems: history ?? [],
     });
 
-    // El destino elegido (validado por el servidor) se fija para toda la ejecución: la herramienta de hoteles no puede reemplazarlo.
-    const result = await conDestinoFijado(req.body?.destinoSeleccionado, () => run(
+    // El destino elegido (validado por el servidor) se fija para toda la ejecución y los resultados de las herramientas se
+    // recogen como datos estructurados (chat-contrato.ts): la web los pinta sin interpretar el texto del modelo.
+    const turno = await turnoChat(req.body?.destinoSeleccionado, () => run(
       travelAgent,
       mensajeAgente,
       {
@@ -46,15 +47,15 @@ app.post('/api/chat', async (req, res) => {
       },
     ));
 
-    await redis.set(
-      `chat:session:${sessionId}`,
-      await session.getItems(),
-      { ex: SESSION_TTL_SECONDS },
-    );
+    if (turno.status === 200) {
+      await redis.set(
+        `chat:session:${sessionId}`,
+        await session.getItems(),
+        { ex: SESSION_TTL_SECONDS },
+      );
+    }
 
-    return res.json({
-      response: result.finalOutput,
-    });
+    return res.status(turno.status).json(turno.body);
   } catch (error: any) {
     console.error(error);
 

@@ -13,6 +13,7 @@ import { filtrarActividadesDeCiudad, type DiagnosticoActividades } from './activ
 import { extraerPrecio, esGratisVerificado, extraerMoneda, parsearPrecio } from './precios-actividades.js';
 import { normalizarTexto } from './ciudades.js';
 import { plataformaPermitida } from './plataformas-actividades.js';
+import { bloqueActividades, registrarBloque } from './resultados-estructurados.js';
 
 export type EstadoActividades = 'ok' | 'parcial' | 'sin_resultados' | 'error';
 export type MotivoSinResultados = 'proveedor_sin_resultados' | 'descartadas_por_ubicacion' | 'sin_titulo_o_url';
@@ -94,6 +95,16 @@ function construirSalida(args: {
 }
 
 export async function buscarActividadesDestino(
+  params: { destino: string; tipos: string[] },
+  buscar?: (p: { destino: string }) => Promise<EjecucionActor>,
+) {
+  const salida = await buscarActividadesDestinoInterno(params, buscar);
+  // La web recibe las actividades como datos estructurados (resultados-estructurados.ts), no como markdown del modelo.
+  registrarBloque(bloqueActividades({ ...salida, tipos: params.tipos }));
+  return salida;
+}
+
+async function buscarActividadesDestinoInterno(
   params: { destino: string; tipos: string[] },
   // Import diferido: el cliente de Apify solo se carga si se usa el proveedor real (las pruebas inyectan uno simulado).
   buscar: (p: { destino: string }) => Promise<EjecucionActor> = async (p) => (await import('./apify.js')).buscarActividadesApifyDetallado(p),

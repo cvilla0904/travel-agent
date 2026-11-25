@@ -426,6 +426,7 @@
   </main>
   <footer><div class="footer-inner wrap"><span class="footer-brand">✦ Mogavel</span><span>Viajes pensados para ti.</span><nav class="footer-links" aria-label="Enlaces legales"><a href="#como-funciona">Cómo funciona</a><a href="#planifica-tu-viaje">Planifica tu viaje</a><a href="/sobre-mogavel.html">Sobre Mogavel</a><a href="mailto:holamogavel@gmail.com">Contacto</a><a href="#privacidad">Privacidad</a><a href="#cookies">Cookies</a><a href="#terminos">Términos y condiciones</a></nav></div><p class="footer-atribucion wrap">Datos geográficos de <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> (licencia <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, con modificaciones: normalización, índice propio y asociación de aeropuertos) y <a href="https://ourairports.com/" target="_blank" rel="noopener">OurAirports</a> (dominio público).</p></footer>
   <script src="/render-resultados.js"></script>
+  <script src="/render-datos.js"></script>
   <script src="/estado-busqueda.js"></script>
   <script>
     function prepararItinerario(destino, duracion, idea) {
@@ -474,7 +475,13 @@
       try { return ptDestinoSeleccionadoVigente(JSON.parse(el.dataset.destinoGeo), String(el.value || '').trim()); } catch (_) { return null; }
     }
 
+    /** Texto de la respuesta del agente (compatibilidad). La portada usa consultarAgenteDatos para recibir también los resultados estructurados. */
     async function consultarAgente(message, destinoSeleccionado) {
+      const datos = await consultarAgenteDatos(message, destinoSeleccionado);
+      return typeof datos?.response === 'string' ? datos.response : '';
+    }
+
+    async function consultarAgenteDatos(message, destinoSeleccionado) {
       const response =
         await fetch('/api/chat', {
           method: 'POST',
@@ -485,7 +492,7 @@
             message: (() => {
               const selected = window.MogavelTripBuilder?.snapshot?.() || [];
               if (!selected.length) return message;
-              const selection = selected.map(item => '- ' + item.type + ': ' + item.name + (item.price ? (item.price.free ? ' (gratuita según el proveedor)' : item.price.basis === 'desde' ? ' (precio orientativo "desde" del proveedor: ' + item.price.value + ' ' + item.price.currency + '; no es un precio final garantizado)' : ' (importe mostrado: ' + item.price.value + ' ' + item.price.currency + ')') : ' (importe no identificado)')).join('\n');
+              const selection = selected.map(item => '- ' + item.type + ': ' + item.name + (item.price ? (item.price.free ? ' (gratuita según el proveedor)' : item.price.basis === 'desde' ? ' (precio orientativo "desde" del proveedor: ' + item.price.value + ' ' + (item.price.currency || 'moneda no confirmada') + '; no es un precio final garantizado)' : ' (importe mostrado: ' + item.price.value + ' ' + (item.price.currency || 'moneda no confirmada') + (item.price.basis === 'noche' ? ' por noche' : '') + ')') : ' (importe no identificado)')).join('\n');
               return message + '\n\n[Selección actual del viaje en la web; úsala como contexto. Si pido cambiar o quitar un elemento, actualiza la propuesta y confirma claramente el cambio. No inventes precios ni des por reservados los elementos.]\n' + selection;
             })(),
             sessionId,
@@ -503,9 +510,34 @@
         );
       }
 
-      return data.response;
+      return data;
     }
 
+
+    /* Respuesta de /api/chat ({ response, resultados, aviso }): con datos estructurados las tarjetas salen de los datos (no del texto). */
+    function mostrarRespuesta(datos) {
+      const results = document.getElementById('results');
+      const texto = typeof datos?.response === 'string' ? datos.response : '';
+      if (datos && datos.resultados && window.MogavelDatos) {
+        if (window.MogavelDatos.hayResultados(datos.resultados)) {
+          window.MogavelDatos.renderizar(datos.resultados, results);
+        } else if (!results.querySelector('.flight-card,.hotel-card,.activity-card')) {
+          results.replaceChildren();
+        }
+        Array.prototype.forEach.call(results.querySelectorAll('.res-explicacion'), (n) => n.remove());
+        if (!results.querySelector('.loading') || results.children.length > 1) Array.prototype.forEach.call(results.querySelectorAll('.loading'), (n) => n.remove());
+        if (texto || datos.aviso) {
+          const nota = document.createElement('div');
+          nota.className = 'result-text res-explicacion';
+          nota.textContent = [texto.replace(/[#*]{1,3}/g, ''), datos.aviso].filter(Boolean).join('\n\n');
+          nota.style.whiteSpace = 'pre-wrap';
+          nota.style.marginTop = '24px';
+          results.appendChild(nota);
+        }
+        return;
+      }
+      renderResultados(texto);
+    }
 
     /* Autocompletado visual de ciudades. Catálogo inicial local; no modifica las APIs de búsqueda. */
     const ciudadesMogavel = [
@@ -927,9 +959,9 @@
 
       try {
         const respuesta =
-          await consultarAgente(message, destinoSeleccionado);
+          await consultarAgenteDatos(message, destinoSeleccionado);
 
-        renderResultados(respuesta);
+        mostrarRespuesta(respuesta);
 
         document.getElementById('chatBox')
           .style.display = 'block';
@@ -975,9 +1007,9 @@
 
       try {
         const respuesta =
-          await consultarAgente(message);
+          await consultarAgenteDatos(message);
 
-        renderResultados(respuesta);
+        mostrarRespuesta(respuesta);
       } catch (error) {
         results.textContent =
           'Ha ocurrido un error: ' +

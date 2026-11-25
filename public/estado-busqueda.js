@@ -19,6 +19,13 @@
     try { return global.sessionStorage || null; } catch (_) { return null; }
   }
 
+  // Las imágenes no se usan en las tarjetas: no ocupan espacio en sessionStorage.
+  function quitarImagenes(bloques) {
+    return bloques.map(function (b) {
+      return Object.assign({}, b, { opciones: (b.opciones || []).map(function (o) { var c = Object.assign({}, o); delete c.imagen; return c; }) });
+    });
+  }
+
   function crear(almacen) {
     function leer() {
       try {
@@ -72,12 +79,25 @@
         return escribir(d);
       },
 
-      /** Añade una respuesta del agente (la primera o las de seguimiento) y marca la búsqueda como completa. */
-      agregarRespuesta: function (texto) {
+      /**
+       * Añade una respuesta del agente (la primera o las de seguimiento) y marca la búsqueda como completa.
+       * `resultados` (datos estructurados de /api/chat): se conservan los ÚLTIMOS bloques de cada tipo en `ultimos`
+       * (una búsqueda posterior del mismo tipo los sustituye; un seguimiento sin búsquedas no los borra).
+       */
+      agregarRespuesta: function (texto, resultados) {
         var d = leer(); if (!d || typeof texto !== 'string') return false;
         d.respuestas.push(texto);
         if (d.respuestas.length > MAX_RESPUESTAS) d.respuestas = d.respuestas.slice(-MAX_RESPUESTAS);
-        d.mensajes.push({ tipo: 'agente', texto: texto, t: Date.now() });
+        var mensaje = { tipo: 'agente', texto: texto, t: Date.now() };
+        if (resultados && typeof resultados === 'object') {
+          mensaje.datos = true;
+          d.ultimos = d.ultimos || {};
+          ['vuelos', 'hoteles', 'actividades'].forEach(function (tipo) {
+            var bloques = resultados[tipo];
+            if (Array.isArray(bloques) && bloques.length) { d.ultimos[tipo] = quitarImagenes(bloques); mensaje.hayDatos = true; }
+          });
+        }
+        d.mensajes.push(mensaje);
         if (d.mensajes.length > MAX_MENSAJES) d.mensajes = d.mensajes.slice(-MAX_MENSAJES);
         d.estado = 'completa'; d.error = null;
         return escribir(d);

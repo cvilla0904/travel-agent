@@ -12,7 +12,8 @@
       "src": "api/chat.ts",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": "src/geo/data/{catalogo/**,regiones.json,destacados.json}"
+        "includeFiles": "src/geo/data/{catalogo/**,regiones.json,destacados.json}",
+        "maxDuration": 300
       }
     },
     {
@@ -113,6 +114,10 @@
     },
     {
       "src": "public/render-conversacion.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/render-datos.js",
       "use": "@vercel/static"
     }
   ],
@@ -224,6 +229,10 @@
     {
       "src": "/render-conversacion.js",
       "dest": "/public/render-conversacion.js"
+    },
+    {
+      "src": "/render-datos.js",
+      "dest": "/public/render-datos.js"
     },
     {
       "src": "/(.*)",

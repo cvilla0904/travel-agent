@@ -15,6 +15,7 @@ import { buscarHotelesConEstado as buscarHotelesSearchApiConEstado } from './sea
 import type { DependenciasSearchApi, ParametrosHoteles, ResultadoHotelesConEstado } from './searchapi.js';
 import { buscarHotelesApifyConEstado } from './apify-hoteles.js';
 import { reconciliarDestino } from './destino-fijado.js';
+import { bloqueHoteles, registrarBloque } from './resultados-estructurados.js';
 import type { DependenciasApifyHoteles, ResultadoHotelesApify } from './apify-hoteles.js';
 
 export type ProveedorHoteles = 'searchapi' | 'apify';
@@ -47,7 +48,10 @@ export async function buscarHotelesConEstado(
   // reemplazarlo por un homónimo (destino-fijado.ts). Sin destino fijado, no cambia nada.
   const { destino, paisCodigo, sustituido } = reconciliarDestino(params.destino);
   if (sustituido) params = { ...params, destino, paisCodigo };
-  return proveedor === 'apify'
-    ? buscarHotelesApifyConEstado(params, deps.apify)
-    : buscarHotelesSearchApiConEstado(params, deps.searchapi);
+  const resultado = proveedor === 'apify'
+    ? await buscarHotelesApifyConEstado(params, deps.apify)
+    : await buscarHotelesSearchApiConEstado(params, deps.searchapi);
+  // Los dos proveedores se entregan a la web con el MISMO formato estructurado (resultados-estructurados.ts).
+  registrarBloque(bloqueHoteles(resultado, proveedor));
+  return resultado;
 }

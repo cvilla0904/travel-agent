@@ -158,6 +158,11 @@ export async function buscarActividadesApify(params: {
   return ejecutarActor(consultasParaDestino(params.destino));
 }
 
+/** Multidestino conservando el estado de la ejecución (completa / parcial) para poder informar de «incompleta». */
+export async function buscarActividadesApifyMultidestinoDetallado(destinos: string[]) {
+  return ejecutarActorDetallado(destinos.flatMap(consultasParaDestino));
+}
+
 export async function buscarActividadesApifyMultidestino(destinos: string[]) {
   return ejecutarActor(destinos.flatMap(consultasParaDestino));
 }

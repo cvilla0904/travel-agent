@@ -145,11 +145,15 @@ test('multidestino: un tramo de Salento recibe el destino elegido aunque el itin
   assert.equal(sin.llamadas[0].searchQueries[0], 'hotels in Salento, Quindío, Colombia', 'sin fijar, el itinerario por Colombia sigue igual');
 });
 
-test('cableado: los dos puntos de entrada del agente ejecutan run() dentro de conDestinoFijado con el cuerpo de la petición', () => {
+test('cableado: los dos puntos de entrada del agente ejecutan run() dentro de turnoChat(destinoSeleccionado), que lo fija con conDestinoFijado', () => {
   // Solo comprobación de fuente: api/index.ts y src/server.ts importan el SDK y no se pueden ejecutar sin las dependencias reales.
   const raiz = path.resolve(import.meta.dirname, '..');
   for (const f of ['api/index.ts', 'src/server.ts']) {
     const src = fs.readFileSync(path.join(raiz, f), 'utf8');
-    assert.match(src, /await conDestinoFijado\(req\.body\?\.destinoSeleccionado,\s*\(\) => run\(/, f);
+    assert.match(src, /await turnoChat\(req\.body\?\.destinoSeleccionado,\s*\(\) => run\(/, f);
   }
+  // turnoChat es quien fija el destino (y recoge los resultados estructurados) alrededor de la ejecución.
+  const contrato = fs.readFileSync(path.join(raiz, 'src/services/chat-contrato.ts'), 'utf8');
+  assert.match(contrato, /conColectorResultados\(\(\) => conDestinoFijado\(destinoSeleccionado, ejecutar\)\)/);
 });
+

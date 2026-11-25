@@ -2,7 +2,7 @@ import express from 'express';
 import { run, MemorySession } from '@openai/agents';
 import { travelAgent } from './index.js';
 import { mensajeConDestinoSeleccionado } from './services/destino-seleccionado.js';
-import { conDestinoFijado } from './services/destino-fijado.js';
+import { turnoChat } from './services/chat-contrato.js';
 
 const app = express();
 
@@ -35,7 +35,7 @@ app.post('/api/chat', async (req, res) => {
       sessions.set(sessionId, session);
     }
 
-    const result = await conDestinoFijado(req.body?.destinoSeleccionado, () => run(
+    const turno = await turnoChat(req.body?.destinoSeleccionado, () => run(
       travelAgent,
       mensajeConDestinoSeleccionado(userMessage, req.body?.destinoSeleccionado),
       {
@@ -43,9 +43,7 @@ app.post('/api/chat', async (req, res) => {
       },
     ));
 
-    return res.json({
-      response: result.finalOutput,
-    });
+    return res.status(turno.status).json(turno.body);
   } catch (error: any) {
     console.error(error);
 

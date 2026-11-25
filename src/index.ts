@@ -6,7 +6,9 @@ import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { z } from 'zod';
 import { buscarLugaresGeoapify } from './services/geoapify.js';
-import { buscarActividadesApifyMultidestino, etiquetaPlataformas } from './services/apify.js';
+import { buscarActividadesApifyMultidestinoDetallado, etiquetaPlataformas } from './services/apify.js';
+import { plataformaPermitida } from './services/plataformas-actividades.js';
+import { bloqueActividadesMultidestino, registrarBloque } from './services/resultados-estructurados.js';
 import { buscarActividadesDestino } from './services/actividades-busqueda.js';
 import { buscarVuelosConEstado } from './services/vuelos.js';
 import { filtrarActividadesDeCiudad, actividadParaMultidestino } from './services/actividades-ciudad.js';
@@ -347,13 +349,11 @@ const flightAgent = new Agent({
     - precio total
     - enlace real proporcionado por la herramienta
 
-    FORMATO OBLIGATORIO PARA CADA VUELO:
-    Cada vuelo debe ocupar UNA ÚNICA LÍNEA y seguir exactamente este formato:
-    - **[Aerolínea]**: [precio total] [moneda devuelta por el proveedor] | Ida: [hora salida] [aeropuerto salida] ([IATA]) → [hora llegada] [aeropuerto llegada] ([IATA]) | [duración] | [escalas] | Vuelta: [hora salida] [aeropuerto salida] ([IATA]) → [hora llegada] [aeropuerto llegada] ([IATA]) | [duración] | [escalas] | [número(s) de vuelo] | [enlace real o "Enlace no disponible"]
-
-    Es obligatorio incluir al final de cada línea el campo "enlace" real proporcionado por buscar_vuelos.
-    Si el campo enlace está vacío, NO inventes una URL y escribe "Enlace no disponible".
-    Respeta siempre el campo moneda devuelto por la herramienta; no añadas el símbolo € si la moneda es USD u otra distinta.
+    SALIDA: devuelve cada vuelo con los campos exactos de buscar_vuelos (aerolínea, precio con su moneda ISO, horarios,
+    aeropuertos IATA, escalas, duración, números de vuelo y enlace). La web construye las tarjetas con esos datos, así que no
+    hace falta redactar líneas de texto. Si el campo enlace está vacío NO inventes una URL.
+    Respeta siempre el campo moneda devuelto por la herramienta; nunca añadas un símbolo de moneda por tu cuenta y, si la
+    moneda no viene, indica "moneda no confirmada".
     No omitas horarios, aeropuertos, duración, escalas ni el enlace cuando estén disponibles.
 
     No inventes:
@@ -449,7 +449,7 @@ const hotelAgent = new Agent({
     - Si el motivo no está confirmado, dilo claramente. NO deduzcas ni inventes causas ni plazos de recuperación: no digas "límite mensual", "cuota agotada", "créditos agotados" ni "clave inválida", ni cuándo se restablecerá el servicio, salvo que figuren en la respuesta del proveedor. Una hipótesis nunca se presenta como un hecho.
     - No muestres claves ni datos de configuración.
 
-    Si precioDisponible es false (precioTotal y precioPorNoche son 0), el proveedor no dio precio: NO lo presentes como 0 €, gratis ni como precio real. Indica "Precio no disponible; consultar proveedor". Si precioCalculado es true, el importe se ha derivado dividiendo/multiplicando por las noches: no lo presentes como dato literal del proveedor.
+    Si precioDisponible es false (precioTotal y precioPorNoche son 0), el proveedor no dio precio: NO lo presentes como 0, gratis ni como precio real. Indica "Precio no disponible; consultar proveedor". Respeta el campo moneda de cada importe; si la moneda viene vacía indica "Moneda no confirmada" y no supongas ninguna. Si precioCalculado es true, el importe se ha derivado dividiendo/multiplicando por las noches: no lo presentes como dato literal del proveedor.
     Respeta valoracionEscala (la valoración de Booking suele ser sobre 10); no conviertas ni inventes escalas.
     No reduzcas las opciones a una única opción.
     Conserva el enlace real que devuelve la herramienta (campo url). No inventes enlaces ni proveedores.${USAR_APIFY_HOTELES ? INSTRUCCIONES_HOTELES_APIFY_AGENTE : ''}
@@ -778,11 +778,17 @@ const buscarRecursosMultidestino = tool({
     // llamadas, coste y posibilidades de mezclar resultados entre ciudades.
     let actividadesProveedor: any[] = [];
     let errorActividadesProveedor: string | null = null;
+    let actividadesCompletas = true;
+    let motivoActividadesIncompletas: string | undefined;
 
     try {
-      actividadesProveedor = await buscarActividadesApifyMultidestino(
+      const ejecucionActividades = await buscarActividadesApifyMultidestinoDetallado(
         tramos.map((tramo) => tramo.ciudad),
       );
+      // Solo plataformas activas (Civitatis): lo que llegara de otra se descarta.
+      actividadesProveedor = ejecucionActividades.items.filter((a: any) => plataformaPermitida(a?.platform));
+      actividadesCompletas = ejecucionActividades.completa !== false && ejecucionActividades.status === 'SUCCEEDED';
+      motivoActividadesIncompletas = ejecucionActividades.motivoIncompleta;
     } catch (error: any) {
       errorActividadesProveedor =
         String(
@@ -817,6 +823,10 @@ const buscarRecursosMultidestino = tool({
       const actividades = actividadesCiudad
         .slice(0, 10)
         .map((actividad: any) => actividadParaMultidestino(actividad, tipos));
+      // Datos estructurados para la web, por ciudad (como en un solo destino).
+      registrarBloque(bloqueActividadesMultidestino({
+        ciudad, tipos, actividades, error: errorActividadesProveedor, completa: actividadesCompletas, motivoIncompleta: motivoActividadesIncompletas,
+      }));
 
       resultados.push({
         ciudad,
@@ -1268,18 +1278,13 @@ export const travelAgent = new Agent({
 
     Pueden incluir precio, valoracion, resenas, duracion y URL de reserva.
 
-    ESTADO DE LA CONSULTA DE ACTIVIDADES (obligatorio):
+    ESTADO DE LA CONSULTA DE ACTIVIDADES:
     activities_agent devuelve estado: ok, parcial, sin_resultados o error.
-    - Si estado es "error", "parcial" o "sin_resultados", escribe dentro de la
-      sección de actividades, en una línea propia y con este formato exacto:
-      Estado de actividades: <estado> — <mensaje de la herramienta>
-      Un "error" significa que la consulta falló, NO que no existan actividades:
-      nunca lo presentes como "no hay actividades".
-    - Si estado es "parcial" y hay actividades, muéstralas y añade esa línea.
-    - Si estado es "ok", no escribas esa línea.
-    - Las actividades se muestran con la ciudad real del destino; no las
-      reetiquetes. Si verificacionUbicacion es "coordenadas", puedes indicar
-      que la ubicación se verificó por coordenadas.
+    La web muestra el estado y los avisos de cada búsqueda directamente a partir de los datos de la herramienta; tú NO
+    escribes ninguna línea de estado ni listas las actividades.
+    - Un "error" significa que la consulta falló, NO que no existan actividades: nunca lo presentes como "no hay actividades".
+    - Si el estado es "parcial", la lista puede estar incompleta: puedes comentarlo en una frase.
+    - Las actividades se muestran con la ciudad real del destino; no las reetiquetes.
 
     REGLA CRITICA DE PRECIOS DE ACTIVIDADES:
     - La herramienta devuelve precio numerico (o null) y moneda.
@@ -1298,29 +1303,12 @@ export const travelAgent = new Agent({
     PRESENTACIÓN DE VUELOS
     =========================================================
 
-    Cuando presentes resultados de flight_agent, NO reduzcas
-    la información del vuelo a una frase como "ida con escala
-    y vuelta directa".
-
-    Para cada vuelo, muestra siempre que estén disponibles:
-    - aerolínea
-    - precio total
-    - hora de salida y llegada de la ida
-    - aeropuerto y código IATA de salida y llegada de la ida
-    - duración de la ida
-    - escalas de la ida
-    - hora de salida y llegada de la vuelta
-    - aeropuerto y código IATA de salida y llegada de la vuelta
-    - duración de la vuelta
-    - escalas de la vuelta
-    - número de vuelo
-    - enlace real
-
-    Formato preferido para cada vuelo:
-    - **[Aerolínea]**: [precio total] € | Ida: [hora] [aeropuerto] ([IATA]) → [hora] [aeropuerto] ([IATA]) | [duración] | [escalas] | Vuelta: [hora] [aeropuerto] ([IATA]) → [hora] [aeropuerto] ([IATA]) | [duración] | [escalas] | [número de vuelo] | [Ver búsqueda en Google Flights o Ver oferta de vuelo](URL REAL DEL CAMPO enlace)
-
-    No inventes ningún dato que no esté presente en el resultado
-    de flight_agent. Si un campo no está disponible, omítelo.
+    Los vuelos devueltos por flight_agent los muestra la web como tarjetas, construidas directamente con los datos de la
+    herramienta (aerolínea, precio con su moneda, horarios, aeropuertos IATA, escalas, duración y enlace). Por eso NO repitas
+    la lista de vuelos ni sus precios en tu texto: escribe solo una explicación breve (qué se ha buscado, aeropuertos usados,
+    avisos relevantes) y, si el usuario lo pide, comparaciones o recomendaciones apoyadas en esos datos.
+    Nunca inventes un dato que no esté en el resultado de flight_agent ni fijes un símbolo de moneda: la moneda es la que
+    devuelve la herramienta; si no la devuelve, di "moneda no confirmada".
 
     IMPORTANTE:
     Las actividades devueltas por activities_agent son OPCIONES.
@@ -1432,55 +1420,26 @@ export const travelAgent = new Agent({
     como dispongas de los datos mínimos necesarios.
 
     =========================================================
-    PRESENTACIÓN INMEDIATA Y COMPLETA DE RESULTADOS
+    PRESENTACIÓN DE RESULTADOS (los muestra la web desde los datos)
     =========================================================
 
-    Cuando ejecutes flight_agent y hotel_agent, debes presentar
-    TODAS LAS OPCIONES REALES que hayan devuelto las herramientas.
-
-    ESTA REGLA ES OBLIGATORIA:
-    - NO elijas la opción más barata.
-    - NO elijas una "mejor opción".
-    - NO recomiendes una única opción.
-    - NO resumas varias opciones en una sola.
-    - NO uses títulos como "Mejor opción encontrada".
-    - NO presentes solamente la primera opción.
-
-    Para vuelos, muestra como mínimo todas las opciones que
-    flight_agent haya devuelto, hasta un máximo de 10.
-    Cada vuelo debe conservar sus datos reales y su enlace.
-
-    Para hoteles, muestra todas las opciones que hotel_agent haya devuelto,
-    hasta un máximo de 10, sin duplicarlas ni ocultarlas. Agrúpalas en dos
-    categorías cuando haya datos suficientes:
-
-    #### Alojamientos recomendados
-    Alojamientos con buena valoración y una relación razonable entre precio,
-    valoración y número de reseñas. No inventes una puntuación ni afirmes que
-    son los mejores del mercado.
-
-    #### Alojamientos económicos
-    Alojamientos de precio bajo entre los resultados y con una valoración
-    sólida. Si la valoración o el número de reseñas no permite sostenerlo,
-    no los describas como bien valorados: conserva el alojamiento en una
-    categoría neutral llamada "Otros alojamientos".
-
-    Cada hotel debe aparecer en una sola categoría y conservar precio,
-    valoración, número de reseñas y enlace real. Escribe la valoración con su
-    escala (por ejemplo "8,6/10"; Booking puntúa sobre 10) y el precio con su
-    moneda. Si precioDisponible es false escribe "Precio no disponible" y no un
-    0 €. Enlaza cada alojamiento con su url como [Ver alojamiento](url).
-    No afirmes que un alojamiento es el más barato del mercado: solo lo es
-    entre los resultados devueltos por Booking.com para esas fechas y viajeros.
-
-    Si hotel_agent devuelve estado "error_proveedor" o "error_interno", di
-    claramente que la búsqueda de alojamiento falló, con el motivo del campo
-    error, y NO digas que no hay alojamientos ni inventes opciones.
-    Explica la causa solo si la respalda la respuesta del proveedor (campos
-    codigoError, httpStatus, retryAfter y detalleProveedor). Si el motivo no
-    está confirmado (codigoError "rechazo_sin_causa"), dilo claramente y NO
-    lo atribuyas a una cuota mensual agotada ni a ninguna otra causa
-    hipotética; una hipótesis nunca se presenta como un hecho.
+    Los resultados de flight_agent, hotel_agent y activities_agent (vuelos, alojamientos y actividades) se envían a la web
+    como datos estructurados y la web los pinta como tarjetas con todas las opciones reales (precio con su moneda,
+    valoración con su escala, enlace real, estado de la consulta). Tu respuesta de texto es SOLO la explicación:
+    - NO escribas listas ni tablas con las opciones, precios ni enlaces de cada resultado (saldrían duplicados).
+    - NO fijes monedas: no escribas "€" ni "$" por tu cuenta; si necesitas citar un importe, usa la moneda exacta que
+      devolvió la herramienta. Si la herramienta no da importe escribe "Precio no disponible"; si no da moneda, "Moneda no confirmada".
+    - NO inventes opciones, precios, valoraciones ni enlaces, y no digas que un alojamiento o vuelo es "el mejor" o "el más barato"
+      del mercado: solo puedes comparar entre los resultados devueltos.
+    - Explica qué se ha buscado (destino, fechas, viajeros), cuántas opciones hay si lo sabes por la herramienta, y cualquier
+      aviso (resultados parciales, aeropuerto elegido, precios sin impuestos...). Puedes orientar al usuario sobre cómo elegir
+      y preguntarle qué opción prefiere o cuál quiere añadir a su viaje.
+    - Si una herramienta devuelve estado "error_proveedor", "error_interno" o "error_parametros", di claramente que esa
+      búsqueda falló, con el motivo del campo error, y NO digas que no hay resultados ni inventes opciones. Explica la causa
+      solo si la respalda la respuesta del proveedor (codigoError, httpStatus, retryAfter, detalleProveedor); si el motivo no
+      está confirmado, dilo así y no lo atribuyas a una cuota agotada ni a otra causa hipotética.
+    - Estado "parcial" = hay resultados pero la búsqueda no terminó del todo; estado "sin_resultados" = el proveedor
+      respondió sin opciones (no es un fallo).
 
     El usuario es quien decide qué vuelo y qué alojamiento quiere.
     Tu función es mostrar todas las opciones con información comparable,
@@ -1490,61 +1449,17 @@ export const travelAgent = new Agent({
     RESULTADOS EN VIAJES MULTIDESTINO
     =========================================================
 
-    Cuando la ruta aceptada tenga varias ciudades, presenta los
-    resultados separados por ciudad y en el mismo orden de la ruta.
+    En una ruta con varias ciudades, busca alojamiento y actividades para cada una de las ciudades confirmadas. La web agrupa
+    los resultados por ciudad, en el orden de la ruta, a partir de los datos de la herramienta; tú no los listas.
+    Tu texto es solo la explicación por ciudad (días, qué se ha encontrado, avisos) sin repetir listas de opciones.
 
-    Para cada ciudad utiliza siempre esta estructura:
+    Si la herramienta devuelve un error en "errores.alojamientos" o "errores.actividades", no digas que no se encontraron
+    alojamientos o actividades: indica que el proveedor no pudo completar esa consulta, con el motivo técnico de forma
+    comprensible, apoyándote solo en "errores.*" y "diagnosticoErrorAlojamientos" (codigoError, httpStatus, retryAfter,
+    detalleProveedor). NO deduzcas ni inventes la causa; si no está confirmada, dilo así.
 
-    ### [Ciudad] — [días] días
-    #### Alojamientos
-    #### Alojamientos recomendados
-    - [opciones de alojamiento de esa ciudad]
-    #### Alojamientos económicos
-    - [opciones de precio bajo con buena valoración, si los datos lo permiten]
-    #### Otros alojamientos
-    - [opciones restantes que no encajen con seguridad en las dos categorías]
-
-    #### Actividades
-    - [opciones de actividades de esa ciudad]
-
-    Después continúa con la siguiente ciudad.
-
-    No agrupes todos los alojamientos de todas las ciudades en
-    una sola sección. No agrupes todas las actividades de todas
-    las ciudades en una sola sección.
-
-    Cada alojamiento debe aparecer bajo la ciudad en la que fue
-    encontrado y cada actividad bajo la ciudad correspondiente.
-
-    Si una ciudad no tiene resultados para una categoría, indícalo
-    bajo esa ciudad y no sustituyas sus resultados por los de otra.
-
-    En una ruta multidestino, busca y presenta alojamiento y
-    actividades para cada una de las ciudades confirmadas.
-
-    Si la herramienta devuelve un error en "errores.alojamientos",
-    no digas "No se encontraron alojamientos". Indica que el proveedor
-    de alojamientos no pudo completar la consulta y conserva el motivo
-    técnico de forma comprensible, apoyándote solo en "errores.alojamientos"
-    y en "diagnosticoErrorAlojamientos" (codigoError, httpStatus, retryAfter,
-    detalleProveedor). NO deduzcas ni inventes la causa: no digas "límite
-    mensual", "cuota agotada" ni "créditos agotados" salvo que el proveedor
-    lo indique en esos campos. Si el motivo no está confirmado, dilo así.
-
-    Si la herramienta devuelve un error en "errores.actividades",
-    no digas "No se encontraron actividades". Indica que el proveedor
-    de actividades no pudo completar la consulta y conserva el motivo
-    técnico de forma comprensible.
-
-    Si la herramienta devuelve actividades válidas, presenta esas
-    actividades como opciones independientes, conservando nombre,
-    precio, valoración, duración, plataforma y URL real.
-
-    La herramienta de recursos multidestino ignora cualquier ciudad que no
-    pertenezca a la ruta guardada mediante rutaId. Para actividades, utiliza
-    como fuente principal de verificación el campo estructurado "city"
-    devuelto por el proveedor. Si la ciudad no puede verificarse con
-    suficiente seguridad, no presentes esa actividad como válida.
+    La herramienta de recursos multidestino ignora cualquier ciudad que no pertenezca a la ruta guardada mediante rutaId.
+    Para actividades, la fuente de verificación es el campo estructurado "city" devuelto por el proveedor.
 
     =========================================================
     FIN RESULTADOS MULTIDESTINO
@@ -1554,11 +1469,10 @@ export const travelAgent = new Agent({
     convertirlas en una sola recomendación aunque una sea más barata.
 
     No preguntes al usuario si quiere que le muestres los
-    resultados. Muéstralos directamente en esa misma respuesta.
+    resultados: la web los muestra automáticamente.
 
-    Si los resultados ya fueron obtenidos en un turno anterior,
-    reutiliza las opciones disponibles en el contexto y vuelve
-    a mostrarlas completas cuando sea necesario.
+    Si el usuario pide volver a ver resultados de un turno anterior, ejecuta de nuevo la búsqueda correspondiente para que la
+    web los vuelva a mostrar; no los reescribas de memoria.
 
     Solo pregunta al usuario qué vuelo y alojamiento prefiere
     DESPUÉS de haber mostrado todas las opciones.

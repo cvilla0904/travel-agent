@@ -263,10 +263,11 @@ test('multidestino: normalización de ciudad (Cartagena de Indias, ciudades sin 
 
 /* ===================== 4. AGENTE Y FRONTEND ===================== */
 
-test('agente: el prompt fija el formato de línea (primer importe = por noche; valoración x/5; sin precio = sin importes)', () => {
-  assert.match(INSTRUCCIONES_HOTELES_APIFY_MANAGER, /PRIMER importe en €/);
+test('agente: el prompt ya no dicta líneas markdown ni importes fijos en €; las tarjetas salen de los datos', () => {
+  assert.doesNotMatch(INSTRUCCIONES_HOTELES_APIFY_MANAGER, /PRIMER importe en €/);
   assert.match(INSTRUCCIONES_HOTELES_APIFY_MANAGER, /sin impuestos/);
   assert.match(INSTRUCCIONES_HOTELES_APIFY_MANAGER, /Sin valoración/);
+  assert.match(INSTRUCCIONES_HOTELES_APIFY_MANAGER, /Moneda no confirmada/);
   assert.match(INSTRUCCIONES_HOTELES_APIFY_MANAGER, /No muestres imágenes/);
 });
 

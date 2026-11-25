@@ -7,26 +7,40 @@
   const labels = { flight: 'Vuelo', hotel: 'Alojamiento', activity: 'Experiencia' };
   let panel;
   // Importe mostrado al usuario: conserva la naturaleza "desde" y distingue gratuita de pendiente.
+  // La moneda es la del dato (ISO 4217); si no se conoce se dice, nunca se asume EUR.
+  const formatMoney = (value, currency) => {
+    if (currency && /^[A-Z]{3}$/.test(currency)) {
+      try { return value.toLocaleString('es-ES', { style: 'currency', currency }); } catch (_) { return value.toLocaleString('es-ES') + ' ' + currency; }
+    }
+    return value.toLocaleString('es-ES') + ' (moneda no confirmada)';
+  };
   const amountLabel = price => {
     if (!price) return 'Precio por confirmar';
     if (price.free) return 'Gratuita';
-    const text = price.value.toLocaleString('es-ES',{style:'currency',currency:price.currency==='USD'?'USD':price.currency==='GBP'?'GBP':'EUR'});
-    return price.basis === 'desde' ? 'Desde ' + text : text;
+    const text = formatMoney(price.value, price.currency);
+    return price.basis === 'desde' ? 'Desde ' + text : price.basis === 'noche' ? text + ' por noche' : price.basis === 'total' ? text + ' total' : text;
   };
 
   const textOf = el => (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
   const titleOf = (card, kind) => {
+    if (card.dataset && card.dataset.titulo) return card.dataset.titulo;
     const selector = kind === 'flight' ? '.flight-airline' : kind === 'hotel' ? '.hotel-name' : '.activity-name';
     return textOf(card.querySelector(selector)) || textOf(card).slice(0, 110);
   };
   function moneyOf(card, kind) {
+    // Tarjetas construidas desde datos estructurados (render-datos.js): importe, moneda y base vienen en data-*.
+    if (card.dataset && card.dataset.kind) {
+      if (card.dataset.base === 'gratis') return { value: 0, currency: null, basis: 'gratuita', free: true };
+      const value = Number(card.dataset.importe);
+      if (card.dataset.importe === undefined || !Number.isFinite(value) || value <= 0) return null;
+      return { value, currency: card.dataset.moneda || null, basis: card.dataset.base || 'total' };
+    }
+    // Tarjetas antiguas (estados guardados por versiones anteriores, sin data-*): lectura del texto.
     const text = textOf(card);
     if (kind === 'activity') {
       const badge = card.querySelector('.activity-price-badge');
       const label = textOf(badge);
-      // Las etiquetas de estado no equivalen a una tarifa. Solo guardamos importes positivos explícitos.
-      // Gratuita (anunciada por el proveedor) NO es lo mismo que precio desconocido.
-      if (badge && /^GRATUITA$/i.test(label)) return { value: 0, currency: 'EUR', basis: 'gratuita', free: true };
+      if (badge && /^GRATUITA$/i.test(label)) return { value: 0, currency: null, basis: 'gratuita', free: true };
       if (!badge || /CONSULTAR PRECIO|PRECIO POR CONFIRMAR/i.test(label)) return null;
       const m = label.match(/(?:DESDE\s*)?(\d[\d.,]*)\s*€/i);
       if (!m) return null;
@@ -38,7 +52,7 @@
     const raw = matches[0][0].replace(/EUR|USD|GBP|€/gi, '').trim().replace(/\./g, '').replace(',', '.');
     const value = Number(raw);
     if (!Number.isFinite(value) || value < 0) return null;
-    const token = matches[0][0].match(/EUR|USD|GBP/i)?.[0]?.toUpperCase() || (matches[0][0].includes('$') ? 'USD' : 'EUR');
+    const token = matches[0][0].match(/EUR|USD|GBP/i)?.[0]?.toUpperCase() || (matches[0][0].includes('€') ? 'EUR' : null);
     return { value, currency: token };
   }
   // Pinta la propuesta («Un viaje elegido por ti») en el elemento dado. Misma salida que antes de extraerla.
@@ -173,8 +187,14 @@
   // Identificador estable: no depende del orden de las tarjetas ni de si su pestaña está visible.
   // Se calcula con título + enlace + importe; si dos tarjetas son idénticas se distinguen con un sufijo.
   const hashText = str => { let h = 5381; for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
-  const externalUrlOf = card => { const a = card.querySelector('a[href^="http"]'); return a ? a.getAttribute('href') : ''; };
+  const externalUrlOf = card => { if (card.dataset && card.dataset.url) return card.dataset.url; const a = card.querySelector('a[href^="http"]'); return a ? a.getAttribute('href') : ''; };
   function stableId(card, kind, price, vistos) {
+    if (card.dataset && card.dataset.id) {
+      const base0 = kind + ':' + card.dataset.id;
+      const n0 = (vistos.get(base0) || 0) + 1;
+      vistos.set(base0, n0);
+      return n0 > 1 ? base0 + '#' + n0 : base0;
+    }
     const clave = [titleOf(card, kind), externalUrlOf(card), price ? [price.value, price.currency, price.basis || ''].join('/') : ''].join('|').toLowerCase().replace(/\s+/g, ' ');
     const base = kind + ':' + hashText(clave);
     const n = (vistos.get(base) || 0) + 1;
@@ -210,7 +230,7 @@
   function contextoSeleccion(message) {
     const selected = window.MogavelTripBuilder.snapshot();
     if (!selected.length) return message;
-    const selection = selected.map(item => '- ' + item.type + ': ' + item.name + (item.price ? (item.price.free ? ' (gratuita según el proveedor)' : item.price.basis === 'desde' ? ' (precio orientativo "desde" del proveedor: ' + item.price.value + ' ' + item.price.currency + '; no es un precio final garantizado)' : ' (importe mostrado: ' + item.price.value + ' ' + item.price.currency + ')') : ' (importe no identificado)')).join('\n');
+    const selection = selected.map(item => '- ' + item.type + ': ' + item.name + (item.price ? (item.price.free ? ' (gratuita según el proveedor)' : item.price.basis === 'desde' ? ' (precio orientativo "desde" del proveedor: ' + item.price.value + ' ' + (item.price.currency || 'moneda no confirmada') + '; no es un precio final garantizado)' : ' (importe mostrado: ' + item.price.value + ' ' + (item.price.currency || 'moneda no confirmada') + (item.price.basis === 'noche' ? ' por noche' : '') + ')') : ' (importe no identificado)')).join('\n');
     return message + '\n\n[Selección actual del viaje en la web; úsala como contexto. Si pido cambiar o quitar un elemento, actualiza la propuesta y confirma claramente el cambio. No inventes precios ni des por reservados los elementos.]\n' + selection;
   }
   window.MogavelTripBuilder = {

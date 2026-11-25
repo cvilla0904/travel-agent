@@ -58,7 +58,7 @@ test('hoteles SearchAPI: moneda declarada (campo o texto) o vacía; nunca EUR po
     { title: 'B', link: 'https://www.booking.com/hotel/b.html', price: '€ 90' },
     { title: 'C', link: 'https://www.booking.com/hotel/c.html', extracted_price: 80 },
   ];
-  const r = normalizarPropiedades(props, 2, 10);
+  const r = normalizarPropiedades(props, 2, 'EUR', 10);
   const por = Object.fromEntries(r.map((h) => [h.nombre, h.moneda]));
   assert.deepEqual(por, { A: 'GBP', B: 'EUR', C: '' });
 });

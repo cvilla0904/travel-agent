@@ -1,5 +1,6 @@
 import { resolverAeropuertoVuelo, type AeropuertoResuelto } from './aeropuertos-vuelos.js';
 import { aeropuertoFijadoPara } from './destino-fijado.js';
+import { bloqueVuelos, registrarBloque } from './resultados-estructurados.js';
 import { monedaComun, monedaDesdeTexto, monedaIso } from './moneda.js';
 /**
  * Vuelos (Apify / Google Flights): normalización y orquestación de la búsqueda.
@@ -235,6 +236,16 @@ function esErrorDeParametros(razon: unknown): boolean {
 }
 
 export async function buscarVuelosConEstado(
+  p: ParametrosVuelos,
+  dependencias: DependenciasVuelos = {},
+): Promise<ResultadoVuelos> {
+  const resultado = await buscarVuelosConEstadoInterno(p, dependencias);
+  // La web recibe los vuelos como datos (no como markdown escrito por el modelo): se registran para la respuesta de /api/chat.
+  registrarBloque(bloqueVuelos(resultado));
+  return resultado;
+}
+
+async function buscarVuelosConEstadoInterno(
   p: ParametrosVuelos,
   dependencias: DependenciasVuelos = {},
 ): Promise<ResultadoVuelos> {
