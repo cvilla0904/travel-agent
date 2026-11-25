@@ -56,7 +56,7 @@ export function normalizarTexto(valor: unknown): string {
  * `consulta` es el nombre habitual en inglés que se envía al proveedor.
  * `nombres` ya van normalizados (sin acentos, en minúsculas).
  */
-export const CIUDADES_EQUIVALENTES: Array<{ consulta: string; nombres: string[] }> = [
+export const CIUDADES_EQUIVALENTES: Array<{ consulta: string; nombres: string[]; pais?: string }> = [
   { consulta: 'Amsterdam', nombres: ['amsterdam'] },
   { consulta: 'Florence', nombres: ['florencia', 'florence', 'firenze'] },
   { consulta: 'Venice', nombres: ['venecia', 'venice', 'venezia'] },
@@ -97,6 +97,9 @@ export const CIUDADES_EQUIVALENTES: Array<{ consulta: string; nombres: string[] 
   { consulta: 'Paris', nombres: ['paris'] },
   { consulta: 'Barcelona', nombres: ['barcelona'] },
   { consulta: 'Madrid', nombres: ['madrid'] },
+  { consulta: 'Budapest', nombres: ['budapest'] },
+  // Nombre ambiguo (Salento, Italia): `pais` limita la entrada a destinos de ese país si el texto indica otro.
+  { consulta: 'Salento', nombres: ['salento'], pais: 'co' },
 ];
 
 /**
@@ -141,13 +144,25 @@ const CENTROS_CIUDAD: Record<string, { es: string; lat: number; lng: number }> =
   Paris: { es: 'París', lat: 48.8566, lng: 2.3522 },
   Barcelona: { es: 'Barcelona', lat: 41.3874, lng: 2.1686 },
   Madrid: { es: 'Madrid', lat: 40.4168, lng: -3.7038 },
+  Budapest: { es: 'Budapest', lat: 47.49835, lng: 19.04045 },
+  Salento: { es: 'Salento', lat: 4.63758, lng: -75.56996 },
 };
+
+/** Entrada de la tabla para ese destino; descarta las de país restringido si el texto nombra otro país. */
+function grupoCurado(ciudad: string) {
+  const clave = normalizarTexto(nombreBaseCiudad(ciudad));
+  const grupo = CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave));
+  if (grupo?.pais) {
+    const pais = codigoPaisDesdeDestino(ciudad);
+    if (pais && pais !== grupo.pais) return undefined;
+  }
+  return grupo;
+}
 
 /** Nombre en español, nombre en inglés y centro de la ciudad, o null si no está en la tabla. */
 export function datosCiudad(ciudad: string): { es: string; en: string; lat: number; lng: number } | null {
   // La tabla curada manda (nombres en español revisados a mano); el catálogo cubre el resto de ciudades.
-  const clave = normalizarTexto(nombreBaseCiudad(ciudad));
-  const grupo = CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave));
+  const grupo = grupoCurado(ciudad);
   const centro = grupo ? CENTROS_CIUDAD[grupo.consulta] : undefined;
   if (grupo && centro) return { es: centro.es, en: grupo.consulta, lat: centro.lat, lng: centro.lng };
   const catalogada = ciudadCatalogada(ciudad);
@@ -162,8 +177,7 @@ export function nombreBaseCiudad(ciudad: string): string {
 /** Nombre que se envía al proveedor (inglés habitual si se conoce). */
 export function consultaProveedorParaCiudad(ciudad: string): string {
   const base = nombreBaseCiudad(ciudad);
-  const clave = normalizarTexto(base);
-  const grupo = CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave));
+  const grupo = grupoCurado(ciudad);
   if (grupo) return grupo.consulta;
   const catalogada = ciudadCatalogada(ciudad);
   return catalogada ? catalogada.nombreAscii || catalogada.nombre : base;
@@ -173,7 +187,7 @@ export function consultaProveedorParaCiudad(ciudad: string): string {
 export function variantesCiudad(ciudad: string): string[] {
   const clave = normalizarTexto(nombreBaseCiudad(ciudad));
   if (!clave) return [];
-  const grupo = CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave));
+  const grupo = grupoCurado(ciudad);
   const catalogada = ciudadCatalogada(ciudad);
   // Unión de ambas fuentes: ninguna variante curada se pierde por tener el catálogo disponible.
   const todas = [...(grupo?.nombres ?? []), ...(catalogada ? [catalogada.nombre, catalogada.nombreAscii, ...catalogada.nombres].map(normalizarTexto) : [])].filter(Boolean);
