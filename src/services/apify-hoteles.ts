@@ -26,11 +26,55 @@ export const PROVEEDOR_APIFY_HOTELES = 'Apify / Google Hotels';
 const MONEDA = 'EUR';
 const WAIT_SECS_POR_DEFECTO = 90;
 const TOPE_COSTE_USD_POR_DEFECTO = 0.1;
+/** Techo absoluto por ejecución: ni la variable de entorno puede superarlo. */
+export const TOPE_COSTE_USD_MAXIMO = 0.25;
+const TOPE_COSTE_USD_MINIMO = 0.01;
+/** Presupuesto por itinerario (todas las ciudades de una petición) si no se configura otro. */
+export const PRESUPUESTO_ITINERARIO_USD_POR_DEFECTO = 1;
+const ESTADOS_FINALES = new Set(['SUCCEEDED', 'FAILED', 'ABORTED', 'TIMED-OUT']);
 
 export type ClienteApifyHoteles = {
   actor(id: string): { call(input: any, opts?: any): Promise<any> };
   dataset(id: string): { listItems(opts?: any): Promise<{ items: unknown[] }> };
+  /** Necesario para abortar ejecuciones que siguen en marcha tras waitSecs. */
+  run?(id: string): { abort(opts?: any): Promise<any> };
 };
+
+/**
+ * Presupuesto máximo de gasto de Apify para un itinerario. Antes de lanzar el actor se reserva
+ * el peor caso (el tope por ejecución); al terminar se sustituye por el coste real si se conoce.
+ * Si no queda margen, no se llama a Apify.
+ */
+export interface PresupuestoApify {
+  readonly limiteUsd: number;
+  gastadoOReservadoUsd(): number;
+  reservar(usd: number): boolean;
+  liquidar(reservadoUsd: number, realUsd: number | null): void;
+}
+
+export function crearPresupuestoApify(limiteUsd: number = PRESUPUESTO_ITINERARIO_USD_POR_DEFECTO): PresupuestoApify {
+  const limite = Number.isFinite(limiteUsd) && limiteUsd > 0 ? limiteUsd : PRESUPUESTO_ITINERARIO_USD_POR_DEFECTO;
+  let usado = 0;
+  return {
+    limiteUsd: limite,
+    gastadoOReservadoUsd: () => usado,
+    reservar(usd) {
+      if (usado + usd > limite + 1e-9) return false;
+      usado += usd;
+      return true;
+    },
+    liquidar(reservado, real) {
+      // Nunca se libera más de lo reservado ni se descuenta por debajo de lo realmente gastado.
+      usado = Math.max(0, usado - reservado + (real !== null && Number.isFinite(real) && real >= 0 ? real : reservado));
+    },
+  };
+}
+
+export function topeCosteDesdeEntorno(valor: string | undefined): number {
+  const n = Number(valor);
+  if (!Number.isFinite(n) || n <= 0) return TOPE_COSTE_USD_POR_DEFECTO;
+  return Math.min(TOPE_COSTE_USD_MAXIMO, Math.max(TOPE_COSTE_USD_MINIMO, n));
+}
 
 export interface DependenciasApifyHoteles {
   crearCliente?: (token: string) => Promise<ClienteApifyHoteles> | ClienteApifyHoteles;
@@ -38,6 +82,8 @@ export interface DependenciasApifyHoteles {
   registrar?: (evento: string, datos: Record<string, unknown>) => void;
   /** Para pruebas: variables de entorno inyectadas. */
   env?: Record<string, string | undefined>;
+  /** Presupuesto compartido por todas las búsquedas de un itinerario. */
+  presupuesto?: PresupuestoApify;
 }
 
 export interface ResultadoHotelesApify extends Omit<ResultadoHotelesConEstado, 'hoteles'> {
@@ -113,17 +159,31 @@ export async function buscarHotelesApify(
   const registrar = deps.registrar ?? registradorPorDefecto;
   validarParametros(params);
 
-  const token = deps.token ?? env.APIFY_API_TOKEN;
-  if (!token) throw new HotelesProveedorError('configuracion', 'APIFY_API_TOKEN no está configurada.', { etapa: 'configuracion' });
+  const tokenOpcional = deps.token ?? env.APIFY_API_TOKEN;
+  if (!tokenOpcional) throw new HotelesProveedorError('configuracion', 'APIFY_API_TOKEN no está configurada.', { etapa: 'configuracion' });
 
+  const token: string = tokenOpcional;
   const consulta = construirConsulta(params.destino);
   const entrada = construirEntradaActor(params, consulta);
   const waitSecs = numeroEnv(env.APIFY_HOTELS_WAIT_SECS, WAIT_SECS_POR_DEFECTO);
-  const maxTotalChargeUsd = numeroEnv(env.APIFY_HOTELS_MAX_CHARGE_USD, TOPE_COSTE_USD_POR_DEFECTO);
+  const maxTotalChargeUsd = topeCosteDesdeEntorno(env.APIFY_HOTELS_MAX_CHARGE_USD);
   const build = env.APIFY_HOTELS_BUILD?.trim() || undefined;
   const opcionesLlamada: Record<string, unknown> = { waitSecs, maxTotalChargeUsd };
   if (build) opcionesLlamada.build = build;
 
+  // Control de gasto previo a la ejecución: se reserva el peor caso del itinerario.
+  if (deps.presupuesto && !deps.presupuesto.reservar(maxTotalChargeUsd)) {
+    registrar('presupuesto_agotado', { destino: params.destino, limiteUsd: deps.presupuesto.limiteUsd, reservadoUsd: deps.presupuesto.gastadoOReservadoUsd(), pedidoUsd: maxTotalChargeUsd });
+    throw new HotelesProveedorError('limite_uso', 'Se alcanzó el presupuesto de Apify para este itinerario; no se lanza otra búsqueda de hoteles.', { etapa: 'presupuesto' });
+  }
+  let costeReal: number | null = null;
+  try {
+    return await ejecutarYNormalizar();
+  } finally {
+    deps.presupuesto?.liquidar(maxTotalChargeUsd, costeReal);
+  }
+
+  async function ejecutarYNormalizar(): Promise<ResultadoHotelesApify> {
   const cliente: ClienteApifyHoteles = deps.crearCliente
     ? await deps.crearCliente(token)
     : (new (await import('apify-client')).ApifyClient({ token }) as unknown as ClienteApifyHoteles);
@@ -135,6 +195,16 @@ export async function buscarHotelesApify(
     run = await cliente.actor(ACTOR_HOTELES_ID).call(entrada, opcionesLlamada);
   } catch (error) {
     throw clasificarErrorApify(error, token);
+  }
+  costeReal = typeof run?.usageTotalUsd === 'number' ? run.usageTotalUsd : null;
+  if (run?.status && !ESTADOS_FINALES.has(String(run.status))) {
+    // call() solo espera waitSecs: si sigue en marcha seguiría cobrando. Se aborta.
+    try {
+      if (run.id && cliente.run) await cliente.run(run.id).abort();
+      registrar('ejecucion_abortada', { runId: run.id ?? null, status: run.status });
+    } catch (error) {
+      registrar('aborto_fallido', { runId: run?.id ?? null, mensaje: limpiarSecretos(String((error as any)?.message ?? error), token) });
+    }
   }
   registrar('ejecucion_terminada', {
     runId: run?.id ?? null,
@@ -218,6 +288,7 @@ export async function buscarHotelesApify(
     diagnosticoApify,
     hoteles,
   };
+  }
 }
 
 const MENSAJE_ERROR_INTERNO = 'Error interno al buscar alojamientos. No se pudo completar la búsqueda.';
