@@ -6,6 +6,8 @@
  *  - mostrar y conservar la región en los resultados («Salento, Quindío, Colombia»).
  * No es un nomenclátor completo: una ciudad sin entrada simplemente no tiene región conocida.
  */
+import { DESTINOS_EDITORIALES } from './destinos-editoriales.js';
+
 export interface RegionEditorial { nombre: string; claves: string[] }
 
 export const REGIONES_EDITORIALES: Record<string, RegionEditorial> = {
@@ -16,5 +18,6 @@ export const REGIONES_EDITORIALES: Record<string, RegionEditorial> = {
 };
 
 export function regionEditorial(id: string): RegionEditorial | undefined {
-  return REGIONES_EDITORIALES[id];
+  const destino = DESTINOS_EDITORIALES[id];
+  return REGIONES_EDITORIALES[id] ?? (destino ? { nombre: destino.region, claves: destino.claves } : undefined);
 }

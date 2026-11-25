@@ -2,6 +2,7 @@ import { Catalogo } from './catalogo.js';
 import { normalizar } from './normalizar.js';
 import { identidadDe } from './resolver.js';
 import { regionEditorial } from './regiones-editoriales.js';
+import { DESTINOS_EDITORIALES, ORDEN_HOMONIMOS, type DestinoEditorial } from './destinos-editoriales.js';
 import type { EntradaIndice, Identidad } from './tipos.js';
 
 export interface ResultadoBusqueda {
@@ -44,7 +45,7 @@ export const POBLACION_CIUDAD_GRANDE = 300_000;
 /** Solo para consultas cortas: una palabra más larga ya suele ser el nombre completo que la persona quería escribir. */
 export const LONGITUD_MAX_CONSULTA_AMBIGUA = 6;
 
-interface Candidato { entrada: EntradaIndice; clave: string; exacta: boolean; propio: boolean }
+interface Candidato { entrada: EntradaIndice; clave: string; exacta: boolean; propio: boolean; editorial?: DestinoEditorial }
 /** 0 nombre propio exacto · 1 nombre propio por prefijo · 2 alias exacto · 3 alias por prefijo. */
 const nivel = (c: { exacta: boolean; propio: boolean }) => (c.propio ? 0 : 2) + (c.exacta ? 0 : 1);
 
@@ -80,23 +81,49 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
     }
   }
 
+  // Destinos editoriales complementarios (p. ej. «Salento, Apulia»): compiten con los del catálogo por nombre, país y región.
+  // Solo se ofrecen si el catálogo conoce su país (con un catálogo ajeno, como el de pruebas, no aparecen).
+  for (const d of Object.values(DESTINOS_EDITORIALES)) {
+    if (pais && d.pais !== pais) continue;
+    if (paises && !paises.has(d.pais)) continue;
+    if (!cat.pais(d.pais)) continue;
+    const nombre = d.nombres.filter((n) => n.startsWith(clave)).sort((a, b) => a.length - b.length)[0];
+    if (nombre === undefined) continue;
+    mejores.set(d.id, { entrada: ['c', d.id, d.pais, 0, 1], clave: nombre, exacta: nombre === clave, propio: true, editorial: d });
+  }
+
   const poblacion = (c: Candidato) => c.entrada[3] ?? 0;
   const hayGrande = Array.from(clave).length <= LONGITUD_MAX_CONSULTA_AMBIGUA && [...mejores.values()].some((c) => c.entrada[0] === 'c' && c.propio && !c.exacta && poblacion(c) >= POBLACION_CIUDAD_GRANDE);
   const nivelEfectivo = (c: Candidato) =>
-    hayGrande && c.entrada[0] === 'c' && c.propio && c.exacta && poblacion(c) < POBLACION_CIUDAD_PEQUENA ? 1 : nivel(c);
+    hayGrande && !c.editorial && c.entrada[0] === 'c' && c.propio && c.exacta && poblacion(c) < POBLACION_CIUDAD_PEQUENA ? 1 : nivel(c);
 
   // «Salento, Quindío»: la región escrita prioriza a la ciudad que la declara (sin excluir a las demás).
-  const declaraRegion = (c: Candidato) => {
+  // 2 = la región escrita es la de la ciudad (completa, o ya empezada: «Salento, Camp»); 1 = el calificador sugiere su país.
+  const coincideRegion = (claves: string[], q: string) => claves.some((k) => k === q || (Array.from(q).length >= 3 && k.startsWith(q)));
+  const afinidad = (c: Candidato): number => {
     const r = c.entrada[0] === 'c' ? regionEditorial(`${c.entrada[1]}`) : undefined;
-    if (r && consulta.regiones.some((q) => r.claves.includes(q))) return true;
+    if (r && consulta.regiones.some((q) => coincideRegion(r.claves, q))) return 2;
     // «Salento, Lecce»: si el calificador es una ciudad de un único país (Italia), ese país prioriza a sus candidatos.
-    return !!paisesSugeridos && paisesSugeridos.has(c.entrada[2]);
+    return paisesSugeridos && paisesSugeridos.has(c.entrada[2]) ? 1 : 0;
   };
+  // Homónimos de nombre exacto con orden editorial (Salento: Quindío, Apulia, Campania). Forman un bloque que se ordena entre
+  // sí por esa lista y, frente al resto de resultados, por la mayor población del bloque: no adelanta a nada por ser editorial.
+  const bloque = (c: Candidato): string[] | undefined => ORDEN_HOMONIMOS[c.clave];
+  const posicionEnBloque = (c: Candidato): number => bloque(c)?.indexOf(`${c.entrada[1]}`) ?? -1;
+  const poblacionBloque = new Map<string, number>();
+  for (const c of mejores.values()) {
+    if (posicionEnBloque(c) < 0) continue;
+    poblacionBloque.set(c.clave, Math.max(poblacionBloque.get(c.clave) ?? 0, poblacion(c)));
+  }
+  const poblacionEfectiva = (c: Candidato): number => (posicionEnBloque(c) >= 0 ? poblacionBloque.get(c.clave)! : poblacion(c));
+  const ordenEnBloque = (c: Candidato): number => { const i = posicionEnBloque(c); return i < 0 ? 1_000 : i; };
 
   const ordenados = [...mejores.values()].sort((a, b) =>
-    (declaraRegion(b) ? 1 : 0) - (declaraRegion(a) ? 1 : 0) ||
+    afinidad(b) - afinidad(a) ||
     nivelEfectivo(a) - nivelEfectivo(b) ||
     PRIORIDAD_TIPO[a.entrada[0]] - PRIORIDAD_TIPO[b.entrada[0]] ||
+    poblacionEfectiva(b) - poblacionEfectiva(a) ||
+    ordenEnBloque(a) - ordenEnBloque(b) ||
     (b.entrada[3] ?? 0) - (a.entrada[3] ?? 0) ||
     a.clave.length - b.clave.length ||
     (a.clave < b.clave ? -1 : a.clave > b.clave ? 1 : 0));
@@ -104,6 +131,15 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
   const out: ResultadoBusqueda[] = [];
   for (const c of ordenados) {
     if (out.length >= limite) break;
+    if (c.editorial) {
+      const d = c.editorial;
+      out.push({
+        id: d.id, tipo: 'ciudad', nombre: d.nombre, codigoPais: d.pais, nombrePais: cat.pais(d.pais)?.nombre ?? d.paisNombre,
+        latitud: d.centro.lat, longitud: d.centro.lon, ...(d.aeropuertos.length ? { aeropuertos: d.aeropuertos } : {}),
+        coincidencia: c.exacta ? 'exacta' : 'prefijo', via: 'nombre', region: d.region,
+      });
+      continue;
+    }
     const identidad = identidadDe(cat, c.entrada);
     if (!identidad) continue;
     const p = identidad.pais ? cat.pais(identidad.pais) : undefined;

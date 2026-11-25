@@ -73,11 +73,10 @@ test('proveedor y variantes de cada Salento no se mezclan', () => {
   assert.ok(variantesCiudad('Salento, Italia').includes('salento'));
 });
 
-test('/api/geo: «Salento, Italia» devuelve el municipio de Campania con su región, y Colombia el de Quindío', () => {
+test('/api/geo: «Salento, Italia» ofrece Apulia y, como alternativa, Campania; Colombia ofrece Quindío', () => {
   const cat = new Catalogo(fuenteEnDisco());
   const it = buscarDestinos(cat, 'Salento, Italia', { limite: 5 });
-  assert.equal(it[0]?.id, 'gn:3168676');
-  assert.equal(it[0]?.region, 'Campania');
+  assert.deepEqual(it.map((r) => [r.id, r.region]), [['ed:salento-apulia', 'Apulia'], ['gn:3168676', 'Campania']]);
   const co = buscarDestinos(cat, 'Salento, Colombia', { limite: 5 });
   assert.equal(co[0]?.id, 'gn:3670352');
   assert.equal(co[0]?.region, 'Quindío');

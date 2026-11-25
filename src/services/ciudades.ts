@@ -1,6 +1,7 @@
 import { Catalogo, fuenteEnDisco } from '../geo/catalogo.js';
 import { resolverDestino, paisDesdeTexto } from '../geo/resolver.js';
 import type { Ciudad } from '../geo/tipos.js';
+import { DESTINOS_EDITORIALES, SALENTO_APULIA } from '../geo/destinos-editoriales.js';
 
 let catalogoGeo: Catalogo | undefined;
 function obtenerCatalogoGeo(): Catalogo {
@@ -126,9 +127,10 @@ export const CIUDADES_EQUIVALENTES: GrupoCiudadCurada[] = [
   // Nombre ambiguo con tres destinos distintos. Sin región ni país manda el de Colombia (primero de la lista). En Italia, «Salento»
   // es la península de Lecce (Apulia), no el municipio de 760 habitantes de Campania (gn:3168676), que se pide con «Salento, Campania».
   { consulta: 'Salento', nombres: ['salento'], pais: 'co', regiones: ['quindio', 'departamento del quindio'], region: 'Quindío', paisNombre: 'Colombia' },
-  { consulta: 'Salento', nombres: ['salento'], pais: 'it', regiones: ['lecce', 'provincia di lecce', 'provincia de lecce', 'puglia', 'apulia', 'pulla'], region: 'Apulia', paisNombre: 'Italia',
-    // Zona entre Lecce, Otranto y Gallipoli (a 12, 27 y 28 km): radio seguro de 30 km.
-    centro: { es: 'Salento', lat: 40.25, lng: 18.2, radioKm: 30 } },
+  // Fuente única: geo/destinos-editoriales.ts (el mismo destino que ofrece el autocompletado con id «ed:salento-apulia»).
+  { consulta: 'Salento', nombres: DESTINOS_EDITORIALES[SALENTO_APULIA]!.nombres, pais: 'it', regiones: DESTINOS_EDITORIALES[SALENTO_APULIA]!.claves,
+    region: DESTINOS_EDITORIALES[SALENTO_APULIA]!.region, paisNombre: DESTINOS_EDITORIALES[SALENTO_APULIA]!.paisNombre,
+    centro: { es: DESTINOS_EDITORIALES[SALENTO_APULIA]!.nombre, lat: DESTINOS_EDITORIALES[SALENTO_APULIA]!.centro.lat, lng: DESTINOS_EDITORIALES[SALENTO_APULIA]!.centro.lon, radioKm: DESTINOS_EDITORIALES[SALENTO_APULIA]!.centro.radioKm } },
 ];
 
 /**

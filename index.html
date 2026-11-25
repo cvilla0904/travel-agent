@@ -551,7 +551,8 @@
       let temporizador = null;
       function cerrar() { panel.classList.remove('is-open'); input.setAttribute('aria-expanded','false'); activo = -1; }
       function elegir(opcion) {
-        input.value = opcion.ciudad;
+        // Con región («Salento, Apulia») se muestra también en el campo, para ver qué homónimo se ha elegido.
+        input.value = opcion.region ? opcion.ciudad + ', ' + opcion.region : opcion.ciudad;
         input.dataset.codigoCiudad = opcion.codigo || '';
         input.dataset.paisCiudad = opcion.pais || '';
         if (opcion.id) input.dataset.geoId = opcion.id; else delete input.dataset.geoId;
@@ -567,7 +568,7 @@
         } else {
           panel.innerHTML = opciones.map((ciudad,index) => {
             const etiqueta = ciudad.codigos || ciudad.codigo || (ciudad.tipo === 'pais' ? 'PAÍS' : ciudad.tipo === 'region' ? 'REGIÓN' : ciudad.tipo === 'aeropuerto' ? 'AEROPUERTO' : 'DESTINO');
-            return '<button type="button" class="city-suggestion" role="option" aria-selected="'+(index===activo)+'" data-index="'+index+'"><span class="city-suggestion-icon" aria-hidden="true">⌖</span><span class="city-suggestion-copy"><strong>'+escaparHtmlCiudad(ciudad.ciudad)+'</strong><small>'+escaparHtmlCiudad(ciudad.pais)+'</small></span><span class="city-suggestion-code">'+escaparHtmlCiudad(etiqueta)+'</span></button>';
+            return '<button type="button" class="city-suggestion" role="option" aria-selected="'+(index===activo)+'" data-index="'+index+'"><span class="city-suggestion-icon" aria-hidden="true">⌖</span><span class="city-suggestion-copy"><strong>'+escaparHtmlCiudad(ciudad.ciudad)+'</strong><small>'+escaparHtmlCiudad(ciudad.region ? ciudad.region + ', ' + ciudad.pais : ciudad.pais)+'</small></span><span class="city-suggestion-code">'+escaparHtmlCiudad(etiqueta)+'</span></button>';
           }).join('');
         }
         panel.classList.add('is-open');
@@ -788,8 +789,10 @@
     function ptDestinoSeleccionadoVigente(sel, destinoVisible) {
       if (!sel || typeof sel !== 'object' || Array.isArray(sel)) return null;
       const nombre = String(sel.nombre == null ? '' : sel.nombre).trim();
-      if (!nombre || nombre !== destinoVisible) return null;
       const t = valor => String(valor == null ? '' : valor).trim();
+      /* El campo muestra «Nombre» o, si el destino tiene región, «Nombre, Región» (así se distingue Salento de Apulia del de Quindío). */
+      const visibles = [nombre, t(sel.region) ? nombre + ', ' + t(sel.region) : ''].filter(Boolean);
+      if (!nombre || visibles.indexOf(destinoVisible) === -1) return null;
       return {nombre: nombre, pais: t(sel.pais), codigoPais: t(sel.codigoPais), region: t(sel.region), id: t(sel.id), tipo: t(sel.tipo)};
     }
 

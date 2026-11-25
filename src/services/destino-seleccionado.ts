@@ -5,6 +5,7 @@
  * inequívoca «Ciudad, Región, País» y en un bloque de contexto. Sin dependencias de proveedores.
  */
 import { regionEditorial } from '../geo/regiones-editoriales.js';
+import { destinoEditorial } from '../geo/destinos-editoriales.js';
 
 export interface DestinoSeleccionado {
   nombre: string;
@@ -16,7 +17,7 @@ export interface DestinoSeleccionado {
 }
 
 const MAX_TEXTO = 80;
-const ID_VALIDO = /^(?:gn:\d{1,10}|iata:[A-Za-z]{3}|region:[a-z0-9-]{1,40})$/;
+const ID_VALIDO = /^(?:gn:\d{1,10}|iata:[A-Za-z]{3}|region:[a-z0-9-]{1,40}|ed:[a-z0-9-]{1,40})$/;
 const TIPOS = new Set(['ciudad', 'region', 'pais', 'aeropuerto']);
 
 /** Solo letras, números, espacios y signos de nombre propio; sin saltos de línea, corchetes ni comillas (anti-inyección). */
@@ -31,7 +32,14 @@ export function normalizarDestinoSeleccionado(bruto: unknown): DestinoSelecciona
   const b = bruto as Record<string, unknown>;
   const nombre = limpiar(b.nombre);
   if (!nombre) return null;
-  const id = typeof b.id === 'string' && ID_VALIDO.test(b.id) ? b.id : undefined;
+  let id = typeof b.id === 'string' && ID_VALIDO.test(b.id) ? b.id : undefined;
+  // Identificador editorial («ed:…»): solo vale si existe, y entonces su nombre, país, código de país y región mandan sobre lo que
+  // diga el cliente, para que ni el texto visible ni el país puedan describir otro destino distinto del identificado.
+  if (id?.startsWith('ed:')) {
+    const ed = destinoEditorial(id);
+    if (!ed) id = undefined;
+    else return { nombre: ed.nombre, pais: ed.paisNombre, codigoPais: ed.pais, region: ed.region, id: ed.id, tipo: 'ciudad' };
+  }
   const codigoPais = typeof b.codigoPais === 'string' && /^[A-Za-z]{2}$/.test(b.codigoPais) ? b.codigoPais.toUpperCase() : undefined;
   const pais = limpiar(b.pais);
   // La región editorial del catálogo manda sobre la que diga el cliente.
