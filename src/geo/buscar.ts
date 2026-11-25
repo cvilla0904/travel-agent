@@ -1,7 +1,7 @@
 import { Catalogo } from './catalogo.js';
 import { normalizar } from './normalizar.js';
 import { identidadDe } from './resolver.js';
-import { regionEditorial } from './regiones-editoriales.js';
+import { regionEditorial, todasRegionesEditoriales } from './regiones-editoriales.js';
 import { DESTINOS_EDITORIALES, ORDEN_HOMONIMOS, type DestinoEditorial } from './destinos-editoriales.js';
 import type { EntradaIndice, Identidad } from './tipos.js';
 
@@ -63,6 +63,7 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
   const limite = Math.min(12, Math.max(1, opciones.limite ?? 8));
   const pais = opciones.pais?.toUpperCase();
   const paises = consulta.paises;
+  const idsRegionAlternativa = consulta.idsRegionAlternativa;
   const paisesSugeridos = consulta.paisesSugeridos;
 
   const mejores = new Map<string, Candidato>();
@@ -71,7 +72,7 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
     for (const entrada of entradas) {
       const propio = entrada[4] === 1;
       if (pais && entrada[2] !== pais) continue;
-      if (paises && !paises.has(entrada[2])) continue;
+      if (paises && !paises.has(entrada[2]) && !(entrada[0] === 'c' && idsRegionAlternativa?.has(`${entrada[1]}`))) continue;
       const id = `${entrada[0]}:${entrada[1]}`;
       const previo = mejores.get(id);
       const nuevo = { exacta, propio };
@@ -85,7 +86,7 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
   // Solo se ofrecen si el catálogo conoce su país (con un catálogo ajeno, como el de pruebas, no aparecen).
   for (const d of Object.values(DESTINOS_EDITORIALES)) {
     if (pais && d.pais !== pais) continue;
-    if (paises && !paises.has(d.pais)) continue;
+    if (paises && !paises.has(d.pais) && !idsRegionAlternativa?.has(d.id)) continue;
     if (!cat.pais(d.pais)) continue;
     const nombre = d.nombres.filter((n) => n.startsWith(clave)).sort((a, b) => a.length - b.length)[0];
     if (nombre === undefined) continue;
@@ -162,9 +163,11 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
  * Consulta con comas: «Salento, Italia», «Salento, Quindío», «Cartagena, España», «Salento, Quindío, Col» (mientras se escribe).
  * - El primer tramo es el nombre del lugar; los siguientes son calificadores.
  * - Un calificador que es (o empieza como) un país acota la búsqueda a ese país; el resto se tratan como región.
+ * - Si lo que se está escribiendo es a la vez prefijo de un país y de la región de una ciudad editorial («Salento, Cam»: Camboya o
+ *   Campania), se ofrecen ambas lecturas (idsRegionAlternativa); solo el país escrito completo o su ISO acota sin ambigüedad.
  * - Un calificador que no se reconoce no excluye nada: solo puede priorizar (región editorial) y nunca deja sin resultados.
  */
-function partirConsulta(cat: Catalogo, texto: string): { clave: string; paises?: Set<string>; paisesSugeridos?: Set<string>; regiones: string[] } | null {
+function partirConsulta(cat: Catalogo, texto: string): { clave: string; paises?: Set<string>; idsRegionAlternativa?: Set<string>; paisesSugeridos?: Set<string>; regiones: string[] } | null {
   const trozos = String(texto ?? '').split(',').map((t) => normalizar(t)).filter(Boolean);
   if (trozos.length === 0) return null;
   const clave = trozos[0]!;
@@ -172,6 +175,10 @@ function partirConsulta(cat: Catalogo, texto: string): { clave: string; paises?:
   if (!consultaValida(clave)) return null;
   const calificadores = trozos.slice(1);
   let paises: Set<string> | undefined;
+  // Prefijo ambiguo: lo escrito empieza como un país («cam» → Camboya) y como la región de una ciudad editorial («cam» → Campania).
+  // Se ofrecen las dos lecturas: el país acota como siempre y, además, entran las ciudades cuya región empieza así (con su región
+  // y país visibles); la región escrita sigue priorizando. Un país escrito entero («Colombia») o su ISO («co») nunca es ambiguo.
+  let idsRegionAlternativa: Set<string> | undefined;
   const ultimo = calificadores[calificadores.length - 1]!;
   const exactos = cat.entradas(ultimo).filter((e) => e[0] === 'p').map((e) => e[2]);
   const iso = ultimo.length === 2 && cat.pais(ultimo.toUpperCase()) ? ultimo.toUpperCase() : undefined;
@@ -180,9 +187,15 @@ function partirConsulta(cat: Catalogo, texto: string): { clave: string; paises?:
   else if (Array.from(ultimo).length >= 3) {
     // País que se está escribiendo («ita» → Italia): solo coincidencias de nombre de país por prefijo.
     const isos = cat.buscarPrefijo(ultimo).flatMap(([, entradas]) => entradas.filter((e) => e[0] === 'p').map((e) => e[2]));
-    if (isos.length) paises = new Set(isos);
+    if (isos.length) {
+      paises = new Set(isos);
+      const ids = todasRegionesEditoriales()
+        .filter(([, r]) => normalizar(r.ciudad).startsWith(clave) && r.claves.some((k) => k.startsWith(ultimo)))
+        .map(([id]) => id);
+      if (ids.length) idsRegionAlternativa = new Set(ids);
+    }
   }
-  const regiones = paises ? calificadores.slice(0, -1) : calificadores;
+  const regiones = paises && !idsRegionAlternativa ? calificadores.slice(0, -1) : calificadores;
   let paisesSugeridos: Set<string> | undefined;
   if (!paises) {
     // Calificador que es una ciudad conocida de un solo país: sugiere ese país (no lo impone).
@@ -193,5 +206,5 @@ function partirConsulta(cat: Catalogo, texto: string): { clave: string; paises?:
     }
     if (isos.size) paisesSugeridos = isos;
   }
-  return { clave, ...(paises ? { paises } : {}), ...(paisesSugeridos ? { paisesSugeridos } : {}), regiones };
+  return { clave, ...(paises ? { paises } : {}), ...(idsRegionAlternativa ? { idsRegionAlternativa } : {}), ...(paisesSugeridos ? { paisesSugeridos } : {}), regiones };
 }

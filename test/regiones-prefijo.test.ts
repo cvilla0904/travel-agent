@@ -20,7 +20,7 @@ test('Salento, Apulia: completa, provincia o zona, y a medio escribir (3+ letras
 });
 
 test('Salento, Campania: completa y a medio escribir', () => {
-  // «Salento, Cam» se lee como país a medio escribir (Camboya, Camerún…): el prefijo de región funciona cuando no coincide con un país.
+  // «Salento, Cam» (prefijo de país y de región a la vez) se cubre en regiones-ambiguas.test.ts; aquí, prefijos que ya no coinciden con un país.
   for (const q of ['Salento, Campania', 'Salento, Campa', 'Salento, Camp', 'Salento, Salerno', 'Salento, Provincia di Salerno']) assert.equal(ids(q)[0], CAMPANIA, q);
 });
 

@@ -26,3 +26,9 @@ export function regionEditorial(id: string): RegionEditorial | undefined {
   const destino = DESTINOS_EDITORIALES[id];
   return REGIONES_EDITORIALES[id] ?? (destino ? { nombre: destino.region, claves: destino.claves, ciudad: destino.nombre, pais: destino.pais, paisNombre: destino.paisNombre } : undefined);
 }
+
+/** Todas las regiones editoriales (curadas a mano y derivadas de los destinos editoriales), con el id de su ciudad. */
+export function todasRegionesEditoriales(): Array<[string, RegionEditorial]> {
+  const ids = new Set([...Object.keys(REGIONES_EDITORIALES), ...Object.keys(DESTINOS_EDITORIALES)]);
+  return [...ids].map((id) => [id, regionEditorial(id)!] as [string, RegionEditorial]);
+}
