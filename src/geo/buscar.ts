@@ -1,6 +1,7 @@
 import { Catalogo } from './catalogo.js';
 import { normalizar } from './normalizar.js';
 import { identidadDe } from './resolver.js';
+import { regionEditorial } from './regiones-editoriales.js';
 import type { EntradaIndice, Identidad } from './tipos.js';
 
 export interface ResultadoBusqueda {
@@ -17,6 +18,8 @@ export interface ResultadoBusqueda {
   via: 'nombre' | 'alias';
   /** Solo si via = 'alias': el alias (normalizado) que ha coincidido, distinto del nombre mostrado. */
   alias?: string;
+  /** Región administrativa, solo cuando se conoce (regiones-editoriales.ts): «Quindío» para Salento (Colombia). */
+  region?: string;
 }
 
 export const LONGITUD_MIN_CONSULTA = 3;
@@ -53,9 +56,13 @@ const nivel = (c: { exacta: boolean; propio: boolean }) => (c.propio ? 0 : 2) + 
  * Cada entidad aparece una vez, con su mejor coincidencia (un nombre propio siempre gana a un alias).
  */
 export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: string; limite?: number } = {}): ResultadoBusqueda[] {
-  const clave = normalizar(texto);
+  const consulta = partirConsulta(cat, texto);
+  if (!consulta) return [];
+  const clave = consulta.clave;
   const limite = Math.min(12, Math.max(1, opciones.limite ?? 8));
   const pais = opciones.pais?.toUpperCase();
+  const paises = consulta.paises;
+  const paisesSugeridos = consulta.paisesSugeridos;
 
   const mejores = new Map<string, Candidato>();
   for (const [nombre, entradas] of cat.buscarPrefijo(clave)) {
@@ -63,6 +70,7 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
     for (const entrada of entradas) {
       const propio = entrada[4] === 1;
       if (pais && entrada[2] !== pais) continue;
+      if (paises && !paises.has(entrada[2])) continue;
       const id = `${entrada[0]}:${entrada[1]}`;
       const previo = mejores.get(id);
       const nuevo = { exacta, propio };
@@ -77,7 +85,16 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
   const nivelEfectivo = (c: Candidato) =>
     hayGrande && c.entrada[0] === 'c' && c.propio && c.exacta && poblacion(c) < POBLACION_CIUDAD_PEQUENA ? 1 : nivel(c);
 
+  // «Salento, Quindío»: la región escrita prioriza a la ciudad que la declara (sin excluir a las demás).
+  const declaraRegion = (c: Candidato) => {
+    const r = c.entrada[0] === 'c' ? regionEditorial(`${c.entrada[1]}`) : undefined;
+    if (r && consulta.regiones.some((q) => r.claves.includes(q))) return true;
+    // «Salento, Lecce»: si el calificador es una ciudad de un único país (Italia), ese país prioriza a sus candidatos.
+    return !!paisesSugeridos && paisesSugeridos.has(c.entrada[2]);
+  };
+
   const ordenados = [...mejores.values()].sort((a, b) =>
+    (declaraRegion(b) ? 1 : 0) - (declaraRegion(a) ? 1 : 0) ||
     nivelEfectivo(a) - nivelEfectivo(b) ||
     PRIORIDAD_TIPO[a.entrada[0]] - PRIORIDAD_TIPO[b.entrada[0]] ||
     (b.entrada[3] ?? 0) - (a.entrada[3] ?? 0) ||
@@ -90,6 +107,7 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
     const identidad = identidadDe(cat, c.entrada);
     if (!identidad) continue;
     const p = identidad.pais ? cat.pais(identidad.pais) : undefined;
+    const region = identidad.tipo === 'ciudad' ? regionEditorial(identidad.id)?.nombre : undefined;
     out.push({
       id: identidad.id, tipo: identidad.tipo, nombre: identidad.nombre, codigoPais: identidad.pais, nombrePais: p?.nombre ?? null,
       ...(typeof identidad.lat === 'number' ? { latitud: identidad.lat } : {}),
@@ -98,7 +116,46 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
       coincidencia: c.exacta ? 'exacta' : 'prefijo',
       via: c.propio ? 'nombre' : 'alias',
       ...(c.propio ? {} : { alias: c.clave }),
+      ...(region ? { region } : {}),
     });
   }
   return out;
+}
+
+/**
+ * Consulta con comas: «Salento, Italia», «Salento, Quindío», «Cartagena, España», «Salento, Quindío, Col» (mientras se escribe).
+ * - El primer tramo es el nombre del lugar; los siguientes son calificadores.
+ * - Un calificador que es (o empieza como) un país acota la búsqueda a ese país; el resto se tratan como región.
+ * - Un calificador que no se reconoce no excluye nada: solo puede priorizar (región editorial) y nunca deja sin resultados.
+ */
+function partirConsulta(cat: Catalogo, texto: string): { clave: string; paises?: Set<string>; paisesSugeridos?: Set<string>; regiones: string[] } | null {
+  const trozos = String(texto ?? '').split(',').map((t) => normalizar(t)).filter(Boolean);
+  if (trozos.length === 0) return null;
+  const clave = trozos[0]!;
+  if (trozos.length === 1) return { clave, regiones: [] };
+  if (!consultaValida(clave)) return null;
+  const calificadores = trozos.slice(1);
+  let paises: Set<string> | undefined;
+  const ultimo = calificadores[calificadores.length - 1]!;
+  const exactos = cat.entradas(ultimo).filter((e) => e[0] === 'p').map((e) => e[2]);
+  const iso = ultimo.length === 2 && cat.pais(ultimo.toUpperCase()) ? ultimo.toUpperCase() : undefined;
+  if (exactos.length) paises = new Set(exactos);
+  else if (iso) paises = new Set([iso]);
+  else if (Array.from(ultimo).length >= 3) {
+    // País que se está escribiendo («ita» → Italia): solo coincidencias de nombre de país por prefijo.
+    const isos = cat.buscarPrefijo(ultimo).flatMap(([, entradas]) => entradas.filter((e) => e[0] === 'p').map((e) => e[2]));
+    if (isos.length) paises = new Set(isos);
+  }
+  const regiones = paises ? calificadores.slice(0, -1) : calificadores;
+  let paisesSugeridos: Set<string> | undefined;
+  if (!paises) {
+    // Calificador que es una ciudad conocida de un solo país: sugiere ese país (no lo impone).
+    const isos = new Set<string>();
+    for (const q of regiones) {
+      const delPais = new Set(cat.entradas(q).filter((e) => e[0] === 'c').map((e) => e[2]));
+      if (delPais.size === 1) for (const i of delPais) isos.add(i);
+    }
+    if (isos.size) paisesSugeridos = isos;
+  }
+  return { clave, ...(paises ? { paises } : {}), ...(paisesSugeridos ? { paisesSugeridos } : {}), regiones };
 }
