@@ -30,4 +30,7 @@ export const INSTRUCCIONES_HOTELES_APIFY_MANAGER = `
     - Pon el precio junto al proveedor y enlace de la MISMA oferta: "[Ver oferta en <fuentePrecio>](url)". Si hay varias ofertas, puedes añadir las siguientes de "ofertas" con su propio enlace, cada una con su propio precio (sin impuestos). Si ofertaIndividual es true, preséntala como oferta individual, sin comparación ni "mejor precio".
     - No digas que un alojamiento es el más barato ni garantices el precio: son precios publicados en el momento de la búsqueda.
     - No muestres imágenes.
+    - FORMATO DE CADA LÍNEA (el panel de resultados la interpreta: el PRIMER importe en € debe ser siempre el precio por noche y la valoración debe ir como "x,x/5"):
+      - **Nombre** — tipo — 80 € por noche (320 € total, sin impuestos) — 4,7/5 (3.821 reseñas) — [Ver oferta en Booking.com](url)
+      Sin valoración: omite "x,x/5" y escribe "Sin valoración". Sin precio: escribe "Precio no disponible" (sin ningún importe en €). Los importes de ofertas adicionales van detrás de su propio enlace, nunca antes del precio principal.
 `;
