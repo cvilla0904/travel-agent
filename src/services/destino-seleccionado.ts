@@ -6,6 +6,7 @@
  */
 import { regionEditorial } from '../geo/regiones-editoriales.js';
 import { destinoEditorial } from '../geo/destinos-editoriales.js';
+import { aeropuertoDeDestinoSeleccionado } from './aeropuertos-vuelos.js';
 
 export interface DestinoSeleccionado {
   nombre: string;
@@ -66,7 +67,11 @@ export function etiquetaDestino(d: DestinoSeleccionado): string {
 
 /** Bloque que precede al mensaje del usuario: fija el destino exacto para las herramientas. */
 export function contextoDestinoSeleccionado(d: DestinoSeleccionado): string {
+  // Aeropuerto IATA del destino elegido, resuelto en el servidor desde el catálogo (el servidor lo impone en buscar_vuelos).
+  let iata = '';
+  try { iata = aeropuertoDeDestinoSeleccionado(d)?.iata ?? ''; } catch { /* catálogo no disponible: sin código */ }
   const datos = [
+    iata ? `aeropuerto IATA ${iata}` : '',
     d.codigoPais ? `país ${d.codigoPais}` : '',
     d.region ? `región ${d.region}` : '',
     d.id ? `id geográfico ${d.id}` : '',

@@ -1,4 +1,5 @@
-import { consultaProveedorParaCiudad } from './ciudades.js';
+import { resolverAeropuertoVuelo, type AeropuertoResuelto } from './aeropuertos-vuelos.js';
+import { aeropuertoFijadoPara } from './destino-fijado.js';
 /**
  * Vuelos (Apify / Google Flights): normalización y orquestación de la búsqueda.
  *
@@ -14,7 +15,8 @@ import { consultaProveedorParaCiudad } from './ciudades.js';
  *    de modo que nunca se confunda con "no hay vuelos";
  *  - no se combinan tramos sin precio (antes el total quedaba subestimado).
  */
-import { buscarVuelosApify, ErrorVuelos, type BuscarVuelosApifyParams } from './apify-flights.js';
+import { buscarVuelosApify, type BuscarVuelosApifyParams } from './apify-flights.js';
+import { ErrorVuelos } from './errores-vuelos.js';
 
 export function parsearDuracionMinutos(value: any): number {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -233,10 +235,28 @@ export async function buscarVuelosConEstado(
   dependencias: DependenciasVuelos = {},
 ): Promise<ResultadoVuelos> {
   const buscar = dependencias.buscar ?? buscarVuelosApify;
-  const destinoBusqueda = p.aeropuertoDestino?.trim() || p.destino;
-  const origenProveedor = consultaProveedorParaCiudad(p.origen);
-  const destinoProveedor = consultaProveedorParaCiudad(destinoBusqueda);
-  const regresoProveedor = consultaProveedorParaCiudad(p.destinoRegreso || destinoBusqueda);
+  // El aeropuerto se resuelve AQUÍ, con el nombre original que escribió el modelo (nunca traducido antes), y se envía al
+  // proveedor como código IATA. Si el usuario eligió el destino en el autocompletado, el servidor impone su aeropuerto:
+  // el modelo no puede sustituirlo con un código inventado en aeropuertoDestino.
+  const aeropuertoIndicado = p.aeropuertoDestino?.trim();
+  const resolver = (texto: string, campo: string, indicado?: string): AeropuertoResuelto | ErrorVuelos => {
+    try {
+      const fijado = aeropuertoFijadoPara(texto) ?? (indicado ? aeropuertoFijadoPara(indicado) : undefined);
+      if (fijado) return fijado;
+      return resolverAeropuertoVuelo(indicado || texto, campo);
+    } catch (e) {
+      return e instanceof ErrorVuelos ? e : new ErrorVuelos('parametros', e instanceof Error ? e.message : String(e));
+    }
+  };
+  const apOrigen = resolver(p.origen, 'origen');
+  const apDestino = resolver(p.destino, 'destino', aeropuertoIndicado);
+  const apRegreso = p.destinoRegreso ? resolver(p.destinoRegreso, 'destino de regreso') : apDestino;
+  const destinoBusqueda = p.destino;
+  const errorResolucion = [apOrigen, apDestino, apRegreso].find((x): x is ErrorVuelos => x instanceof ErrorVuelos);
+  const iata = (x: AeropuertoResuelto | ErrorVuelos) => (x instanceof ErrorVuelos ? '' : x.iata);
+  const origenProveedor = iata(apOrigen);
+  const destinoProveedor = iata(apDestino);
+  const regresoProveedor = iata(apRegreso);
   const hayVuelta = Boolean(p.fechaVuelta);
   const abierto = Boolean(p.destinoRegreso);
   const origenVuelta = p.destinoRegreso || destinoBusqueda;
@@ -245,12 +265,22 @@ export async function buscarVuelosConEstado(
     origen: p.origen,
     destino: p.destino,
     ...(p.destinoRegreso ? { destinoRegreso: p.destinoRegreso } : {}),
-    aeropuertoDestino: p.aeropuertoDestino?.trim().toUpperCase() || p.destino,
-    aeropuertoOrigen: p.origen,
+    // Códigos IATA realmente enviados al proveedor (vacío si no se pudo resolver el aeropuerto).
+    aeropuertoDestino: destinoProveedor || aeropuertoIndicado?.toUpperCase() || p.destino,
+    aeropuertoOrigen: origenProveedor || p.origen,
     fechaIda: p.fechaIda,
     fechaVuelta: p.fechaVuelta,
     pasajeros: p.pasajeros,
   };
+
+  if (errorResolucion) {
+    return {
+      ...base, estado: 'error_parametros', error: errorResolucion.message, direccionesConError: [], avisos: [errorResolucion.message], vuelos: [],
+    };
+  }
+  const avisosAeropuerto = [apOrigen, apDestino, apRegreso]
+    .filter((x): x is AeropuertoResuelto => !(x instanceof ErrorVuelos) && !!x.aviso)
+    .map((x) => x.aviso!);
 
   // Las dos direcciones son independientes: se lanzan a la vez y un fallo de una no cancela la otra.
   const [rIda, rVuelta] = await Promise.allSettled([
@@ -289,7 +319,7 @@ export async function buscarVuelosConEstado(
     .slice(0, MAX_VUELOS);
 
   const resultado = (estado: EstadoVuelos, vuelos: any[], error: string | null): ResultadoVuelos => ({
-    ...base, estado, error, direccionesConError, avisos, vuelos,
+    ...base, estado, error, direccionesConError, avisos: [...new Set(avisosAeropuerto), ...avisos], vuelos,
   });
 
   // Solo ida solicitada (sin fecha de vuelta).

@@ -16,6 +16,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { regionEditorial } from '../geo/regiones-editoriales.js';
 import { etiquetaDestino, normalizarDestinoSeleccionado } from './destino-seleccionado.js';
 import { nombreBaseCiudad, normalizarTexto, variantesCiudad } from './ciudades.js';
+import { aeropuertoDeDestinoSeleccionado, type AeropuertoResuelto } from './aeropuertos-vuelos.js';
 
 export interface DestinoFijado {
   /** «Salento, Apulia, Italia». */
@@ -34,10 +35,61 @@ export function destinoFijadoDesde(bruto: unknown): DestinoFijado | null {
   return { etiqueta: etiquetaDestino(d), id: d.id, paisCodigo: d.codigoPais.toLowerCase() };
 }
 
+/**
+ * Aeropuerto del destino elegido (vuelos). A diferencia del destino editorial de arriba, aplica a CUALQUIER destino elegido en
+ * el autocompletado que tenga identificador (Bruselas, Sarajevo, París…): el aeropuerto sale del catálogo en el servidor y el
+ * modelo no puede sustituirlo al escribir los argumentos de buscar_vuelos.
+ */
+export interface AeropuertoFijado {
+  etiqueta: string;
+  aeropuerto: AeropuertoResuelto;
+  /** Nombres normalizados con los que el modelo puede nombrar ese lugar (incluidas traducciones y el municipio). */
+  nombres: string[];
+}
+const almacenAeropuerto = new AsyncLocalStorage<AeropuertoFijado>();
+
+export function aeropuertoFijadoDesde(bruto: unknown): AeropuertoFijado | null {
+  const d = normalizarDestinoSeleccionado(bruto);
+  if (!d?.id) return null;
+  try {
+    const aeropuerto = aeropuertoDeDestinoSeleccionado(d);
+    if (!aeropuerto) return null;
+    const etiqueta = etiquetaDestino(d);
+    const nombres = new Set<string>([...variantesCiudad(etiqueta), normalizarTexto(d.nombre)]);
+    if (aeropuerto.nombre) nombres.add(normalizarTexto(aeropuerto.nombre));
+    return { etiqueta, aeropuerto, nombres: [...nombres].filter(Boolean) };
+  } catch {
+    // Catálogo no disponible: no se fija nada y se resuelve por el texto, como siempre.
+    return null;
+  }
+}
+
 /** Ejecuta `fn` con el destino elegido fijado (si lo hay y es válido). Sin destino fijable, ejecuta `fn` tal cual. */
 export function conDestinoFijado<T>(bruto: unknown, fn: () => T): T {
   const fijado = destinoFijadoDesde(bruto);
-  return fijado ? almacen.run(fijado, fn) : fn();
+  const ap = aeropuertoFijadoDesde(bruto);
+  let ejecutar: () => T = fn;
+  if (fijado) { const interior = ejecutar; ejecutar = () => almacen.run(fijado, interior); }
+  if (ap) { const interior = ejecutar; ejecutar = () => almacenAeropuerto.run(ap, interior); }
+  return ejecutar();
+}
+
+export function aeropuertoFijadoActual(): AeropuertoFijado | undefined {
+  return almacenAeropuerto.getStore();
+}
+
+/**
+ * Aeropuerto que debe usarse para el lugar que el modelo escribió como origen/destino de vuelos. Si hay un destino elegido y el
+ * modelo lo nombra (en cualquier idioma conocido) o escribe un código IATA que no coincide con el elegido para ese mismo lugar,
+ * manda el aeropuerto del catálogo. Si nombra otro lugar (p. ej. el origen «Madrid»), devuelve undefined y se resuelve por texto.
+ */
+export function aeropuertoFijadoPara(textoModelo: string): AeropuertoResuelto | undefined {
+  const fijado = almacenAeropuerto.getStore();
+  if (!fijado) return undefined;
+  const base = normalizarTexto(nombreBaseCiudad(textoModelo));
+  if (!base) return undefined;
+  const coincide = fijado.nombres.includes(base);
+  return coincide ? { ...fijado.aeropuerto, entrada: textoModelo, via: 'fijado' } : undefined;
 }
 
 export function destinoFijadoActual(): DestinoFijado | undefined {

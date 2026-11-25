@@ -7,6 +7,8 @@ let catalogoGeo: Catalogo | undefined;
 function obtenerCatalogoGeo(): Catalogo {
   return (catalogoGeo ??= new Catalogo(fuenteEnDisco()));
 }
+/** Catálogo geográfico en uso (el de disco salvo que una prueba inyecte otro). Lo comparten las resoluciones de aeropuertos. */
+export function catalogoGeoActual(): Catalogo { return obtenerCatalogoGeo(); }
 /** Solo para pruebas: inyecta un catálogo (o undefined para volver al de disco) y vacía la memoria de resultados. */
 export function establecerCatalogoGeo(cat: Catalogo | undefined): void {
   catalogoGeo = cat;

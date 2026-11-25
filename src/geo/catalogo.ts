@@ -65,6 +65,8 @@ export class Catalogo {
   /** Ciudad completa (con nombres alternativos). Carga el archivo del país: para una ficha ligera usa ficha(). */
   ciudad(id: string, iso: string): Ciudad | undefined { return this.shard(iso)?.ciudades[id]; }
   aeropuertoPorIata(iata: string): Aeropuerto | undefined { return this.fuente.aeropuertos()[iata.toUpperCase()]; }
+  /** Todos los aeropuertos comerciales del catálogo (para resolver «Brussels Airport» por nombre). */
+  todosAeropuertos(): Aeropuerto[] { return Object.values(this.fuente.aeropuertos()); }
   aeropuerto(iata: string, _iso?: string): Aeropuerto | undefined { return this.aeropuertoPorIata(iata); }
 }
 

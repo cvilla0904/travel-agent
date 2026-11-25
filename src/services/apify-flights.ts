@@ -1,21 +1,15 @@
 // Integración de vuelos basada en el patrón operativo de la integración Apify
 // de actividades: ejecutar actor, comprobar el estado, leer el dataset y validar
 // los registros reales antes de entregarlos al agente.
+import { resolverAeropuertoVuelo } from './aeropuertos-vuelos.js';
+import { ErrorVuelos } from './errores-vuelos.js';
 const ACTOR_ID = 'johnvc/google-flights-data-scraper-flight-and-price-search';
 const MAX_RESULTS = 10;
 const WAIT_SECS = 60;
 // Build fijada tras comprobar entregas en dataset; configurable desde Vercel.
 const ACTOR_BUILD = process.env.APIFY_FLIGHTS_BUILD?.trim() || '0.0.450';
 
-export type CodigoErrorVuelos = 'parametros' | 'configuracion' | 'proveedor' | 'formato';
-
-/** Error con categoría, para distinguir "fallo del proveedor" de "parámetros no válidos". */
-export class ErrorVuelos extends Error {
-  constructor(public readonly codigo: CodigoErrorVuelos, mensaje: string) {
-    super(mensaje);
-    this.name = 'ErrorVuelos';
-  }
-}
+export { ErrorVuelos, type CodigoErrorVuelos } from './errores-vuelos.js';
 
 export type ClienteApifyMinimo = {
   actor(id: string): { call(input: any, opts?: any): Promise<any> };
@@ -34,40 +28,8 @@ export type BuscarVuelosApifyParams = {
   pasajeros: number;
 };
 
-const AEROPUERTOS: Record<string, string> = {
-  bilbao: 'BIO', donostia: 'EAS', 'san sebastian': 'EAS', 'san sebastián': 'EAS',
-  pasaia: 'EAS', pasajes: 'EAS', madrid: 'MAD', barcelona: 'BCN',
-  malaga: 'AGP', málaga: 'AGP', sevilla: 'SVQ', valencia: 'VLC',
-  alicante: 'ALC', ibiza: 'IBZ', palma: 'PMI', 'palma de mallorca': 'PMI',
-  'santiago de compostela': 'SCQ', vigo: 'VGO', 'a coruña': 'LCG',
-  paris: 'CDG', parís: 'CDG', londres: 'LHR', roma: 'FCO', rome: 'FCO',
-  milan: 'MXP', milán: 'MXP', venecia: 'VCE', florencia: 'FLR', florence: 'FLR',
-  amsterdam: 'AMS', berlin: 'BER', berlín: 'BER', munich: 'MUC', múnich: 'MUC',
-  frankfurt: 'FRA', lisboa: 'LIS', lisbon: 'LIS', oporto: 'OPO', porto: 'OPO',
-  bruselas: 'BRU', praga: 'PRG', viena: 'VIE', zurich: 'ZRH', zúrich: 'ZRH',
-  atenas: 'ATH', athens: 'ATH', estambul: 'IST', istanbul: 'IST',
-  'nueva york': 'JFK', 'new york': 'JFK', 'los angeles': 'LAX', 'los ángeles': 'LAX',
-  tokio: 'HND', tokyo: 'HND', osaka: 'KIX', bangkok: 'BKK', singapur: 'SIN',
-  singapore: 'SIN', dubai: 'DXB', dublín: 'DUB', dublin: 'DUB', copenhague: 'CPH',
-  estocolmo: 'ARN', helsinki: 'HEL', varsovia: 'WAW', budapest: 'BUD',
-  bogota: 'BOG', bogotá: 'BOG', medellin: 'MDE', medellín: 'MDE',
-  cartagena: 'CTG', 'ciudad de mexico': 'MEX', 'ciudad de méxico': 'MEX',
-  'mexico city': 'MEX', 'buenos aires': 'EZE', 'sao paulo': 'GRU',
-  'são paulo': 'GRU', 'rio de janeiro': 'GIG',
-  miami: 'MIA', orlando: 'MCO', kioto: 'KIX', kyoto: 'KIX', madinah: 'MED',
-  madison: 'MSN', 'san francisco': 'SFO', chicago: 'ORD', boston: 'BOS',
-  lima: 'LIM', santiago: 'SCL', 'santiago de chile': 'SCL', cancun: 'CUN',
-  'la habana': 'HAV', habana: 'HAV', marrakech: 'RAK', 'el cairo': 'CAI',
-  napoles: 'NAP', 'nápoles': 'NAP', edimburgo: 'EDI', 'tenerife': 'TFS',
-};
-
 export function resolverAeropuerto(value: string, campo: string): string {
-  const limpio = value.trim();
-  if (/^[A-Z]{3}$/i.test(limpio)) return limpio.toUpperCase();
-  const normalizado = limpio.toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  const codigo = AEROPUERTOS[normalizado] ?? AEROPUERTOS[limpio.toLocaleLowerCase('es')];
-  if (codigo) return codigo;
-  throw new ErrorVuelos('parametros', `No he podido identificar el aeropuerto IATA de ${campo} ("${limpio}"). Prueba con un código IATA de tres letras, por ejemplo BIO, MAD o FCO.`);
+  return resolverAeropuertoVuelo(value, campo).iata;
 }
 
 function normalizarClave(value: string): string {
