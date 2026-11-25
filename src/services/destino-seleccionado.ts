@@ -33,17 +33,17 @@ export function normalizarDestinoSeleccionado(bruto: unknown): DestinoSelecciona
   const nombre = limpiar(b.nombre);
   if (!nombre) return null;
   let id = typeof b.id === 'string' && ID_VALIDO.test(b.id) ? b.id : undefined;
-  // Identificador editorial («ed:…»): solo vale si existe, y entonces su nombre, país, código de país y región mandan sobre lo que
-  // diga el cliente, para que ni el texto visible ni el país puedan describir otro destino distinto del identificado.
-  if (id?.startsWith('ed:')) {
-    const ed = destinoEditorial(id);
-    if (!ed) id = undefined;
-    else return { nombre: ed.nombre, pais: ed.paisNombre, codigoPais: ed.pais, region: ed.region, id: ed.id, tipo: 'ciudad' };
-  }
+  // Identificador editorial («ed:…») inexistente: se descarta, no se acepta un identificador inventado.
+  if (id?.startsWith('ed:') && !destinoEditorial(id)) id = undefined;
+  // Identificador con identidad editorial (ed:… o gn:… de un homónimo curado como Salento o Cartagena): el identificador MANDA.
+  // Su ciudad, país, código de país, región y tipo se imponen y lo que diga el cliente se ignora, de modo que no se puede
+  // combinar, por ejemplo, el id del municipio de Campania con el país Colombia.
+  const editorial = id ? regionEditorial(id) : undefined;
+  if (id && editorial) return { nombre: editorial.ciudad, pais: editorial.paisNombre, codigoPais: editorial.pais, region: editorial.nombre, id, tipo: 'ciudad' };
   const codigoPais = typeof b.codigoPais === 'string' && /^[A-Za-z]{2}$/.test(b.codigoPais) ? b.codigoPais.toUpperCase() : undefined;
   const pais = limpiar(b.pais);
-  // La región editorial del catálogo manda sobre la que diga el cliente.
-  const region = (id && regionEditorial(id)?.nombre) || limpiar(b.region);
+  // Destino normal del catálogo (sin identidad editorial): se conserva lo saneado, como siempre.
+  const region = limpiar(b.region);
   const tipo = typeof b.tipo === 'string' && TIPOS.has(b.tipo) ? (b.tipo as DestinoSeleccionado['tipo']) : undefined;
   return {
     nombre,

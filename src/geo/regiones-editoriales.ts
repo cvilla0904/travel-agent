@@ -8,16 +8,21 @@
  */
 import { DESTINOS_EDITORIALES } from './destinos-editoriales.js';
 
-export interface RegionEditorial { nombre: string; claves: string[] }
+/**
+ * `nombre` es la región; `ciudad`, `pais` (ISO-2 en mayúsculas) y `paisNombre` identifican la ciudad a la que pertenece. Así un
+ * identificador editorial implica TAMBIÉN su nombre y su país: el servidor puede imponerlos y rechazar combinaciones
+ * contradictorias («gn:3168676» —Campania— con país Colombia).
+ */
+export interface RegionEditorial { nombre: string; claves: string[]; ciudad: string; pais: string; paisNombre: string }
 
 export const REGIONES_EDITORIALES: Record<string, RegionEditorial> = {
-  'gn:3670352': { nombre: 'Quindío', claves: ['quindio', 'departamento del quindio'] },          // Salento (Colombia)
-  'gn:3687238': { nombre: 'Bolívar', claves: ['bolivar', 'departamento de bolivar'] },            // Cartagena de Indias (Colombia)
-  'gn:3168676': { nombre: 'Campania', claves: ['campania', 'provincia di salerno', 'salerno'] },     // Salento (Italia, municipio de Campania)
-  'gn:2520058': { nombre: 'Región de Murcia', claves: ['murcia', 'region de murcia'] },           // Cartagena (España)
+  'gn:3670352': { nombre: 'Quindío', claves: ['quindio', 'departamento del quindio'], ciudad: 'Salento', pais: 'CO', paisNombre: 'Colombia' },          // Salento (Colombia)
+  'gn:3687238': { nombre: 'Bolívar', claves: ['bolivar', 'departamento de bolivar'], ciudad: 'Cartagena', pais: 'CO', paisNombre: 'Colombia' },            // Cartagena de Indias (Colombia)
+  'gn:3168676': { nombre: 'Campania', claves: ['campania', 'provincia di salerno', 'salerno'], ciudad: 'Salento', pais: 'IT', paisNombre: 'Italia' },     // Salento (Italia, municipio de Campania)
+  'gn:2520058': { nombre: 'Región de Murcia', claves: ['murcia', 'region de murcia'], ciudad: 'Cartagena', pais: 'ES', paisNombre: 'España' },           // Cartagena (España)
 };
 
 export function regionEditorial(id: string): RegionEditorial | undefined {
   const destino = DESTINOS_EDITORIALES[id];
-  return REGIONES_EDITORIALES[id] ?? (destino ? { nombre: destino.region, claves: destino.claves } : undefined);
+  return REGIONES_EDITORIALES[id] ?? (destino ? { nombre: destino.region, claves: destino.claves, ciudad: destino.nombre, pais: destino.pais, paisNombre: destino.paisNombre } : undefined);
 }
