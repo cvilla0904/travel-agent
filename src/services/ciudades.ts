@@ -60,7 +60,13 @@ export function normalizarTexto(valor: unknown): string {
  * por el catálogo. Sin país en el texto, la tabla manda (preferencia editorial: «Cartagena» es Cartagena de Indias).
  * `regiones` (opcional, normalizadas): si el texto trae una región entre ciudad y país y no es ninguna de estas, tampoco se aplica.
  */
-export interface GrupoCiudadCurada { consulta: string; nombres: string[]; pais: string; regiones?: string[] }
+export interface GrupoCiudadCurada {
+  consulta: string; nombres: string[]; pais: string;
+  /** Regiones aceptadas entre ciudad y país (normalizadas). */
+  regiones?: string[];
+  /** Región tal como se muestra y se envía a los proveedores (p. ej. «Quindío»): se conserva en las consultas. */
+  region?: string;
+}
 export const CIUDADES_EQUIVALENTES: GrupoCiudadCurada[] = [
   { consulta: 'Amsterdam', nombres: ['amsterdam'], pais: 'nl' },
   { consulta: 'Florence', nombres: ['florencia', 'florence', 'firenze'], pais: 'it' },
@@ -104,7 +110,7 @@ export const CIUDADES_EQUIVALENTES: GrupoCiudadCurada[] = [
   { consulta: 'Madrid', nombres: ['madrid'], pais: 'es' },
   { consulta: 'Budapest', nombres: ['budapest'], pais: 'hu' },
   // Nombre ambiguo (Salento, Italia): el país y la región acotan la entrada.
-  { consulta: 'Salento', nombres: ['salento'], pais: 'co', regiones: ['quindio', 'departamento del quindio'] },
+  { consulta: 'Salento', nombres: ['salento'], pais: 'co', regiones: ['quindio', 'departamento del quindio'], region: 'Quindío' },
 ];
 
 /**
@@ -170,6 +176,14 @@ export function grupoCurado(ciudad: string): GrupoCiudadCurada | undefined {
     if (intermedias.length && !intermedias.some((r) => grupo.regiones!.includes(r))) return undefined;
   }
   return grupo;
+}
+
+/**
+ * Región curada (para mostrar y consultar) del destino, solo si la ciudad curada la tiene y el destino pertenece a ella:
+ * regionCurada('Salento, Colombia') -> 'Quindío'; regionCurada('Salento, Italia') -> undefined.
+ */
+export function regionCurada(ciudad: string): string | undefined {
+  return grupoCurado(ciudad)?.region;
 }
 
 /** Nombre en español, nombre en inglés y centro de la ciudad, o null si no está en la tabla. */

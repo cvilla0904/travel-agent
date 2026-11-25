@@ -1,9 +1,9 @@
-// Budapest y Salento en la tabla curada de ciudades (necesaria mientras el catálogo geográfico no esté integrado).
+// Budapest y Salento en la tabla curada de ciudades, ya con el catálogo geográfico v3 integrado.
 // Sin red, sin proveedores, sin créditos.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { consultaProveedorParaCiudad, datosCiudad, variantesCiudad } from '../src/services/ciudades.js';
-import { buscarHotelesApifyConEstado } from '../src/services/apify-hoteles.js';
+import { codigoPaisDesdeDestino, consultaProveedorParaCiudad, datosCiudad, regionCurada, variantesCiudad } from '../src/services/ciudades.js';
+import { buscarHotelesApifyConEstado, construirConsulta } from '../src/services/apify-hoteles.js';
 
 const fechas = { fechaEntrada: '2027-01-04', fechaSalida: '2027-01-08', adultos: 2 };
 
@@ -13,7 +13,8 @@ test('Budapest: centro y nombres en la tabla curada, con o sin país', () => {
     assert.ok(d, t);
     assert.deepEqual([d!.lat, d!.lng], [47.49835, 19.04045]);
   }
-  assert.deepEqual(variantesCiudad('Budapest, Hungría'), ['budapest']);
+  // Con el catálogo integrado las variantes son la UNIÓN de la tabla curada y el catálogo: la variante curada no se pierde.
+  assert.ok(variantesCiudad('Budapest, Hungría').includes('budapest'));
   assert.equal(consultaProveedorParaCiudad('Budapest'), 'Budapest');
 });
 
@@ -23,8 +24,13 @@ test('Salento: se resuelve con Quindío/Colombia o sin país, y NO para otro pa�
     assert.ok(d, t);
     assert.deepEqual([d!.lat, d!.lng], [4.63758, -75.56996], t);
   }
-  assert.equal(datosCiudad('Salento, Italia'), null, 'no se aplica el centro colombiano a Salento (Italia)');
-  assert.equal(datosCiudad('Salento, Italy'), null);
+  // Con el catálogo, Salento (Italia) se resuelve por el catálogo (antes, sin catálogo, no se resolvía): nunca al centro colombiano.
+  for (const t of ['Salento, Italia', 'Salento, Italy', 'Salento, Lecce, Italia']) {
+    const d = datosCiudad(t);
+    assert.ok(d, t);
+    assert.ok(Math.abs(d!.lat - 4.63758) > 10 && Math.abs(d!.lng + 75.56996) > 10, `${t}: lejos del centro colombiano (${d!.lat},${d!.lng})`);
+  }
+  assert.equal(consultaProveedorParaCiudad('Salento, Italia'), 'Salento');
   assert.deepEqual(variantesCiudad('Salento, Italia'), ['salento'], 'solo el propio nombre, sin datos curados de Colombia');
 });
 
@@ -32,6 +38,19 @@ test('las ciudades que ya estaban en la tabla no cambian', () => {
   assert.deepEqual([datosCiudad('Bogotá')!.lat, datosCiudad('Bogotá')!.lng], [4.711, -74.0721]);
   assert.equal(datosCiudad('Cartagena, Colombia')!.en, 'Cartagena de Indias');
   assert.equal(datosCiudad('Bruselas, Bélgica')!.en, 'Brussels');
+});
+
+test('Salento: la región Quindío solo se asocia al Salento colombiano', () => {
+  assert.equal(regionCurada('Salento, Colombia'), 'Quindío');
+  assert.equal(regionCurada('Salento, Quindío, Colombia'), 'Quindío');
+  assert.equal(regionCurada('Salento'), 'Quindío');
+  assert.equal(regionCurada('Salento, Italia'), undefined);
+  assert.equal(regionCurada('Salento, Lecce, Italia'), undefined);
+  assert.equal(regionCurada('Salento, Lecce'), undefined, 'región distinta de Quindío y sin país: no es el Salento curado');
+  assert.equal(regionCurada('Bogotá, Colombia'), undefined, 'solo las ciudades curadas con región la tienen');
+  assert.equal(construirConsulta('Salento, Quindío, Colombia'), 'hotels in Salento, Quindío, Colombia', 'el actor recibe Quindío');
+  assert.equal(codigoPaisDesdeDestino('Salento, Lecce, Italia'), 'it');
+  assert.equal(codigoPaisDesdeDestino('Salento, Quindío, Colombia'), 'co');
 });
 
 /* Filas sintéticas (ETIQUETADAS como tales): hoteles de CO en las ciudades vecinas de Salento. */
