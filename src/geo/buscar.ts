@@ -29,6 +29,17 @@ export function consultaValida(clave: string): boolean {
 }
 export const LONGITUD_MAX_CONSULTA = 100;
 const PRIORIDAD_TIPO = { c: 0, p: 1, r: 2, a: 3 } as const;
+/**
+ * Un pueblo diminuto cuyo nombre coincide EXACTAMENTE con lo escrito no debe tapar a una gran ciudad que empieza igual
+ * («buda» → Buda (Texas), Buda (Rumanía)… antes que Budapest; «rio» → Rio (EE. UU.) antes que Rio de Janeiro).
+ * Solo si existe al menos una ciudad grande con ese prefijo, las coincidencias exactas de ciudades pequeñas se tratan como
+ * coincidencias por prefijo (siguen apareciendo, ordenadas por población). Nada cambia si el nombre exacto es una ciudad
+ * mediana o grande, un país, una región o un aeropuerto.
+ */
+export const POBLACION_CIUDAD_PEQUENA = 30_000;
+export const POBLACION_CIUDAD_GRANDE = 300_000;
+/** Solo para consultas cortas: una palabra más larga ya suele ser el nombre completo que la persona quería escribir. */
+export const LONGITUD_MAX_CONSULTA_AMBIGUA = 6;
 
 interface Candidato { entrada: EntradaIndice; clave: string; exacta: boolean; propio: boolean }
 /** 0 nombre propio exacto · 1 nombre propio por prefijo · 2 alias exacto · 3 alias por prefijo. */
@@ -61,8 +72,13 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
     }
   }
 
+  const poblacion = (c: Candidato) => c.entrada[3] ?? 0;
+  const hayGrande = Array.from(clave).length <= LONGITUD_MAX_CONSULTA_AMBIGUA && [...mejores.values()].some((c) => c.entrada[0] === 'c' && c.propio && !c.exacta && poblacion(c) >= POBLACION_CIUDAD_GRANDE);
+  const nivelEfectivo = (c: Candidato) =>
+    hayGrande && c.entrada[0] === 'c' && c.propio && c.exacta && poblacion(c) < POBLACION_CIUDAD_PEQUENA ? 1 : nivel(c);
+
   const ordenados = [...mejores.values()].sort((a, b) =>
-    nivel(a) - nivel(b) ||
+    nivelEfectivo(a) - nivelEfectivo(b) ||
     PRIORIDAD_TIPO[a.entrada[0]] - PRIORIDAD_TIPO[b.entrada[0]] ||
     (b.entrada[3] ?? 0) - (a.entrada[3] ?? 0) ||
     a.clave.length - b.clave.length ||
