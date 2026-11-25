@@ -1,0 +1,3962 @@
+[
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Bogotá, Colombia",
+  "searchLocation": "Bogotá",
+  "position": 1,
+  "name": "Hotel NH Collection Bogotá Teleport Royal",
+  "hotelId": "ChgIp8vztIfDoPiRARoLL2cvMXRmNDk1eGsQAQ",
+  "placeId": "ChIJvYxnvaaaP44Rp-WcdhiC8JE",
+  "category": "Hotel",
+  "hotelClass": 5,
+  "rating": 4.7,
+  "reviewsCount": 3821,
+  "pricePerNight": 74,
+  "totalPrice": 296,
+  "totalPriceBeforeTaxes": 296.13,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 88,
+  "typicalPriceHigh": 159,
+  "lowestPrice": 74,
+  "lowestPriceProvider": "trivago DEALS",
+  "address": "Cl. 113 #7 - 65, Bogotá, Colombia",
+  "website": "https://www.nh-hotels.com/en/hotel/nh-collection-bogota-teleport-royal?utm_campaign=local-gmb&utm_medium=organic_search&utm_source=google_gmb",
+  "latitude": 4.6917599999999995,
+  "longitude": -74.035527,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChgIp8vztIfDoPiRARoLL2cvMXRmNDk1eGsQAQ",
+  "bookingOptions": [
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 74,
+    "totalStayPrice": 296,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/colombia_co_bogot/104798_nh-collection-bogot-teleport-royal"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 90,
+    "totalStayPrice": 361,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 90,
+    "totalStayPrice": 361,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 95,
+    "totalStayPrice": 381,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=242259&highlighted_hotels=242259&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=380.70&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 90,
+    "totalStayPrice": 361,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 90,
+    "totalStayPrice": 361,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 91,
+    "totalStayPrice": 366,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=74059&PriceTotal=365.88&PriceTax=0.00"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 90,
+    "totalStayPrice": 361,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 90,
+    "totalStayPrice": 361,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 91,
+    "totalStayPrice": 366,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 90,
+    "totalStayPrice": 361,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Bogotá, Colombia",
+  "searchLocation": "Bogotá",
+  "position": 2,
+  "name": "Hotel Santa Barbara Real",
+  "hotelId": "ChkI8MTLze_rvabuARoML2cvMXB0dnJ4a2tfEAE",
+  "placeId": "ChIJ8SVqnACQP44RcOKy-V73TO4",
+  "category": "Hotel",
+  "hotelClass": 3,
+  "rating": 4,
+  "reviewsCount": 946,
+  "pricePerNight": 23,
+  "totalPrice": 109,
+  "totalPriceBeforeTaxes": 91.75,
+  "taxesAndFees": 17.44,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 21,
+  "typicalPriceHigh": 31,
+  "lowestPrice": 23,
+  "lowestPriceProvider": "Hotel Santa Barbara Real",
+  "address": "Ac 127 #7 89 D.C, Usaquén, Bogotá, Cundinamarca, Colombia",
+  "website": "https://hotelsantabarbarareal.com/",
+  "latitude": 4.7021046,
+  "longitude": -74.0296433,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkI8MTLze_rvabuARoML2cvMXB0dnJ4a2tfEAE",
+  "bookingOptions": [
+   {
+    "provider": "Hotel Santa Barbara Real",
+    "nightlyPrice": 23,
+    "totalStayPrice": 92,
+    "isOfficialSite": true,
+    "memberDeal": "Precio para miembros, ahorra un 10 %",
+    "bookingUrl": "https://app.thebookingbutton.com/api/properties/hotelsantabarbarareal/gha"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 23,
+    "totalStayPrice": 92,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 23,
+    "totalStayPrice": 93,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=251437&highlighted_hotels=251437&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=110.68&ext_price_tax=17.67"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 30,
+    "totalStayPrice": 121,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Bogotá, Colombia",
+  "searchLocation": "Bogotá",
+  "position": 3,
+  "name": "Hotel NH Bogotá Urban 26 Royal",
+  "hotelId": "ChkIvvL2joX4jefcARoML2cvMXB0ejB4dnY2EAE",
+  "placeId": "ChIJVVUU0NebP44RPrndUcA3ztw",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": 4.6,
+  "reviewsCount": 3265,
+  "pricePerNight": 39,
+  "totalPrice": 182,
+  "totalPriceBeforeTaxes": 154.61,
+  "taxesAndFees": 27.31,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 39,
+  "lowestPriceProvider": "Super.com",
+  "address": "Cra. 33 #25F-18, Bogotá, Colombia",
+  "website": "https://www.nh-hotels.com/en/hotel/nh-bogota-urban-26-royal?utm_campaign=local-gmb&utm_medium=organic_search&utm_source=google_gmb",
+  "latitude": 4.629446,
+  "longitude": -74.083242,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkIvvL2joX4jefcARoML2cvMXB0ejB4dnY2EAE",
+  "bookingOptions": [
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 39,
+    "totalStayPrice": 155,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=169.21%26total_price=199.09"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 58,
+    "totalStayPrice": 232,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=724807&highlighted_hotels=724807&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=231.78&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 59,
+    "totalStayPrice": 234,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 58,
+    "totalStayPrice": 232,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 59,
+    "totalStayPrice": 234,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 59,
+    "totalStayPrice": 234,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=555799&PriceTotal=234.10&PriceTax=0.00"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 59,
+    "totalStayPrice": 234,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 58,
+    "totalStayPrice": 232,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/5943984b7c00cb0e643ca78c"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 58,
+    "totalStayPrice": 231,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/XC0FrvhxKKjQTMjsF9bdQWXgypdBQO2uNav5SWz9_XIWQRmbEmdU2hgPzPNwMscH3y9xWYSbpMZKgdmxEhX_PiUNIVT4Qw9qbwEwMJub2Iz5p7Q2gApI8Ok58wLeAC-X0"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Bogotá, Colombia",
+  "searchLocation": "Bogotá",
+  "position": 4,
+  "name": "Grand Hyatt | Bogotá",
+  "hotelId": "ChkI7dSMlNX4w7AdGg0vZy8xMWJ3NmYxM2NjEAE",
+  "placeId": "ChIJUypOvsGbP44RbSqDUsUPYR0",
+  "category": "Resort hotel",
+  "hotelClass": 5,
+  "rating": 4.8,
+  "reviewsCount": 12153,
+  "pricePerNight": 116,
+  "totalPrice": 552,
+  "totalPriceBeforeTaxes": 463.89,
+  "taxesAndFees": 88.16,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 154,
+  "typicalPriceHigh": 223,
+  "lowestPrice": 116,
+  "lowestPriceProvider": "Traveluro",
+  "address": "Cl. 24a #57 – 60, Salitre, Bogotá, Cundinamarca, Colombia",
+  "website": "https://www.hyatt.com/grand-hyatt/en-US/boggh-grand-hyatt-bogota?src=corp_lclb_google_seo_boggh&utm_source=google&utm_medium=organic&utm_campaign=lmr",
+  "latitude": 4.6440714,
+  "longitude": -74.1000564,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkI7dSMlNX4w7AdGg0vZy8xMWJ3NmYxM2NjEAE",
+  "bookingOptions": [
+   {
+    "provider": "Traveluro",
+    "nightlyPrice": 116,
+    "totalStayPrice": 464,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.traveluro.com/hotels/colombia_co_bogot/552919_grand-hyatt-bogota"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 117,
+    "totalStayPrice": 467,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/colombia_co_bogot/552919_grand-hyatt-bogota"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 245,
+    "totalStayPrice": 982,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=3421335&highlighted_hotels=3421335&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=981.62&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 205,
+    "totalStayPrice": 820,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 205,
+    "totalStayPrice": 820,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 205,
+    "totalStayPrice": 820,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 146,
+    "totalStayPrice": 586,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=641.12%26total_price=755.04"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 167,
+    "totalStayPrice": 666,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/N6A5sWRNU_Zq-qKF5bdvG1jY2fm8Zr96hDoMD9U9khkes-E8ZEty3SebzuMqHzwLPmQAoZrfhlEzPLuqwpOXjkX5nDFqq7YYETT00M94k3Y0bnsUjrgHQ09krKroOG0R0"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 205,
+    "totalStayPrice": 820,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 205,
+    "totalStayPrice": 820,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 205,
+    "totalStayPrice": 820,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 205,
+    "totalStayPrice": 820,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/5b36ff297c00cb0738f25b11"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 205,
+    "totalStayPrice": 820,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 205,
+    "totalStayPrice": 820,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   },
+   {
+    "provider": "Grand Hyatt Bogotá",
+    "nightlyPrice": 205,
+    "totalStayPrice": 820,
+    "isOfficialSite": true,
+    "memberDeal": "Descuentos con la inscripción gratuita",
+    "bookingUrl": "https://www.hyatt.com/es-ES/shop/BOGGH"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Bogotá, Colombia",
+  "searchLocation": "Bogotá",
+  "position": 5,
+  "name": "Bogotá Plaza Hotel",
+  "hotelId": "ChkImfeir76T5fsaGg0vZy8xMWJieGtnNnQ4EAE",
+  "placeId": "ChIJRyrq75maP44Rmbvo5ZuU9xo",
+  "category": "Hotel",
+  "hotelClass": 5,
+  "rating": 4.6,
+  "reviewsCount": 4985,
+  "pricePerNight": 56,
+  "totalPrice": 265,
+  "totalPriceBeforeTaxes": 222.38,
+  "taxesAndFees": 42.26,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 32,
+  "typicalPriceHigh": 90,
+  "lowestPrice": 56,
+  "lowestPriceProvider": "Super.com",
+  "address": "Cra. 18a #100 41, Usaquén, Bogotá, Cundinamarca, Colombia",
+  "website": "http://www.bogotaplazahotel.com/",
+  "latitude": 4.686249699999999,
+  "longitude": -74.05098439999999,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkImfeir76T5fsaGg0vZy8xMWJieGtnNnQ4EAE",
+  "bookingOptions": [
+   {
+    "provider": "Bogotá Plaza Hotel",
+    "nightlyPrice": 73,
+    "totalStayPrice": 293,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://reservations.travelclick.com/113970"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 56,
+    "totalStayPrice": 222,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=243.31%26total_price=289.55"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 71,
+    "totalStayPrice": 285,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 79,
+    "totalStayPrice": 317,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 83,
+    "totalStayPrice": 332,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=238566&highlighted_hotels=238566&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=394.99&ext_price_tax=63.06"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 83,
+    "totalStayPrice": 332,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 83,
+    "totalStayPrice": 332,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=8395&PriceTotal=394.99&PriceTax=63.06"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Bogotá, Colombia",
+  "searchLocation": "Bogotá",
+  "position": 6,
+  "name": "GHL Bioxury Hotel",
+  "hotelId": "ChgIpszE0Ma9z89zGgwvZy8xMnZ0M2dwaHMQAQ",
+  "placeId": "ChIJz4J-LGCaP44RJiYRauw9n3M",
+  "category": "Hotel",
+  "hotelClass": 5,
+  "rating": 4.6,
+  "reviewsCount": 1675,
+  "pricePerNight": 80,
+  "totalPrice": 318,
+  "totalPriceBeforeTaxes": 318.07,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 58,
+  "typicalPriceHigh": 166,
+  "lowestPrice": 80,
+  "lowestPriceProvider": "Traveluro",
+  "address": "Cl. 83 #9 – 48, Bogotá, Colombia",
+  "website": "http://www.bioxury.com/?partner=4153&utm_source=google&utm_medium=mybusiness",
+  "latitude": 4.6656546,
+  "longitude": -74.0506656,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChgIpszE0Ma9z89zGgwvZy8xMnZ0M2dwaHMQAQ",
+  "bookingOptions": [
+   {
+    "provider": "Bioxury",
+    "nightlyPrice": 109,
+    "totalStayPrice": 435,
+    "isOfficialSite": true,
+    "memberDeal": "Precio para miembros, ahorra un 10 %",
+    "bookingUrl": "https://bookcore.backhotelengine.com/hpa/landing/bioxury/2027-01-04/2027-01-08/es/"
+   },
+   {
+    "provider": "Traveluro",
+    "nightlyPrice": 80,
+    "totalStayPrice": 318,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.traveluro.com/hotels/colombia_co_bogot/322142_ghl-bioxury-hotel"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 80,
+    "totalStayPrice": 322,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/colombia_co_bogot/322142_ghl-bioxury-hotel"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 134,
+    "totalStayPrice": 535,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=506055&highlighted_hotels=506055&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=535.20&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 134,
+    "totalStayPrice": 535,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 98,
+    "totalStayPrice": 392,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/ghl-hotel-bioxury/72424099"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 112,
+    "totalStayPrice": 448,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Bogotá, Colombia",
+  "searchLocation": "Bogotá",
+  "position": 7,
+  "name": "Hotel CGH Bogotá Airport",
+  "hotelId": "ChoI0PegirbjsLCaARoNL2cvMTFwdl83MWpubRAB",
+  "placeId": "ChIJ1VJT3HmbP44R0DtIYRvDYJo",
+  "category": "Hotel",
+  "hotelClass": 3,
+  "rating": 4.3,
+  "reviewsCount": 445,
+  "pricePerNight": 24,
+  "totalPrice": 127,
+  "totalPriceBeforeTaxes": 97.48,
+  "taxesAndFees": 29.08,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 33,
+  "typicalPriceHigh": 41,
+  "lowestPrice": 24,
+  "lowestPriceProvider": "Super.com",
+  "address": "Cra. 74a #47-51, Bogotá, Colombia",
+  "website": "http://www.hotelcghbogotaairport.com.co/",
+  "latitude": 4.6711449,
+  "longitude": -74.1127729,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChoI0PegirbjsLCaARoNL2cvMTFwdl83MWpubRAB",
+  "bookingOptions": [
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 24,
+    "totalStayPrice": 97,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=106.65%26total_price=138.47"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 38,
+    "totalStayPrice": 154,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=8141004&highlighted_hotels=8141004&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=153.82&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 36,
+    "totalStayPrice": 143,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/gyQGhRRNzsxI2ci-r1imUYo1hkD1SJJl7YrLph6NJrvpj1xV-2ELrBEF0Mdw2_feC8i1uUxjpOUzZdTM0V3UKOAemCqunrQcRpCrDXAwGU92KnjiF111OFjWZUfX-FsJ0"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 38,
+    "totalStayPrice": 154,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 38,
+    "totalStayPrice": 151,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/65ca96fd671b07d23c6e3864"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Bogotá, Colombia",
+  "searchLocation": "Bogotá",
+  "position": 8,
+  "name": "Hotel NH Collection Bogotá Terra 100 Royal",
+  "hotelId": "ChgI-7aZmZS37NBPGgwvZy8xcTY3c3h2MnAQAQ",
+  "placeId": "ChIJJ-ON4r-aP44Re1smQ7mxoU8",
+  "category": "Hotel",
+  "hotelClass": 5,
+  "rating": 4.5,
+  "reviewsCount": 973,
+  "pricePerNight": 36,
+  "totalPrice": 168,
+  "totalPriceBeforeTaxes": 142.46,
+  "taxesAndFees": 25.14,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 28,
+  "typicalPriceHigh": 78,
+  "lowestPrice": 36,
+  "lowestPriceProvider": "Super.com",
+  "address": "Ac 100 #19A-70, Bogotá, Colombia",
+  "website": "https://www.nh-hotels.com/en/hotel/nh-collection-bogota-terra-100-royal?utm_campaign=local-gmb&utm_medium=organic_search&utm_source=google_gmb",
+  "latitude": 4.6865818,
+  "longitude": -74.0537631,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChgI-7aZmZS37NBPGgwvZy8xcTY3c3h2MnAQAQ",
+  "bookingOptions": [
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 36,
+    "totalStayPrice": 142,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=155.87%26total_price=183.38"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 44,
+    "totalStayPrice": 175,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/colombia_25_bogot/346698_nh-collection-bogot-terra-100-royal"
+   },
+   {
+    "provider": "Traveluro",
+    "nightlyPrice": 45,
+    "totalStayPrice": 179,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.traveluro.com/hotels/colombia_25_bogot/346698_nh-collection-bogot-terra-100-royal"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 52,
+    "totalStayPrice": 209,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=855758&highlighted_hotels=855758&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=209.37&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 52,
+    "totalStayPrice": 209,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 52,
+    "totalStayPrice": 209,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 52,
+    "totalStayPrice": 209,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 52,
+    "totalStayPrice": 209,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=589136&PriceTotal=209.37&PriceTax=0.00"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 52,
+    "totalStayPrice": 209,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Bogotá, Colombia",
+  "searchLocation": "Bogotá",
+  "position": 9,
+  "name": "Four Seasons Casa Medina",
+  "hotelId": "ChcIl6XB6Y604dR6GgsvZy8xdG5oemNsNxAB",
+  "placeId": "ChIJL_vE0UOaP44Rl1Iw7aCFqXo",
+  "category": "Hotel",
+  "hotelClass": 5,
+  "rating": 4.7,
+  "reviewsCount": 2096,
+  "pricePerNight": 319,
+  "totalPrice": 1516,
+  "totalPriceBeforeTaxes": 1274.21,
+  "taxesAndFees": 242.09,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 172,
+  "typicalPriceHigh": 410,
+  "lowestPrice": 319,
+  "lowestPriceProvider": "Super.com",
+  "address": "Ak 7 #69a-22, Chapinero, Bogotá, Colombia",
+  "website": "https://www.fourseasons.com/casamedina/?utm_source=google&utm_medium=organicsearch&utm_campaign=tor-bih-hre-mid-seo-na&utm_content=na-na&utm_term=na",
+  "latitude": 4.65231,
+  "longitude": -74.0565666,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChcIl6XB6Y604dR6GgsvZy8xdG5oemNsNxAB",
+  "bookingOptions": [
+   {
+    "provider": "Four Seasons Hotel Casa Medina Bogota",
+    "nightlyPrice": 394,
+    "totalStayPrice": 1577,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://linkcenterus.derbysoftca.com/dplatform-linkcenter/booking.htm"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 319,
+    "totalStayPrice": 1274,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=1394.17%26total_price=1659.05"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 394,
+    "totalStayPrice": 1577,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 335,
+    "totalStayPrice": 1339,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/colombia_co_bogot/322160_four-seasons-hotel-casa-medina-bogot"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 394,
+    "totalStayPrice": 1577,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=1530745&highlighted_hotels=1530745&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=1876.18&ext_price_tax=299.56"
+   },
+   {
+    "provider": "es.KAYAK.com",
+    "nightlyPrice": 394,
+    "totalStayPrice": 1577,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.es.kayak.com/semi/ha/hotel_ads/363006/es.html"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 394,
+    "totalStayPrice": 1577,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 449,
+    "totalStayPrice": 1795,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 394,
+    "totalStayPrice": 1577,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=1134516&PriceTotal=1876.18&PriceTax=299.62"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 394,
+    "totalStayPrice": 1577,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 394,
+    "totalStayPrice": 1577,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/5943856a7c00cb0e64330dd4"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Bogotá, Colombia",
+  "searchLocation": "Bogotá",
+  "position": 10,
+  "name": "Mercure Bogota bh Zona Financiera",
+  "hotelId": "ChkI2c-ggvi1wIbQARoML2cvMTI2MGIzY2MyEAE",
+  "placeId": "ChIJV5pQLEGaP44R2SdIgK8BDdA",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": 4.4,
+  "reviewsCount": 982,
+  "pricePerNight": 25,
+  "totalPrice": 139,
+  "totalPriceBeforeTaxes": 99.17,
+  "taxesAndFees": 39.76,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 31,
+  "typicalPriceHigh": 41,
+  "lowestPrice": 25,
+  "lowestPriceProvider": "trivago DEALS",
+  "address": "Ak 7 #65 01, Chapinero, Bogotá, Cundinamarca, Colombia",
+  "website": "https://all.accor.com/lien_externe.svlt?goto=fiche_hotel&code_hotel=A535&merchantid=seo-maps-CO-A535&sourceid=aw-cen&utm_medium=seo%20maps&utm_source=google%20Maps&utm_campaign=seo%20maps",
+  "latitude": 4.649517299999999,
+  "longitude": -74.0593225,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkI2c-ggvi1wIbQARoML2cvMTI2MGIzY2MyEAE",
+  "bookingOptions": [
+   {
+    "provider": "Mercure Bogota BH Zona Financiera",
+    "nightlyPrice": 60,
+    "totalStayPrice": 239,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://linkcenter.derbysoftca.com/dplatform-linkcenter/booking.htm"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 25,
+    "totalStayPrice": 99,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/colombia_co_bogot/322135_mercure-bogota-bh-zona-financiera"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 46,
+    "totalStayPrice": 186,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 45,
+    "totalStayPrice": 180,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 95,
+    "totalStayPrice": 380,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/mercure-bh-zona-financiera/00085140"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 60,
+    "totalStayPrice": 240,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/Z3Lhks9M9glyow-bKNVNZcgb6g6ibo9PXBDFgL3VdjdLtLC7yajsoYqrD00M1e1eBpJ2gnN3SEtfVJM2Kz4BdfXsqjTu4b61g7lpIfWdpKYlh8M_yvcmRmCMwDdxd7Ll0"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Medellín, Colombia",
+  "searchLocation": "Medellín",
+  "position": 1,
+  "name": "Manila Hotel Boutique",
+  "hotelId": "ChoI4bWK6JD71MmbARoNL2cvMTFnd21zbDdweBAB",
+  "placeId": "ChIJJ65DkEkpRI4R4ZoCDdlTk5s",
+  "category": "Hotel",
+  "hotelClass": null,
+  "rating": 4.6,
+  "reviewsCount": 349,
+  "pricePerNight": 34,
+  "totalPrice": 161,
+  "totalPriceBeforeTaxes": 135.62,
+  "taxesAndFees": 25.76,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 34,
+  "lowestPriceProvider": "Agoda",
+  "address": "Cra 43D #11a-10 C4, El Poblado, Medellín, El Poblado, Medellín, Antioquia, Colombia",
+  "website": "http://www.manilahotelboutique.com/",
+  "latitude": 6.2130073,
+  "longitude": -75.5716484,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChoI4bWK6JD71MmbARoNL2cvMTFnd21zbDdweBAB",
+  "bookingOptions": [
+   {
+    "provider": "Manila Hotel Boutique",
+    "nightlyPrice": 45,
+    "totalStayPrice": 182,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://engine.lobbypms.com/manila-hotel-boutique-sas"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 34,
+    "totalStayPrice": 136,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=22311678&PriceTotal=161.38&PriceTax=25.76"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 46,
+    "totalStayPrice": 185,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=7072684&highlighted_hotels=7072684&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=185.12&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 35,
+    "totalStayPrice": 141,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=154.37%26total_price=181.63"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 46,
+    "totalStayPrice": 185,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 41,
+    "totalStayPrice": 164,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/mv7vTDTgY3sjqXzQMkFP6AbXj-9JbYkWLIKzeAD6WfYwr61oPH6SXaTikiNPSEEXYBfHgeU1jQkL2aTFdXPhY8pySfa3Ck4Ft8R1zg44rwNDAYsCta7-hS3HxHyJabVH0"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Medellín, Colombia",
+  "searchLocation": "Medellín",
+  "position": 2,
+  "name": "SUI HOTEL BOUTIQUE",
+  "hotelId": "ChkIoJne29CWms4VGg0vZy8xMXE4dDQycTUwEAE",
+  "placeId": "ChIJiZOP5CopRI4RoIx3C7VonBU",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": 4.8,
+  "reviewsCount": 213,
+  "pricePerNight": 66,
+  "totalPrice": 314,
+  "totalPriceBeforeTaxes": 265.78,
+  "taxesAndFees": 48.58,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 51,
+  "typicalPriceHigh": 73,
+  "lowestPrice": 66,
+  "lowestPriceProvider": "Priceline",
+  "address": "Cra. 47A #5-67, El Poblado, Medellín, El Poblado, Medellín, Antioquia, Colombia",
+  "website": "https://www.suiposadaboutique.com/",
+  "latitude": 6.2079249,
+  "longitude": -75.5764183,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkIoJne29CWms4VGg0vZy8xMXE4dDQycTUwEAE",
+  "bookingOptions": [
+   {
+    "provider": "SUI HOTEL DE DISEÑO",
+    "nightlyPrice": 90,
+    "totalStayPrice": 358,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://api.cloudbeds.com/adshotel-deeplink/official_site_redirect.php"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 66,
+    "totalStayPrice": 266,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 79,
+    "totalStayPrice": 314,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 81,
+    "totalStayPrice": 322,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/1qorp87s1_yqQuN2fPj2bxsTqnoL-2ehVAxnPrVobUi4EqYgu3K7nslP-1cTI9cm2ch32GEKW7EkK_mEzB5-jDue2IN186JblcU4NgJ4d7nfDE9seDQWpcr6IWBjqoCg0"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 90,
+    "totalStayPrice": 358,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=7661376&highlighted_hotels=7661376&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=358.36&ext_price_tax=0.00"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Medellín, Colombia",
+  "searchLocation": "Medellín",
+  "position": 3,
+  "name": "Tequendama Hotel Medellín",
+  "hotelId": "ChgI57PtzNTd19nDARoLL2cvMXZ4dzk5bWYQAQ",
+  "placeId": "ChIJB3FM4g8pRI4R51mbSe1es8M",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": 4.3,
+  "reviewsCount": 2726,
+  "pricePerNight": 37,
+  "totalPrice": 165,
+  "totalPriceBeforeTaxes": 149.32,
+  "taxesAndFees": 15.19,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 37,
+  "lowestPriceProvider": "Traveluro",
+  "address": "C. 50 #70-124, Laureles - Estadio, Medellín, Laureles, Medellín, Antioquia, Colombia",
+  "website": "https://www.hotelestequendama.com.co/es/tequendama-hotel-medellin",
+  "latitude": 6.2590696,
+  "longitude": -75.58688149999999,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChgI57PtzNTd19nDARoLL2cvMXZ4dzk5bWYQAQ",
+  "bookingOptions": [
+   {
+    "provider": "Traveluro",
+    "nightlyPrice": 37,
+    "totalStayPrice": 149,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.traveluro.com/hotels/colombia_co_medellin/144167_tequendama-hotel-medelln"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 46,
+    "totalStayPrice": 183,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 44,
+    "totalStayPrice": 178,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 58,
+    "totalStayPrice": 230,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=305061&highlighted_hotels=305061&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=230.10&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 50,
+    "totalStayPrice": 202,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 49,
+    "totalStayPrice": 195,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/PNaQABBmxEzzFj_FHR4ElCyisv4FvufDOY8900e3B38nCpZ_5h0LDz4845CbFQn_ruLxu_K-RLBLGsNPjziHDdtiGFIsYbo_iNQmKMIHaLiD9xxGNr0xmGiV5KydLede0"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 56,
+    "totalStayPrice": 225,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/594392827c00cb0e6439c77c"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 69,
+    "totalStayPrice": 277,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/tequendama-hotel-medellin/00210166"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Medellín, Colombia",
+  "searchLocation": "Medellín",
+  "position": 4,
+  "name": "The Click Clack Hotel Medellín",
+  "hotelId": "ChkIwI26z6jqnZdUGg0vZy8xMWZrNGR2N3J4EAE",
+  "placeId": "ChIJRUpnznUpRI4RwIbuiVJ3LlQ",
+  "category": "Hotel",
+  "hotelClass": 5,
+  "rating": 4.8,
+  "reviewsCount": 7915,
+  "pricePerNight": 112,
+  "totalPrice": 449,
+  "totalPriceBeforeTaxes": 448.87,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 113,
+  "typicalPriceHigh": 187,
+  "lowestPrice": 112,
+  "lowestPriceProvider": "Vio.com",
+  "address": "Cra. 37 #10A 29, El Poblado, Medellín, El Poblado, Medellín, Antioquia, Colombia",
+  "website": "https://www.clickclackmedellin.com/es/?utm_source=google&utm_medium=organic&utm_campaign=GoogleMyBusiness&utm_content=medellin&partner=8794",
+  "latitude": 6.2102284999999995,
+  "longitude": -75.5666011,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkIwI26z6jqnZdUGg0vZy8xMWZrNGR2N3J4EAE",
+  "bookingOptions": [
+   {
+    "provider": "The Click Clack Hotel Medellín",
+    "nightlyPrice": 169,
+    "totalStayPrice": 677,
+    "isOfficialSite": true,
+    "memberDeal": "Precio para miembros, ahorra un 6 %",
+    "bookingUrl": "https://bookcore.backhotelengine.com/hpa/landing/clickclackmedellin/2027-01-04/2027-01-08/es/"
+   },
+   {
+    "provider": "Vio.com",
+    "nightlyPrice": 112,
+    "totalStayPrice": 449,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.vio.com/"
+   },
+   {
+    "provider": "Etrip.net",
+    "nightlyPrice": 112,
+    "totalStayPrice": 449,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.etrip.net/"
+   },
+   {
+    "provider": "dealbase.com",
+    "nightlyPrice": 112,
+    "totalStayPrice": 449,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.dealbase.com/"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 114,
+    "totalStayPrice": 457,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/colombia_co_medellin/4149991_the-click-clack-hotel-medelln"
+   },
+   {
+    "provider": "Traveluro",
+    "nightlyPrice": 113,
+    "totalStayPrice": 453,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.traveluro.com/hotels/colombia_co_medellin/4149991_the-click-clack-hotel-medelln"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 117,
+    "totalStayPrice": 466,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/the-click-clack-hotel-medellin/00067140"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 117,
+    "totalStayPrice": 470,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/DB_D7otCSdbjEJ0JvNRaqzatbPJsMfocqHOqfnAwy0Ard2ClLGAgPifdYBmSULzaDS4T3OXqZGjF2vjJRBPolvQobCAzHJImRQBeX5RwqdtO6hlvnXSKYd8CsbZvR8YN0"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 162,
+    "totalStayPrice": 650,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=4548074&highlighted_hotels=4548074&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=649.68&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 142,
+    "totalStayPrice": 569,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 162,
+    "totalStayPrice": 650,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Prestigia.com",
+    "nightlyPrice": 133,
+    "totalStayPrice": 532,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.prestigia.com/es/produit.php"
+   },
+   {
+    "provider": "Kiwi.com",
+    "nightlyPrice": 158,
+    "totalStayPrice": 632,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://hotels-tracker.kiwi.com/"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 146,
+    "totalStayPrice": 583,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 157,
+    "totalStayPrice": 629,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Medellín, Colombia",
+  "searchLocation": "Medellín",
+  "position": 5,
+  "name": "Lettera Hotel",
+  "hotelId": "ChkI_JizrfKSoZYuGg0vZy8xMWo1Z2I3aGNiEAE",
+  "placeId": "ChIJYxMcs5yCRo4RfMysJZeELC4",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": 4.7,
+  "reviewsCount": 737,
+  "pricePerNight": 87,
+  "totalPrice": 349,
+  "totalPriceBeforeTaxes": 348.73,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 97,
+  "typicalPriceHigh": 140,
+  "lowestPrice": 87,
+  "lowestPriceProvider": "Lettera",
+  "address": "Cl. 5f #30 73, El Poblado, Medellín, El Poblado, Medellín, Antioquia, Colombia",
+  "website": "http://www.letterahotel.com/",
+  "latitude": 6.2025543,
+  "longitude": -75.5624806,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkI_JizrfKSoZYuGg0vZy8xMWo1Z2I3aGNiEAE",
+  "bookingOptions": [
+   {
+    "provider": "Lettera",
+    "nightlyPrice": 87,
+    "totalStayPrice": 349,
+    "isOfficialSite": true,
+    "memberDeal": "Precio para miembros, ahorra un 12 %",
+    "bookingUrl": "https://reservation.mirai.com/Forwarder/googleFrontDispatcher.htm"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 104,
+    "totalStayPrice": 418,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 110,
+    "totalStayPrice": 442,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 110,
+    "totalStayPrice": 442,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 111,
+    "totalStayPrice": 445,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/lettera-hotel/00034012"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 140,
+    "totalStayPrice": 560,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=6214957&highlighted_hotels=6214957&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=560.46&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Stayforlong",
+    "nightlyPrice": 111,
+    "totalStayPrice": 442,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.stayforlong.com/hotel-detail/1210938"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 112,
+    "totalStayPrice": 448,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/6jzDxqQa6qx4Tx5NE6q-c5ogZK05P0j13UCywnwtYYV6q2NupouSg8H1IeVYEuYMsf9bgjeVT1O7SS6MVLbz7BeGjH_PBiWQxuUUGqj3wty1oDNImC8vQcrs5klBO6gR0"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Medellín, Colombia",
+  "searchLocation": "Medellín",
+  "position": 6,
+  "name": "Blues Suites Medellín",
+  "hotelId": "ChoIrqjHxbKg5KvwARoNL2cvMTFoaGwxbjZ2cRAB",
+  "placeId": "ChIJ60yjgKCDRo4RLtSxKAORV_A",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": 4.3,
+  "reviewsCount": 453,
+  "pricePerNight": 62,
+  "totalPrice": 247,
+  "totalPriceBeforeTaxes": 247.31,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 71,
+  "typicalPriceHigh": 118,
+  "lowestPrice": 62,
+  "lowestPriceProvider": "Clicktrip.com",
+  "address": "Cra. 29c #1a sur 80, El Poblado, Medellín, El Poblado, Medellín, Antioquia, Colombia",
+  "website": "https://bluessuitesmedellin.com/",
+  "latitude": 6.1985806,
+  "longitude": -75.56215139999999,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChoIrqjHxbKg5KvwARoNL2cvMTFoaGwxbjZ2cRAB",
+  "bookingOptions": [
+   {
+    "provider": "Blues Suites Medellin",
+    "nightlyPrice": 93,
+    "totalStayPrice": 372,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://api.cloudbeds.com/adshotel-deeplink/official_site_redirect.php"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 62,
+    "totalStayPrice": 247,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/dWxim902D4fimLA_LD6PF8XaHqtJtfVRZScEStTE0hn6s-0x_MM8QaMQD66dpiU1nIXmONW2O_joiXmrsEahl4DsiOcihf1Y4B0XfXl5eN9auTruKZ6W3A_GVZpmIVfN0"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 78,
+    "totalStayPrice": 313,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=9594202&highlighted_hotels=9594202&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=313.24&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 91,
+    "totalStayPrice": 366,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 91,
+    "totalStayPrice": 366,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 78,
+    "totalStayPrice": 313,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 94,
+    "totalStayPrice": 375,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 91,
+    "totalStayPrice": 366,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 175,
+    "totalStayPrice": 701,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/blues-suites-medellin/85484861"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 91,
+    "totalStayPrice": 366,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Medellín, Colombia",
+  "searchLocation": "Medellín",
+  "position": 7,
+  "name": "Marquee Hotel",
+  "hotelId": "ChoI-c_nn9KdpLnkARoNL2cvMTFtaF85OGNnMxAB",
+  "placeId": "ChIJRR2GmikoRI4R-ef5I-2QcuQ",
+  "category": "Hotel",
+  "hotelClass": 5,
+  "rating": 4.7,
+  "reviewsCount": 1164,
+  "pricePerNight": 105,
+  "totalPrice": 499,
+  "totalPriceBeforeTaxes": 419.26,
+  "taxesAndFees": 79.66,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 96,
+  "typicalPriceHigh": 144,
+  "lowestPrice": 105,
+  "lowestPriceProvider": "Etrip.net",
+  "address": "Cra. 38 #9A-13, El Poblado, Medellín, El Poblado, Medellín, Antioquia, Colombia",
+  "website": "https://marqueemedellin.com/",
+  "latitude": 6.209120599999999,
+  "longitude": -75.5676197,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChoI-c_nn9KdpLnkARoNL2cvMTFtaF85OGNnMxAB",
+  "bookingOptions": [
+   {
+    "provider": "Marquee",
+    "nightlyPrice": 111,
+    "totalStayPrice": 445,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://reservation.mirai.com/Forwarder/googleFrontDispatcher.htm"
+   },
+   {
+    "provider": "Etrip.net",
+    "nightlyPrice": 105,
+    "totalStayPrice": 419,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.etrip.net/"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 133,
+    "totalStayPrice": 531,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=7107452&highlighted_hotels=7107452&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=531.24&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 121,
+    "totalStayPrice": 484,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=529.98%26total_price=549.08"
+   },
+   {
+    "provider": "dealbase.com",
+    "nightlyPrice": 105,
+    "totalStayPrice": 419,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.dealbase.com/"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 133,
+    "totalStayPrice": 531,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 133,
+    "totalStayPrice": 531,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=23760088&PriceTotal=531.24&PriceTax=0.00"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 159,
+    "totalStayPrice": 637,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 129,
+    "totalStayPrice": 517,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 159,
+    "totalStayPrice": 637,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 143,
+    "totalStayPrice": 572,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Kiwi.com",
+    "nightlyPrice": 145,
+    "totalStayPrice": 579,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://hotels-tracker.kiwi.com/"
+   },
+   {
+    "provider": "Qantas Hotels",
+    "nightlyPrice": 158,
+    "totalStayPrice": 631,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.qantas.com/hotels/properties/1201828"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 145,
+    "totalStayPrice": 581,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/4iWhCrRKeEAHYVJ3dA3WyZe_mfD0PuqslHOGg0aRYpD2WczgDMvXfM2sUvqO3oV0WnZzJCbMB75WIqvsnoUjynfwq2VG5ZU4sNRjm_lpyYNgWeD368j36YwyOYNGCOTQ0"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 159,
+    "totalStayPrice": 635,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Medellín, Colombia",
+  "searchLocation": "Medellín",
+  "position": 8,
+  "name": "Hotel Sites Medellín",
+  "hotelId": "ChoIjoWEzLyrgNGEARoNL2cvMTFidG03dGR0dhAB",
+  "placeId": "ChIJoyUM_X-CRo4RjgKByVsBooQ",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": 4.5,
+  "reviewsCount": 1313,
+  "pricePerNight": 53,
+  "totalPrice": 238,
+  "totalPriceBeforeTaxes": 210.3,
+  "taxesAndFees": 27.34,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 55,
+  "typicalPriceHigh": 88,
+  "lowestPrice": 53,
+  "lowestPriceProvider": "trivago DEALS",
+  "address": "Cra. 45 #5 - 15, El Poblado, Medellín, El Poblado, Medellín, Antioquia, Colombia",
+  "website": "https://www.sitesmedellin.com/?partner=8975&utm_source=google&utm_medium=organic&utm_campaign=MyBusiness",
+  "latitude": 6.2066786,
+  "longitude": -75.5744119,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChoIjoWEzLyrgNGEARoNL2cvMTFidG03dGR0dhAB",
+  "bookingOptions": [
+   {
+    "provider": "Sites Medellín",
+    "nightlyPrice": 76,
+    "totalStayPrice": 305,
+    "isOfficialSite": true,
+    "memberDeal": "Precio para miembros, ahorra un 9 %",
+    "bookingUrl": "https://bookcore.backhotelengine.com/hpa/landing/sitehotel/2027-01-04/2027-01-08/es/"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 53,
+    "totalStayPrice": 210,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/colombia_co_envigado/822786_sites"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 65,
+    "totalStayPrice": 262,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/I3X1oAEumC96oDPMsh7BvTpCcJuJUuRb9cVYYetiZ5r9SPNOxG7A5shisAw3SrjXRfX_wBVrEhjqYH3URoO1yrOruVNiixBz0MPH_DTAeKqSIPRh889W56KRcoGY6r680"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 85,
+    "totalStayPrice": 339,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 79,
+    "totalStayPrice": 317,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 83,
+    "totalStayPrice": 331,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Medellín, Colombia",
+  "searchLocation": "Medellín",
+  "position": 9,
+  "name": "Casamia Hotel Boutique",
+  "hotelId": "ChkItYmImdn197kTGg0vZy8xMXgycGJ3NjluEAE",
+  "placeId": "ChIJPWfpJQApRI4RtQQik63fcxM",
+  "category": "Hotel",
+  "hotelClass": null,
+  "rating": 5,
+  "reviewsCount": 61,
+  "pricePerNight": 34,
+  "totalPrice": 136,
+  "totalPriceBeforeTaxes": 135.86,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 42,
+  "typicalPriceHigh": 54,
+  "lowestPrice": 34,
+  "lowestPriceProvider": "Booking.com",
+  "address": "Cl. 59 #45-80, La Candelaria, Medellín, La Candelaria, Medellín, Antioquia, Colombia",
+  "website": "https://hotelboutiquecasamia.com/",
+  "latitude": 6.2545696,
+  "longitude": -75.5603558,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkItYmImdn197kTGg0vZy8xMXgycGJ3NjluEAE",
+  "bookingOptions": [
+   {
+    "provider": "Casamia Hotel Boutique",
+    "nightlyPrice": 41,
+    "totalStayPrice": 166,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://engine.lobbypms.com/casamia-hotel-boutique"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 34,
+    "totalStayPrice": 136,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=15348059&highlighted_hotels=15348059&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=135.88&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 34,
+    "totalStayPrice": 136,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Medellín, Colombia",
+  "searchLocation": "Medellín",
+  "position": 10,
+  "name": "Hashtag 98 Hotel By Jalo",
+  "hotelId": "ChkIkZrfsO2QvsFIGg0vZy8xMW5tdDZzeGI1EAE",
+  "placeId": "ChIJPTetKSgpRI4REc0X1ob4gkg",
+  "category": "Hotel",
+  "hotelClass": 5,
+  "rating": 4.3,
+  "reviewsCount": 771,
+  "pricePerNight": 52,
+  "totalPrice": 209,
+  "totalPriceBeforeTaxes": 208.92,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 33,
+  "typicalPriceHigh": 79,
+  "lowestPrice": 52,
+  "lowestPriceProvider": "Evendo",
+  "address": "Cra. 41 #10 - 37, El Poblado, Medellín, El Poblado, Medellín, Antioquia, Colombia",
+  "website": "https://hashtag98.com.co/",
+  "latitude": 6.2104151,
+  "longitude": -75.5686897,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkIkZrfsO2QvsFIGg0vZy8xMW5tdDZzeGI1EAE",
+  "bookingOptions": [
+   {
+    "provider": "Hashtag 98 by Jalo",
+    "nightlyPrice": 65,
+    "totalStayPrice": 258,
+    "isOfficialSite": true,
+    "memberDeal": "Precio para miembros, ahorra un 10 %",
+    "bookingUrl": "https://reservation.mirai.com/Forwarder/googleFrontDispatcher.htm"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 52,
+    "totalStayPrice": 209,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/hashtag-98-hotel/09518179"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 76,
+    "totalStayPrice": 305,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=8488365&highlighted_hotels=8488365&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=305.02&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 70,
+    "totalStayPrice": 281,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 55,
+    "totalStayPrice": 219,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=35193700&PriceTotal=260.24&PriceTax=41.55"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 72,
+    "totalStayPrice": 288,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 74,
+    "totalStayPrice": 296,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 70,
+    "totalStayPrice": 281,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 70,
+    "totalStayPrice": 281,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 76,
+    "totalStayPrice": 305,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Salento, Quindío, Colombia",
+  "searchLocation": "Salento",
+  "position": 1,
+  "name": "Hotel Salento Mirador",
+  "hotelId": "ChkI7vOd98Kfk9odGg0vZy8xMW41ZDdzcW41EAE",
+  "placeId": "ChIJEWy34FqNOI4R7nnnLvxMtB0",
+  "category": "Hotel",
+  "hotelClass": 3,
+  "rating": 4.5,
+  "reviewsCount": 334,
+  "pricePerNight": 63,
+  "totalPrice": 254,
+  "totalPriceBeforeTaxes": 253.83,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 63,
+  "lowestPriceProvider": "Hotel Salento Mirador",
+  "address": "Cra. 7 # 4 - 23, Salento, Quindío, Colombia",
+  "website": "https://cutt.ly/HotelSalentoMirador",
+  "latitude": 4.637370499999999,
+  "longitude": -75.568708,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkI7vOd98Kfk9odGg0vZy8xMW41ZDdzcW41EAE",
+  "bookingOptions": [
+   {
+    "provider": "Hotel Salento Mirador",
+    "nightlyPrice": 63,
+    "totalStayPrice": 254,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://api.cloudbeds.com/adshotel-deeplink/official_site_redirect.php"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Salento, Quindío, Colombia",
+  "searchLocation": "Salento",
+  "position": 2,
+  "name": "Coffee Tree",
+  "hotelId": "ChkIw5SHxMuEwoM8Gg0vZy8xMWJ2dnpyajB3EAE",
+  "placeId": "ChIJERnpgbONOI4RQ8qBuCQIBzw",
+  "category": "Hostel",
+  "hotelClass": 4,
+  "rating": 4.6,
+  "reviewsCount": 669,
+  "pricePerNight": 96,
+  "totalPrice": 384,
+  "totalPriceBeforeTaxes": 384.03,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 52,
+  "lowestPriceProvider": "Coffee Tree",
+  "address": "Cra. 9 #9-06, Salento, Quindío, Colombia",
+  "website": "http://www.coffeetreebh.com/",
+  "latitude": 4.634274899999999,
+  "longitude": -75.5713074,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkIw5SHxMuEwoM8Gg0vZy8xMWJ2dnpyajB3EAE",
+  "bookingOptions": [
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 98,
+    "totalStayPrice": 392,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=1474657&highlighted_hotels=1474657&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=391.97&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 96,
+    "totalStayPrice": 384,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/5943848d7c00cb0e6432a825"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 98,
+    "totalStayPrice": 392,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Hostelworld",
+    "nightlyPrice": 109,
+    "totalStayPrice": 437,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.spanish.hostelworld.com/pwa/hosteldetails.php/265290"
+   },
+   {
+    "provider": "Coffee Tree",
+    "nightlyPrice": 52,
+    "totalStayPrice": 207,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://engine.lobbypms.com/forest-hospitality-sas"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Salento, Quindío, Colombia",
+  "searchLocation": "Salento",
+  "position": 3,
+  "name": "Terasu Hotel Salento",
+  "hotelId": "ChoI16eproj9gPWmARoNL2cvMTFmNHIxbmxtMhAB",
+  "placeId": "ChIJjZ4GS0uMOI4R11PKhegD6qY",
+  "category": "Hotel",
+  "hotelClass": null,
+  "rating": 4.7,
+  "reviewsCount": 286,
+  "pricePerNight": 202,
+  "totalPrice": 808,
+  "totalPriceBeforeTaxes": 808.36,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 126,
+  "typicalPriceHigh": 207,
+  "lowestPrice": 202,
+  "lowestPriceProvider": "Booking.com",
+  "address": "Cra. 5 #11-43, Salento, Quindío, Colombia",
+  "website": "http://www.hotelterasu.com/",
+  "latitude": 4.6356344,
+  "longitude": -75.57404319999999,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChoI16eproj9gPWmARoNL2cvMTFmNHIxbmxtMhAB",
+  "bookingOptions": [
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 202,
+    "totalStayPrice": 808,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=4057396&highlighted_hotels=4057396&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=808.36&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 214,
+    "totalStayPrice": 855,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 214,
+    "totalStayPrice": 855,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 214,
+    "totalStayPrice": 855,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Salento, Quindío, Colombia",
+  "searchLocation": "Salento",
+  "position": 4,
+  "name": "Hospedaje Vista Hermosa Salento",
+  "hotelId": "ChkI7PeGqrLc8bBMGg0vZy8xMXRma3dyY3dzEAE",
+  "placeId": "ChIJc_NaBCeNOI4R7LtBJePGYUw",
+  "category": "Hotel",
+  "hotelClass": 3,
+  "rating": 4.4,
+  "reviewsCount": 319,
+  "pricePerNight": 46,
+  "totalPrice": 183,
+  "totalPriceBeforeTaxes": 182.87,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 46,
+  "lowestPriceProvider": "Bluepillow.com",
+  "address": "Cl 7 #9-46, Salento, Quindío, Colombia",
+  "website": null,
+  "latitude": 4.6346565,
+  "longitude": -75.5696706,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkI7PeGqrLc8bBMGg0vZy8xMXRma3dyY3dzEAE",
+  "bookingOptions": [
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 47,
+    "totalStayPrice": 187,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=2082670&highlighted_hotels=2082670&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=186.65&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 46,
+    "totalStayPrice": 183,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/59438f597c00cb0e64379202"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Salento, Quindío, Colombia",
+  "searchLocation": "Salento",
+  "position": 5,
+  "name": "Hotel Salento Real",
+  "hotelId": "ChoIw6u5s4bAoaysARoNL2cvMTFidHY2NHJfNBAB",
+  "placeId": "ChIJPaZZ9LWNOI4Rw1VuZgCGWKw",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": 4.5,
+  "reviewsCount": 1005,
+  "pricePerNight": 65,
+  "totalPrice": 260,
+  "totalPriceBeforeTaxes": 259.57,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 91,
+  "typicalPriceHigh": 149,
+  "lowestPrice": 65,
+  "lowestPriceProvider": "Traveluro",
+  "address": "Cl. 3 #4-31, Salento, Quindío, Colombia",
+  "website": "https://www.hotelsalentoreal.com/?utm_source=google&utm_medium=organic&utm_campaign=GoogleMyBusiness&partner=5792",
+  "latitude": 4.6395726999999995,
+  "longitude": -75.569075,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChoIw6u5s4bAoaysARoNL2cvMTFidHY2NHJfNBAB",
+  "bookingOptions": [
+   {
+    "provider": "Salento Real",
+    "nightlyPrice": 85,
+    "totalStayPrice": 340,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://reservation.mirai.com/Forwarder/googleFrontDispatcher.htm"
+   },
+   {
+    "provider": "Traveluro",
+    "nightlyPrice": 65,
+    "totalStayPrice": 260,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.traveluro.com/hotels/colombia_63_salento/606117_hotel-salento-real"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 66,
+    "totalStayPrice": 263,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/colombia_63_salento/606117_hotel-salento-real"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 85,
+    "totalStayPrice": 342,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 105,
+    "totalStayPrice": 421,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=476082&highlighted_hotels=476082&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=421.30&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 105,
+    "totalStayPrice": 421,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 85,
+    "totalStayPrice": 342,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 105,
+    "totalStayPrice": 421,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=435262&PriceTotal=421.30&PriceTax=0.00"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 100,
+    "totalStayPrice": 402,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/hotel-salento-real-eje-cafetero/42206731"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 95,
+    "totalStayPrice": 378,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Salento, Quindío, Colombia",
+  "searchLocation": "Salento",
+  "position": 6,
+  "name": "El Mirador del Cocora",
+  "hotelId": "ChkIr_mU4sn717zjARoML2cvMXBwMnRfY3B0EAE",
+  "placeId": "ChIJjUVFiMmNOI4RrzxFnNxfeeM",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": 4.5,
+  "reviewsCount": 870,
+  "pricePerNight": 203,
+  "totalPrice": 966,
+  "totalPriceBeforeTaxes": 811.68,
+  "taxesAndFees": 154.23,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 203,
+  "lowestPriceProvider": "El Mirador del Cocora",
+  "address": "Cl. 1 #3-01, Salento, Quindío, Colombia",
+  "website": "http://www.elmiradordelcocora.com/",
+  "latitude": 4.6409177999999995,
+  "longitude": -75.5681003,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkIr_mU4sn717zjARoML2cvMXBwMnRfY3B0EAE",
+  "bookingOptions": [
+   {
+    "provider": "El Mirador del Cocora",
+    "nightlyPrice": 203,
+    "totalStayPrice": 812,
+    "isOfficialSite": true,
+    "memberDeal": "Precio para miembros, ahorra un 2 %",
+    "bookingUrl": "https://app.thebookingbutton.com/api/properties/hotelelmiradordelcocora/gha"
+   },
+   {
+    "provider": "Reservation Day",
+    "nightlyPrice": 212,
+    "totalStayPrice": 846,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.reservationday.com/transition/"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 282,
+    "totalStayPrice": 1130,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 296,
+    "totalStayPrice": 1183,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=500289&highlighted_hotels=500289&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=1183.23&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 282,
+    "totalStayPrice": 1130,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 307,
+    "totalStayPrice": 1228,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 282,
+    "totalStayPrice": 1130,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 290,
+    "totalStayPrice": 1161,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=86337954&PriceTotal=1161.22&PriceTax=0.00"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 290,
+    "totalStayPrice": 1161,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/594396577c00cb0e643b9deb"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Salento, Quindío, Colombia",
+  "searchLocation": "Salento",
+  "position": 7,
+  "name": "Villa Salento Boutique Apartments & Spa",
+  "hotelId": "ChkI163E0f6a2up8Gg0vZy8xMXRzcTN2MWIwEAE",
+  "placeId": "ChIJqdP44H2NOI4R1xYx6tdo1Xw",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": 4.7,
+  "reviewsCount": 63,
+  "pricePerNight": 81,
+  "totalPrice": 326,
+  "totalPriceBeforeTaxes": 325.91,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 73,
+  "typicalPriceHigh": 100,
+  "lowestPrice": 81,
+  "lowestPriceProvider": "Expedia.com",
+  "address": "Cra. 3 #9-19, Salento, Quindío, Colombia",
+  "website": "http://villa-salento.com/",
+  "latitude": 4.6369242,
+  "longitude": -75.57321519999999,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkI163E0f6a2up8Gg0vZy8xMXRzcTN2MWIwEAE",
+  "bookingOptions": [
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 81,
+    "totalStayPrice": 326,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 81,
+    "totalStayPrice": 326,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 81,
+    "totalStayPrice": 326,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Salento, Quindío, Colombia",
+  "searchLocation": "Salento",
+  "position": 8,
+  "name": "Hotel La Floresta Salento",
+  "hotelId": "ChgIi_-08o27zJWBARoLL2cvMXdjNDhfd3kQAQ",
+  "placeId": "ChIJmTnjd42ROI4Riz9N3tgxK4E",
+  "category": "Hotel",
+  "hotelClass": 3,
+  "rating": 4.5,
+  "reviewsCount": 441,
+  "pricePerNight": 66,
+  "totalPrice": 266,
+  "totalPriceBeforeTaxes": 265.98,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 74,
+  "typicalPriceHigh": 87,
+  "lowestPrice": 66,
+  "lowestPriceProvider": "Booking.com",
+  "address": "Cra. 5 #10-11, Salento, Quindío, Colombia",
+  "website": "http://www.laflorestahotel.com.co/",
+  "latitude": 4.6363683,
+  "longitude": -75.5732495,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChgIi_-08o27zJWBARoLL2cvMXdjNDhfd3kQAQ",
+  "bookingOptions": [
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 66,
+    "totalStayPrice": 266,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=570417&highlighted_hotels=570417&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=265.98&ext_price_tax=0.00"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Salento, Quindío, Colombia",
+  "searchLocation": "Salento",
+  "position": 9,
+  "name": "Hotel Casa Salento",
+  "hotelId": "ChkI34nA7bHn98YWGg0vZy8xMWM2Y3hfYjI4EAE",
+  "placeId": "ChIJKY2VCbWNOI4R3wSwHTvfjRY",
+  "category": "Bed and breakfast",
+  "hotelClass": null,
+  "rating": 4.7,
+  "reviewsCount": 502,
+  "pricePerNight": 81,
+  "totalPrice": 325,
+  "totalPriceBeforeTaxes": 325.07,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 81,
+  "lowestPriceProvider": "Booking.com",
+  "address": "Cl 7 #4-1 a 4-91, Salento, Quindío, Colombia",
+  "website": "http://www.hotelcasasalento.com/",
+  "latitude": 4.6378417,
+  "longitude": -75.5713652,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkI34nA7bHn98YWGg0vZy8xMWM2Y3hfYjI4EAE",
+  "bookingOptions": [
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 81,
+    "totalStayPrice": 325,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=1629753&highlighted_hotels=1629753&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=325.07&ext_price_tax=0.00"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Salento, Quindío, Colombia",
+  "searchLocation": "Salento",
+  "position": 10,
+  "name": "Los Barranqueros Hotel Salento",
+  "hotelId": "ChkIrcLy8uCgo_h5Gg0vZy8xMXo5Zjh4azN5EAE",
+  "placeId": "ChIJ_T-ziaGNOI4RLaFcDgaN8Hk",
+  "category": "Hotel",
+  "hotelClass": null,
+  "rating": null,
+  "reviewsCount": null,
+  "pricePerNight": 52,
+  "totalPrice": 207,
+  "totalPriceBeforeTaxes": 207.39,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 52,
+  "lowestPriceProvider": "Booking.com",
+  "address": "Cl. 8 #7-19, El Boqueron, Salento, Quindío, Colombia",
+  "website": "https://www.instagram.com/barranqueroshotel?igsh=MTM1MTQ2ZHRpbTRteQ==&utm_source=qr",
+  "latitude": 4.6357364,
+  "longitude": -75.5710391,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkIrcLy8uCgo_h5Gg0vZy8xMXo5Zjh4azN5EAE",
+  "bookingOptions": [
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 52,
+    "totalStayPrice": 207,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=16990319&highlighted_hotels=16990319&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=207.39&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 53,
+    "totalStayPrice": 211,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/6ae43e29fa66f90164966f99"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Cartagena, Colombia",
+  "searchLocation": "Cartagena",
+  "position": 1,
+  "name": "Sofitel Legend Santa Clara Cartagena",
+  "hotelId": "ChcI0oWY6cnl4cMxGgsvZy8xdnh6YnBjehAB",
+  "placeId": "ChIJoxWKIJkv9o4R0gImnSyHhzE",
+  "category": "Hotel",
+  "hotelClass": 5,
+  "rating": 4.9,
+  "reviewsCount": 5285,
+  "pricePerNight": 548,
+  "totalPrice": 2193,
+  "totalPriceBeforeTaxes": 2193,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 548,
+  "lowestPriceProvider": "Clicktrip.com",
+  "address": "Calle Del Torno #39-29, San Diego, Cartagena de Indias, Bolívar, Colombia",
+  "website": "http://sofitel.accor.com/hotels/1871?merchantid=seo-maps-CO-1871&sourceid=aw-cen&utm_source=google+Maps&utm_medium=seo+maps&utm_campaign=seo+maps&utm_term=Sofitel-Launch",
+  "latitude": 10.428270399999999,
+  "longitude": -75.5478512,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChcI0oWY6cnl4cMxGgsvZy8xdnh6YnBjehAB",
+  "bookingOptions": [
+   {
+    "provider": "Sofitel Legend Santa Clara Cartagena",
+    "nightlyPrice": 682,
+    "totalStayPrice": 2728,
+    "isOfficialSite": true,
+    "memberDeal": "Descuento del 10-15% con la inscripción gratuita",
+    "bookingUrl": "https://travel-productads.koddi.com/PropertyAdvocateAPI/ClickRedirect"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 548,
+    "totalStayPrice": 2193,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/5jatyEZXp7mPzoolv7R7Zy-yEuX_IeLGbNywGdW-jEN7m79l343NLU9V7Fmz3uGEQPiHdOUujGFrgH0ZAQhpyWBcOkklB35Rk3z1tp-COhf1oFr80Ez4eLCMls13lGRh0"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 586,
+    "totalStayPrice": 2345,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/colombia_co_cartagena/106561_sofitel-legend-santa-clara-cartagena"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 682,
+    "totalStayPrice": 2728,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=252335&highlighted_hotels=252335&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=2728.24&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 682,
+    "totalStayPrice": 2728,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 682,
+    "totalStayPrice": 2728,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "es.KAYAK.com",
+    "nightlyPrice": 682,
+    "totalStayPrice": 2728,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.es.kayak.com/semi/ha/hotel_ads/49682/es.html"
+   },
+   {
+    "provider": "Catchit.com",
+    "nightlyPrice": 645,
+    "totalStayPrice": 2581,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.catchit.com/tracking/A6-6524-HO-63379_0401202708012027_249300_1500_340_258000_35_payclick/es/hoteles/63379-0_x"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 574,
+    "totalStayPrice": 2295,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   },
+   {
+    "provider": "Prestigia.com",
+    "nightlyPrice": 682,
+    "totalStayPrice": 2728,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.prestigia.com/es/produit.php"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 565,
+    "totalStayPrice": 2258,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/sofitel-legend-santa-clara-cartagena/45479070"
+   },
+   {
+    "provider": "Qantas Hotels",
+    "nightlyPrice": 676,
+    "totalStayPrice": 2702,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.qantas.com/hotels/properties/61688"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 682,
+    "totalStayPrice": 2728,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/594391587c00cb0e64393537"
+   },
+   {
+    "provider": "es.momondo.com",
+    "nightlyPrice": 682,
+    "totalStayPrice": 2728,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.es.momondo.com/semi/ha/hotel_ads/49682/es.html"
+   },
+   {
+    "provider": "TravelUp",
+    "nightlyPrice": 682,
+    "totalStayPrice": 2728,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelup.com/en-us/colombia/cartagena/sofitel-legend-santa-clara-cartagena"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 682,
+    "totalStayPrice": 2728,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   },
+   {
+    "provider": "Hotelscombined.com",
+    "nightlyPrice": 682,
+    "totalStayPrice": 2728,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotelscombined.com/semi/ha/hotel_ads/49682/en.html"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Cartagena, Colombia",
+  "searchLocation": "Cartagena",
+  "position": 2,
+  "name": "InterContinental Cartagena de Indias by IHG",
+  "hotelId": "ChoIuczX-7jj4eWnARoNL2cvMTFiNmQ1MTI2chAB",
+  "placeId": "ChIJ9fyJgj0v9o4ROeZ1jxuHy6c",
+  "category": "Hotel",
+  "hotelClass": 5,
+  "rating": 4.8,
+  "reviewsCount": 8618,
+  "pricePerNight": 147,
+  "totalPrice": 620,
+  "totalPriceBeforeTaxes": 587.38,
+  "taxesAndFees": 32.96,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 183,
+  "typicalPriceHigh": 288,
+  "lowestPrice": 147,
+  "lowestPriceProvider": "Super.com",
+  "address": "Cra. 1 #5-01, Cartagena de Indias, Bolívar, Colombia",
+  "website": "https://www.ihg.com/intercontinental/hotels/us/en/cartagena/ctgha/hoteldetail?cm_mmc=GoogleMaps-_-IC-_-CO-_-CTGHA",
+  "latitude": 10.400247799999999,
+  "longitude": -75.5590609,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChoIuczX-7jj4eWnARoNL2cvMTFiNmQ1MTI2chAB",
+  "bookingOptions": [
+   {
+    "provider": "InterContinental Cartagena de Indias by IHG",
+    "nightlyPrice": 225,
+    "totalStayPrice": 899,
+    "isOfficialSite": true,
+    "memberDeal": "Descuentos y Wi-Fi gratis con la inscripción gratuita",
+    "bookingUrl": "https://www.ihg.com/redirect"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 147,
+    "totalStayPrice": 587,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=642.68%26total_price=678.74"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 225,
+    "totalStayPrice": 899,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=1042745&highlighted_hotels=1042745&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=898.68&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 225,
+    "totalStayPrice": 899,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 194,
+    "totalStayPrice": 775,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 225,
+    "totalStayPrice": 899,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=574564&PriceTotal=898.68&PriceTax=0.00"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 225,
+    "totalStayPrice": 899,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 225,
+    "totalStayPrice": 899,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Catchit.com",
+    "nightlyPrice": 207,
+    "totalStayPrice": 828,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.catchit.com/tracking/A6-6524-HO-478444_0401202708012027_78800_1500_480_82800_54_payclick/es/hoteles/478444-0_x"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 225,
+    "totalStayPrice": 899,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 225,
+    "totalStayPrice": 899,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/59437dcd7c00cb0e642fdad4"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 225,
+    "totalStayPrice": 899,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 243,
+    "totalStayPrice": 972,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/intercontinental-cartagena-de-indias/72978973"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Cartagena, Colombia",
+  "searchLocation": "Cartagena",
+  "position": 3,
+  "name": "Hyatt Regency Cartagena",
+  "hotelId": "ChkI9eGGqOKoqcduGg0vZy8xMWNyendsd3prEAE",
+  "placeId": "ChIJYVOlqRIv9o4R9bABJUaljm4",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": 4.7,
+  "reviewsCount": 4702,
+  "pricePerNight": 174,
+  "totalPrice": 826,
+  "totalPriceBeforeTaxes": 694.29,
+  "taxesAndFees": 131.96,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 174,
+  "lowestPriceProvider": "trivago DEALS",
+  "address": "Cra. 1 #12-118, Cartagena de Indias, Bolívar, Colombia",
+  "website": "https://www.hyatt.com/hyatt-regency/en-US/ctgrc-hyatt-regency-cartagena?src=corp_lclb_google_seo_ctgrc&utm_source=google&utm_medium=organic&utm_campaign=lmr",
+  "latitude": 10.4103731,
+  "longitude": -75.5515023,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkI9eGGqOKoqcduGg0vZy8xMWNyendsd3prEAE",
+  "bookingOptions": [
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 174,
+    "totalStayPrice": 694,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/colombia_co_cartagena/552516_hyatt-regency-cartagena"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 302,
+    "totalStayPrice": 1206,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=2016898&highlighted_hotels=2016898&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=1206.46&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 302,
+    "totalStayPrice": 1206,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 256,
+    "totalStayPrice": 1025,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 247,
+    "totalStayPrice": 987,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/ek5h1Q8NxP5WIRTUkrYI6O9DjoC1suvy-W-FZjX0Zx8sfximYFYngFSg2nZHSPpS5KFbZ0wsS1Svr-KkXYcQwzVgb57jgz3q59yHJy_gSb3ecpHULohN7PhJZRj165zs0"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 302,
+    "totalStayPrice": 1206,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=4454064&PriceTotal=1206.46&PriceTax=0.00"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 302,
+    "totalStayPrice": 1206,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 302,
+    "totalStayPrice": 1206,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 302,
+    "totalStayPrice": 1206,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 302,
+    "totalStayPrice": 1206,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/59438e4e7c00cb0e6436f019"
+   },
+   {
+    "provider": "Atrapalo.com.co",
+    "nightlyPrice": 252,
+    "totalStayPrice": 1007,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.atrapalo.com.co/tracking/A6-6524-HO-945641_0401202708012027_407454600_1184_1184_462197400_42_payclick/hoteles/945641-0_x"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 302,
+    "totalStayPrice": 1206,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Cartagena, Colombia",
+  "searchLocation": "Cartagena",
+  "position": 4,
+  "name": "Hilton Cartagena",
+  "hotelId": "ChkIndu__Za77LgJGg0vZy8xMWJ3Y2o3OTd6EAE",
+  "placeId": "ChIJNwAma5Ml9o4Rne2vb9mxcQk",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": 4.7,
+  "reviewsCount": 8403,
+  "pricePerNight": 174,
+  "totalPrice": 727,
+  "totalPriceBeforeTaxes": 694.69,
+  "taxesAndFees": 32.73,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 174,
+  "lowestPriceProvider": "Super.com",
+  "address": "Avenida Almirante Brion, El Laguito, Cartagena de Indias, Bolívar, Colombia",
+  "website": "https://www.hilton.com/en/hotels/ctghihh-hilton-cartagena-hotel/?SEO_id=GMB-AMER-HH-CTGHIHH",
+  "latitude": 10.3937995,
+  "longitude": -75.55969499999999,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkIndu__Za77LgJGg0vZy8xMWJ3Y2o3OTd6EAE",
+  "bookingOptions": [
+   {
+    "provider": "Hilton Cartagena Hotel",
+    "nightlyPrice": 175,
+    "totalStayPrice": 699,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://linkcenterus.derbysoftca.com/dplatform-linkcenter/booking.htm"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 174,
+    "totalStayPrice": 695,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=760.07%26total_price=795.9"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 223,
+    "totalStayPrice": 891,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=255388&highlighted_hotels=255388&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=891.14&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 223,
+    "totalStayPrice": 891,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "es.KAYAK.com",
+    "nightlyPrice": 223,
+    "totalStayPrice": 891,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.es.kayak.com/semi/ha/hotel_ads/72027/es.html"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 223,
+    "totalStayPrice": 891,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 223,
+    "totalStayPrice": 891,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=6084&PriceTotal=891.14&PriceTax=0.00"
+   },
+   {
+    "provider": "Qantas Hotels",
+    "nightlyPrice": 221,
+    "totalStayPrice": 883,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.qantas.com/hotels/properties/59838"
+   },
+   {
+    "provider": "es.momondo.com",
+    "nightlyPrice": 223,
+    "totalStayPrice": 891,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.es.momondo.com/semi/ha/hotel_ads/72027/es.html"
+   },
+   {
+    "provider": "goseek.com",
+    "nightlyPrice": 223,
+    "totalStayPrice": 891,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.goseek.com/"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 224,
+    "totalStayPrice": 897,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/594391697c00cb0e64393d3d"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 223,
+    "totalStayPrice": 891,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 224,
+    "totalStayPrice": 898,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 283,
+    "totalStayPrice": 1131,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/hilton-cartagena-hotel/78499081"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Cartagena, Colombia",
+  "searchLocation": "Cartagena",
+  "position": 5,
+  "name": "Wyndham Garden Cartagena",
+  "hotelId": "ChkIoZqct4a03ukiGg0vZy8xMWg1NmMzZjhiEAE",
+  "placeId": "ChIJUTP1uy8l9o4RIQ3nZqB50yI",
+  "category": "Hotel",
+  "hotelClass": 3,
+  "rating": 4.2,
+  "reviewsCount": 431,
+  "pricePerNight": 80,
+  "totalPrice": 375,
+  "totalPriceBeforeTaxes": 318.47,
+  "taxesAndFees": 56.23,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 87,
+  "typicalPriceHigh": 112,
+  "lowestPrice": 80,
+  "lowestPriceProvider": "Super.com",
+  "address": "Cra. 1 #62 69, Cartagena de Indias, Bolívar, Colombia",
+  "website": "https://www.wyndhamhotels.com/wyndham-garden/cartagena-colombia/wyndham-garden-cartagena/overview?CID=LC:46q62bu8edfbx3y:54830&iata=00093796",
+  "latitude": 10.443099799999999,
+  "longitude": -75.5243251,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkIoZqct4a03ukiGg0vZy8xMWg1NmMzZjhiEAE",
+  "bookingOptions": [
+   {
+    "provider": "Wyndham Garden Cartagena",
+    "nightlyPrice": 99,
+    "totalStayPrice": 397,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://ad.doubleclick.net/ddm/clk/448223535;252310881;b;u=srch_HPA_WYNDHAM-90774_localuniversal_4_US_desktop_2027-01-04_selected___organic%3Fhttps://linkcenterus.derbysoftca.com/dplatform-linkcenter/booking.htm"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 80,
+    "totalStayPrice": 318,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=6842.61%26total_price=8050.89"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 96,
+    "totalStayPrice": 385,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/wyndham-garden-cartagena/45800665"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 99,
+    "totalStayPrice": 397,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 99,
+    "totalStayPrice": 397,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=8025006&highlighted_hotels=8025006&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=396.67&ext_price_tax=0.00"
+   },
+   {
+    "provider": "es.KAYAK.com",
+    "nightlyPrice": 99,
+    "totalStayPrice": 397,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.es.kayak.com/semi/ha/hotel_ads/8901100/es.html"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 99,
+    "totalStayPrice": 397,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 99,
+    "totalStayPrice": 397,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 99,
+    "totalStayPrice": 397,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Qantas Hotels",
+    "nightlyPrice": 98,
+    "totalStayPrice": 393,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.qantas.com/hotels/properties/900239"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 99,
+    "totalStayPrice": 397,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/65ca93a4671b07d23c6e2037"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 99,
+    "totalStayPrice": 397,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 102,
+    "totalStayPrice": 406,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Cartagena, Colombia",
+  "searchLocation": "Cartagena",
+  "position": 6,
+  "name": "Hotel Casa La Fe",
+  "hotelId": "ChgI84bQvIKg1c2eARoLL2cvMXdjeGY0Zm0QAQ",
+  "placeId": "ChIJfTwbIp8v9o4RcwOUJwBVm54",
+  "category": "Hotel",
+  "hotelClass": 3,
+  "rating": 4.8,
+  "reviewsCount": 392,
+  "pricePerNight": 171,
+  "totalPrice": 686,
+  "totalPriceBeforeTaxes": 685.92,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 171,
+  "lowestPriceProvider": "Booking.com",
+  "address": "Carrera 7 (Cll 2da de Badillo) #36-125, Cartagena de Indias, Bolívar, Colombia",
+  "website": "http://www.casalafe.com/",
+  "latitude": 10.4264043,
+  "longitude": -75.5484615,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChgI84bQvIKg1c2eARoLL2cvMXdjeGY0Zm0QAQ",
+  "bookingOptions": [
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 171,
+    "totalStayPrice": 686,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=308101&highlighted_hotels=308101&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=685.92&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 171,
+    "totalStayPrice": 686,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 171,
+    "totalStayPrice": 686,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=3532904&PriceTotal=685.92&PriceTax=0.00"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 244,
+    "totalStayPrice": 978,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/hNLZBp5qcHairS3m6iCSHXHLXPmvCyXeIw7AJXZ8gxKX5XZKp5cY4xR_C_3ZEUA-1cv6ryvVqxm6IT8goDnsyugn7a6SBj7GiPza-1t4Irmt4zx9sYJ95Ml6nkW-RtZ30"
+   },
+   {
+    "provider": "Hotel Casa La Fe",
+    "nightlyPrice": 228,
+    "totalStayPrice": 913,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://meta2.booking-channel.com/api/google/getBooking"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Cartagena, Colombia",
+  "searchLocation": "Cartagena",
+  "position": 7,
+  "name": "Hotel Movich Cartagena De Indias",
+  "hotelId": "ChgI1ZKU4P78rcPQARoLL2cvMXRkNXNiNm0QAQ",
+  "placeId": "ChIJj-LN4Ocl9o4RVQkF7Oe3htA",
+  "category": "Hotel",
+  "hotelClass": 5,
+  "rating": 4.7,
+  "reviewsCount": 2390,
+  "pricePerNight": 230,
+  "totalPrice": 1038,
+  "totalPriceBeforeTaxes": 918.81,
+  "taxesAndFees": 119.47,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 230,
+  "lowestPriceProvider": "Traveluro",
+  "address": "Centro Histórico, Calle de Vélez Danies, No. 4 – 39, Cartagena de Indias, Bolívar, Colombia",
+  "website": "https://www.movichhotels.com/cartagena",
+  "latitude": 10.4228375,
+  "longitude": -75.55065189999999,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChgI1ZKU4P78rcPQARoLL2cvMXRkNXNiNm0QAQ",
+  "bookingOptions": [
+   {
+    "provider": "Hotel Movich Cartagena De Indias",
+    "nightlyPrice": 357,
+    "totalStayPrice": 1429,
+    "isOfficialSite": true,
+    "memberDeal": "Descuentos con la inscripción gratuita",
+    "bookingUrl": "https://api.ireshotels.com/api/pointofsale/index.php"
+   },
+   {
+    "provider": "Traveluro",
+    "nightlyPrice": 230,
+    "totalStayPrice": 919,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.traveluro.com/hotels/colombia_co_cartagena/143862_cartagena-de-indias"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 231,
+    "totalStayPrice": 925,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/colombia_co_cartagena/143862_cartagena-de-indias"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 264,
+    "totalStayPrice": 1055,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "goseek.com",
+    "nightlyPrice": 265,
+    "totalStayPrice": 1060,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.goseek.com/"
+   },
+   {
+    "provider": "Stayforlong",
+    "nightlyPrice": 266,
+    "totalStayPrice": 1064,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.stayforlong.com/hotel-detail/28876"
+   },
+   {
+    "provider": "Etrip.net",
+    "nightlyPrice": 265,
+    "totalStayPrice": 1058,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.etrip.net/"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 239,
+    "totalStayPrice": 956,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=20541.96%26total_price=23602.38"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 301,
+    "totalStayPrice": 1205,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=259765&highlighted_hotels=259765&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=1204.93&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Catchit.com",
+    "nightlyPrice": 270,
+    "totalStayPrice": 1080,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.catchit.com/tracking/A6-6524-HO-195900_0401202708012027_100800_1500_460_105700_54_payclick/es/hoteles/195900-0_x"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 301,
+    "totalStayPrice": 1205,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 277,
+    "totalStayPrice": 1108,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 293,
+    "totalStayPrice": 1173,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   },
+   {
+    "provider": "Qantas Hotels",
+    "nightlyPrice": 290,
+    "totalStayPrice": 1161,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.qantas.com/hotels/properties/57850"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 293,
+    "totalStayPrice": 1173,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Cartagena, Colombia",
+  "searchLocation": "Cartagena",
+  "position": 8,
+  "name": "Hotel Getsemani Luxury | Hotel en Cartagena",
+  "hotelId": "ChoI1quCpPK7lLC0ARoNL2cvMTFnY3hfdmJyYhAB",
+  "placeId": "ChIJN7e88p0v9o4R1pWAJN9RYLQ",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": 4.3,
+  "reviewsCount": 515,
+  "pricePerNight": 123,
+  "totalPrice": 492,
+  "totalPriceBeforeTaxes": 491.64,
+  "taxesAndFees": 0,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 105,
+  "typicalPriceHigh": 140,
+  "lowestPrice": 123,
+  "lowestPriceProvider": "Clicktrip.com",
+  "address": "Avenida del pedregal # 29 – 291, Cra. 10 #31-56, Getsemaní, Cartagena de Indias, Bolívar, Colombia",
+  "website": "http://www.getsemanicartagenahotel.com/",
+  "latitude": 10.4221836,
+  "longitude": -75.5438715,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChoI1quCpPK7lLC0ARoNL2cvMTFnY3hfdmJyYhAB",
+  "bookingOptions": [
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 135,
+    "totalStayPrice": 540,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=2913204&highlighted_hotels=2913204&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=539.73&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 123,
+    "totalStayPrice": 492,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/u5bVn2gV0rR5VQdH6A7X1cW9PLu4_IrJVhekFW2YRxw091VWqYXZQOefEReM0lSkmjNLny3kTKfAWuxERmE8_6QiLo0SwNy0F0x6frEk4AUM7NmCaBMMBbi8b9MNhSqv0"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 124,
+    "totalStayPrice": 497,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/colombia_co_cartagena/455152_getsemani-cartagena-luxury-hotel"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 135,
+    "totalStayPrice": 540,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 135,
+    "totalStayPrice": 540,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 188,
+    "totalStayPrice": 752,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/getsemani-cartagena-hotel/36355584"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Cartagena, Colombia",
+  "searchLocation": "Cartagena",
+  "position": 9,
+  "name": "Hotel Boutique Bovedas de Santa Clara By Accor",
+  "hotelId": "ChkI1ez8ib2vv4qvARoML2cvMXBwMnRfamdwEAE",
+  "placeId": "ChIJhQHQHpkv9o4RVTY_0Xv9FK8",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": 4.7,
+  "reviewsCount": 505,
+  "pricePerNight": 255,
+  "totalPrice": 1175,
+  "totalPriceBeforeTaxes": 1021.66,
+  "taxesAndFees": 153.09,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 255,
+  "lowestPriceProvider": "Super.com",
+  "address": "Cra. 8 #39-114, San Diego, Cartagena de Indias, Bolívar, Colombia",
+  "website": "https://all.accor.com/lien_externe.svlt?goto=fiche_hotel&code_hotel=A232&merchantid=seo-maps-CO-A232&sourceid=aw-cen&utm_medium=seo%20maps&utm_source=google%20Maps&utm_campaign=seo%20maps",
+  "latitude": 10.4280584,
+  "longitude": -75.547494,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChkI1ez8ib2vv4qvARoML2cvMXBwMnRfamdwEAE",
+  "bookingOptions": [
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 255,
+    "totalStayPrice": 1022,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=1117.82%26total_price=1285.36"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 307,
+    "totalStayPrice": 1230,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 315,
+    "totalStayPrice": 1261,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 316,
+    "totalStayPrice": 1264,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=377129&highlighted_hotels=377129&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=1263.73&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 316,
+    "totalStayPrice": 1264,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 315,
+    "totalStayPrice": 1261,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 315,
+    "totalStayPrice": 1261,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 316,
+    "totalStayPrice": 1264,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 355,
+    "totalStayPrice": 1420,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Cartagena, Colombia",
+  "searchLocation": "Cartagena",
+  "position": 10,
+  "name": "Hotel Almirante Cartagena",
+  "hotelId": "ChgIy9rP-66j1YbOARoLL2cvMXRmem5kNWcQAQ",
+  "placeId": "ChIJobjqFxYv9o4RS-1z7xpVDc4",
+  "category": "Hotel",
+  "hotelClass": 5,
+  "rating": 4.5,
+  "reviewsCount": 5855,
+  "pricePerNight": 121,
+  "totalPrice": 545,
+  "totalPriceBeforeTaxes": 482.04,
+  "taxesAndFees": 62.69,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 90,
+  "typicalPriceHigh": 138,
+  "lowestPrice": 121,
+  "lowestPriceProvider": "Traveluro",
+  "address": "Cra. 2 #Calle 6 Esquina, Cartagena de Indias, Bolívar, Colombia",
+  "website": "http://www.hotelalmirantecartagena.com/",
+  "latitude": 10.4008903,
+  "longitude": -75.5581018,
+  "countryCode": "CO",
+  "url": "https://www.google.com/travel/hotels/entity/ChgIy9rP-66j1YbOARoLL2cvMXRmem5kNWcQAQ",
+  "bookingOptions": [
+   {
+    "provider": "Almirante Cartagena Hotel",
+    "nightlyPrice": 195,
+    "totalStayPrice": 781,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://book.omnibees.com/hotelresults"
+   },
+   {
+    "provider": "Traveluro",
+    "nightlyPrice": 121,
+    "totalStayPrice": 482,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.traveluro.com/hotels/colombia_co_cartagena/143849_hotel-almirante"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 137,
+    "totalStayPrice": 547,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 122,
+    "totalStayPrice": 489,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/colombia_co_cartagena/143849_hotel-almirante"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 131,
+    "totalStayPrice": 524,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=573.7%26total_price=605.89"
+   },
+   {
+    "provider": "Vio.com",
+    "nightlyPrice": 138,
+    "totalStayPrice": 551,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.vio.com/"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 147,
+    "totalStayPrice": 587,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "goseek.com",
+    "nightlyPrice": 139,
+    "totalStayPrice": 556,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.goseek.com/"
+   },
+   {
+    "provider": "Stayforlong",
+    "nightlyPrice": 140,
+    "totalStayPrice": 559,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.stayforlong.com/hotel-detail/28896"
+   },
+   {
+    "provider": "Etrip.net",
+    "nightlyPrice": 138,
+    "totalStayPrice": 551,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.etrip.net/"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 141,
+    "totalStayPrice": 563,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/hotel-almirante-cartagena-colombia/00024198"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 246,
+    "totalStayPrice": 983,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=255544&highlighted_hotels=255544&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=983.04&ext_price_tax=0.00"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 246,
+    "totalStayPrice": 983,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   }
+  ]
+ }
+]

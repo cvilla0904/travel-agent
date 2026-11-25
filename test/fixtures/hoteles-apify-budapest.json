@@ -1,0 +1,1598 @@
+[
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Budapest, Hungary",
+  "searchLocation": "Budapest",
+  "position": 1,
+  "name": "Danubius Hotel Astoria",
+  "hotelId": "ChcI-ebRheeK5-SPARoKL20vMDlyd2JjNhAB",
+  "placeId": "ChIJSfuB30LcQUcReXO0cFacyY8",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": null,
+  "reviewsCount": null,
+  "pricePerNight": 66,
+  "totalPrice": 321,
+  "totalPriceBeforeTaxes": 263.36,
+  "taxesAndFees": 57.94,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 35,
+  "typicalPriceHigh": 112,
+  "lowestPrice": 66,
+  "lowestPriceProvider": "Evendo",
+  "address": "Budapest, Kossuth Lajos u. 19, 1053 Hungría",
+  "website": "https://www.danubiushotels.com/en/our-hotels-budapest/danubius-hotel-astoria",
+  "latitude": 47.494101199999996,
+  "longitude": 19.0596004,
+  "countryCode": "HU",
+  "url": "https://www.google.com/travel/hotels/entity/ChcI-ebRheeK5-SPARoKL20vMDlyd2JjNhAB",
+  "bookingOptions": [
+   {
+    "provider": "Danubius Hotel Astoria",
+    "nightlyPrice": 87,
+    "totalStayPrice": 348,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://onboard.triptease.io/redirect"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 66,
+    "totalStayPrice": 263,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/danubius-hotel-astoria-city-center/33750025"
+   },
+   {
+    "provider": "Traveluro",
+    "nightlyPrice": 70,
+    "totalStayPrice": 278,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.traveluro.com/hotels/hungary_07_budapest/105658_danubius-hotel-astoria-city-center"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 70,
+    "totalStayPrice": 280,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=279.61%26total_price=304.77"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 70,
+    "totalStayPrice": 282,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/hungary_07_budapest/105658_danubius-hotel-astoria-city-center"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 74,
+    "totalStayPrice": 296,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 80,
+    "totalStayPrice": 320,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 79,
+    "totalStayPrice": 315,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 87,
+    "totalStayPrice": 350,
+    "isOfficialSite": false,
+    "memberDeal": "Descuento disponible de",
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=75010&highlighted_hotels=75010&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=381.16&ext_price_tax=31.47"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 87,
+    "totalStayPrice": 350,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 80,
+    "totalStayPrice": 322,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/67a2178e905c444f2d02e70b"
+   },
+   {
+    "provider": "Vio.com",
+    "nightlyPrice": 77,
+    "totalStayPrice": 307,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.vio.com/"
+   },
+   {
+    "provider": "Szallas.hu",
+    "nightlyPrice": 95,
+    "totalStayPrice": 381,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://szallas.hu/danubius-hotel-astoria-budapest"
+   },
+   {
+    "provider": "Travelminit.ro",
+    "nightlyPrice": 95,
+    "totalStayPrice": 381,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://travelminit.ro/danubius-hotel-astoria-budapest"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 79,
+    "totalStayPrice": 315,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 79,
+    "totalStayPrice": 314,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/K3kYvmgM6vLYHJI_pOF_mp-fL1IB9vKqUbWdvzZZ7Mf-WyGLU8m4cSOjEazW1YYscBDFvpRwxxNW-jOfjLz_5GmGc973F7WL_zJS2Y_Tz97-b-U0nk9O4sgKydr2i5Ae0"
+   },
+   {
+    "provider": "Qantas Hotels",
+    "nightlyPrice": 85,
+    "totalStayPrice": 340,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.qantas.com/hotels/properties/34190"
+   },
+   {
+    "provider": "goseek.com",
+    "nightlyPrice": 79,
+    "totalStayPrice": 316,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.goseek.com/"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 80,
+    "totalStayPrice": 322,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 92,
+    "totalStayPrice": 367,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Budapest, Hungary",
+  "searchLocation": "Budapest",
+  "position": 2,
+  "name": "Park Plaza Budapest",
+  "hotelId": "ChgIjbK1iK2EspR0GgwvZy8xMmxsdndjeDgQAQ",
+  "placeId": "ChIJceAajRfcQUcRDVkN0SLIKHQ",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": null,
+  "reviewsCount": null,
+  "pricePerNight": 67,
+  "totalPrice": 294,
+  "totalPriceBeforeTaxes": 269.38,
+  "taxesAndFees": 24.25,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 61,
+  "typicalPriceHigh": 86,
+  "lowestPrice": 67,
+  "lowestPriceProvider": "Super.com",
+  "address": "Budapest, Bem rkp. 16-19, 1011 Hungría",
+  "website": "https://www.radissonhotels.com/en-us/hotels/park-plaza-budapest",
+  "latitude": 47.5025948,
+  "longitude": 19.039569399999998,
+  "countryCode": "HU",
+  "url": "https://www.google.com/travel/hotels/entity/ChgIjbK1iK2EspR0GgwvZy8xMmxsdndjeDgQAQ",
+  "bookingOptions": [
+   {
+    "provider": "parkplaza.com",
+    "nightlyPrice": 106,
+    "totalStayPrice": 422,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://linkcenterus.derbysoftca.com/dplatform-linkcenter/booking.htm"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 67,
+    "totalStayPrice": 269,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=1206.49%26total_price=1315.08"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 89,
+    "totalStayPrice": 356,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/hungary_07_budapest/143779_park-plaza-budapest"
+   },
+   {
+    "provider": "Traveluro",
+    "nightlyPrice": 88,
+    "totalStayPrice": 352,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.traveluro.com/hotels/hungary_07_budapest/143779_park-plaza-budapest"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 89,
+    "totalStayPrice": 356,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/fw3uvxSY6RU6SawQwcxDtiSbSd7qWDENw4nSLjGyM6IP-LCMRm1VSPES8TKolO-2bircjwRwNgjYfxifSB2w-Fh8m290hWmRHtbUU3yKhhJAyM51Fo_0oo2D7LKG6z7H0"
+   },
+   {
+    "provider": "TravelUp",
+    "nightlyPrice": 97,
+    "totalStayPrice": 389,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelup.com/en-us/hungary/budapest/park-plaza-budapest"
+   },
+   {
+    "provider": "Pilot",
+    "nightlyPrice": 102,
+    "totalStayPrice": 407,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://pilotplans.com/stays"
+   },
+   {
+    "provider": "Vio.com",
+    "nightlyPrice": 534,
+    "totalStayPrice": 2135,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.vio.com/"
+   },
+   {
+    "provider": "Kiwi.com",
+    "nightlyPrice": 547,
+    "totalStayPrice": 2187,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://hotels-tracker.kiwi.com/"
+   },
+   {
+    "provider": "BusinessHotels.com",
+    "nightlyPrice": 104,
+    "totalStayPrice": 415,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.businesshotels.com/gha_landing.php"
+   },
+   {
+    "provider": "goseek.com",
+    "nightlyPrice": 534,
+    "totalStayPrice": 2135,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.goseek.com/"
+   },
+   {
+    "provider": "dealbase.com",
+    "nightlyPrice": 534,
+    "totalStayPrice": 2135,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.dealbase.com/"
+   },
+   {
+    "provider": "Etrip.net",
+    "nightlyPrice": 534,
+    "totalStayPrice": 2135,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.etrip.net/"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Budapest, Hungary",
+  "searchLocation": "Budapest",
+  "position": 3,
+  "name": "Luxurious Apartment in the heart of Budapest",
+  "hotelId": "ChoQx-e8xKyt_LSUARoNL2cvMTF3NDJ0ZzU1MBAC",
+  "placeId": null,
+  "category": "Vacation rental",
+  "hotelClass": null,
+  "rating": 3.3,
+  "reviewsCount": 68,
+  "pricePerNight": 46,
+  "totalPrice": 197,
+  "totalPriceBeforeTaxes": 152.95,
+  "taxesAndFees": 43.77,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 46,
+  "lowestPriceProvider": "Booking.com",
+  "address": null,
+  "website": null,
+  "latitude": 47.48283004760742,
+  "longitude": 19.064929962158203,
+  "countryCode": "HU",
+  "url": "https://www.google.com/travel/hotels/entity/ChoQx-e8xKyt_LSUARoNL2cvMTF3NDJ0ZzU1MBAC",
+  "bookingOptions": [
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 46,
+    "totalStayPrice": 183,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=10049636&highlighted_hotels=10049636&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=196.71&ext_price_tax=43.77"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 50,
+    "totalStayPrice": 200,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/65c9cdeb671b07d23c670c0f"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Budapest, Hungary",
+  "searchLocation": "Budapest",
+  "position": 4,
+  "name": "Mystery Hotel Budapest",
+  "hotelId": "ChkIqIit4LnGgdQUGg0vZy8xMWcxMHgwZms4EAE",
+  "placeId": "ChIJJb7uFnPcQUcRKEQLnDMGqBQ",
+  "category": "Hotel",
+  "hotelClass": 5,
+  "rating": null,
+  "reviewsCount": null,
+  "pricePerNight": 102,
+  "totalPrice": 446,
+  "totalPriceBeforeTaxes": 409.19,
+  "taxesAndFees": 36.83,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 102,
+  "lowestPriceProvider": "trivago DEALS",
+  "address": "Budapest, Podmaniczky u. 45, 1064 Hungría",
+  "website": "http://www.mysteryhotelbudapest.com/",
+  "latitude": 47.510904,
+  "longitude": 19.0616637,
+  "countryCode": "HU",
+  "url": "https://www.google.com/travel/hotels/entity/ChkIqIit4LnGgdQUGg0vZy8xMWcxMHgwZms4EAE",
+  "bookingOptions": [
+   {
+    "provider": "Mystery Hotel Budapest",
+    "nightlyPrice": 117,
+    "totalStayPrice": 469,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://linkcenter.derbysoftca.com/dplatform-linkcenter/booking.htm"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 102,
+    "totalStayPrice": 409,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/hungary_07_budapest/584524_mystery-hotel-budapest"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 105,
+    "totalStayPrice": 421,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=421.24%26total_price=459.15"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 108,
+    "totalStayPrice": 431,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Preferred Hotels & Resorts",
+    "nightlyPrice": 112,
+    "totalStayPrice": 446,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://linkcenterus.derbysoftca.com/dplatform-linkcenter/booking.htm"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 121,
+    "totalStayPrice": 484,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=3677904&highlighted_hotels=3677904&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=527.97&ext_price_tax=43.59"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 120,
+    "totalStayPrice": 479,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 121,
+    "totalStayPrice": 484,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=12528536&PriceTotal=527.94&PriceTax=43.56"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 121,
+    "totalStayPrice": 484,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "goseek.com",
+    "nightlyPrice": 112,
+    "totalStayPrice": 450,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.goseek.com/"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 120,
+    "totalStayPrice": 479,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "dealbase.com",
+    "nightlyPrice": 112,
+    "totalStayPrice": 450,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.dealbase.com/"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 120,
+    "totalStayPrice": 479,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 107,
+    "totalStayPrice": 426,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/mystery-hotel-budapest/96392713"
+   },
+   {
+    "provider": "TravelUp",
+    "nightlyPrice": 122,
+    "totalStayPrice": 488,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelup.com/en-us/hungary/budapest/mystery-hotel-budapest"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 126,
+    "totalStayPrice": 503,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/nO2ytdh3FwcwDbgRdUebGb4vs5HHOitZQVu-LBKShQfwmsFHGHztQZf98SW8MVmgjd95eOFb_u-F-ixXrxl0uYWMiyhPqpYz7Ts1HDLiUxBx-svx1oJ8KTZDd_xWZSBR0"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 122,
+    "totalStayPrice": 488,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   },
+   {
+    "provider": "Stayforlong",
+    "nightlyPrice": 117,
+    "totalStayPrice": 469,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.stayforlong.com/hotel-detail/314786"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 128,
+    "totalStayPrice": 512,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/6480850a1f174c21709f663d"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Budapest, Hungary",
+  "searchLocation": "Budapest",
+  "position": 5,
+  "name": "Boutique Hotel Budapest",
+  "hotelId": "ChgImMerspvEw8i2ARoLL2cvMXRtYnR4NzAQAQ",
+  "placeId": "ChIJUZJ83ETcQUcRmONKtiEOkbY",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": null,
+  "reviewsCount": null,
+  "pricePerNight": 61,
+  "totalPrice": 295,
+  "totalPriceBeforeTaxes": 242.09,
+  "taxesAndFees": 53.26,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 61,
+  "lowestPriceProvider": "Evendo",
+  "address": "Budapest, Só u. 6, 1056 Hungría",
+  "website": "http://www.charmhotelbudapest.com/",
+  "latitude": 47.488090899999996,
+  "longitude": 19.057946299999998,
+  "countryCode": "HU",
+  "url": "https://www.google.com/travel/hotels/entity/ChgImMerspvEw8i2ARoLL2cvMXRtYnR4NzAQAQ",
+  "bookingOptions": [
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 63,
+    "totalStayPrice": 252,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=75222&highlighted_hotels=75222&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=274.67&ext_price_tax=22.67"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 61,
+    "totalStayPrice": 242,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/charm-hotel-budapest-formerly-boutique-hotel/14968239"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 63,
+    "totalStayPrice": 252,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Vio.com",
+    "nightlyPrice": 62,
+    "totalStayPrice": 248,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.vio.com/"
+   },
+   {
+    "provider": "Traveluro",
+    "nightlyPrice": 63,
+    "totalStayPrice": 252,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.traveluro.com/hotels/hungary_07_budapest/105745_charm-hotel-budapest"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 69,
+    "totalStayPrice": 277,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   },
+   {
+    "provider": "Etrip.net",
+    "nightlyPrice": 62,
+    "totalStayPrice": 248,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.etrip.net/"
+   },
+   {
+    "provider": "HomeToGo",
+    "nightlyPrice": 66,
+    "totalStayPrice": 263,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hometogo.com/search/5c17b9e13cd72"
+   },
+   {
+    "provider": "Central de Reservas",
+    "nightlyPrice": 66,
+    "totalStayPrice": 265,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://h.centraldereservas.com/search"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 70,
+    "totalStayPrice": 278,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/hungary_07_budapest/105745_charm-hotel-budapest"
+   },
+   {
+    "provider": "Zlavomat.sk",
+    "nightlyPrice": 87,
+    "totalStayPrice": 349,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.zlavomat.sk/api/google-hotel/product"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 85,
+    "totalStayPrice": 340,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 71,
+    "totalStayPrice": 283,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=261.72%26total_price=274.8"
+   },
+   {
+    "provider": "Slevomat.cz",
+    "nightlyPrice": 87,
+    "totalStayPrice": 348,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.slevomat.cz/api/google-hotel/product"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 92,
+    "totalStayPrice": 370,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "goseek.com",
+    "nightlyPrice": 73,
+    "totalStayPrice": 293,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.goseek.com/"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 70,
+    "totalStayPrice": 282,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/yriIraeuQKe5Pz-vht75vWdsH8TbdchC5XBf5udi9pGIio36OB8Wg-WInWISiHQrRDuaqw_aS3MHW5oduStX07o1qwa7hac9zk1bnlR03cxUMDvzel_bgyNqD3-MNeNC0"
+   },
+   {
+    "provider": "TravelUp",
+    "nightlyPrice": 80,
+    "totalStayPrice": 320,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelup.com/en-us/hungary/budapest/boutique-hotel-budapest"
+   },
+   {
+    "provider": "BusinessHotels.com",
+    "nightlyPrice": 83,
+    "totalStayPrice": 331,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.businesshotels.com/gha_landing.php"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 92,
+    "totalStayPrice": 370,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Budapest, Hungary",
+  "searchLocation": "Budapest",
+  "position": 6,
+  "name": "Hotel NH Budapest City",
+  "hotelId": "ChgI0NCVrsb6qcC5ARoLL2cvMXRkd2o4cDIQAQ",
+  "placeId": "ChIJ7TaZlQ7cQUcRUGjFZdSngLk",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": null,
+  "reviewsCount": null,
+  "pricePerNight": 55,
+  "totalPrice": 238,
+  "totalPriceBeforeTaxes": 218.01,
+  "taxesAndFees": 19.63,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 65,
+  "typicalPriceHigh": 120,
+  "lowestPrice": 55,
+  "lowestPriceProvider": "trivago DEALS",
+  "address": "Budapest, Vígszínház u. 3 H, 1137 Hungría",
+  "website": "https://www.nh-hotels.com/en/hotel/nh-budapest-city?utm_campaign=local-gmb&utm_medium=organic_search&utm_source=google_gmb",
+  "latitude": 47.512896399999995,
+  "longitude": 19.051966699999998,
+  "countryCode": "HU",
+  "url": "https://www.google.com/travel/hotels/entity/ChgI0NCVrsb6qcC5ARoLL2cvMXRkd2o4cDIQAQ",
+  "bookingOptions": [
+   {
+    "provider": "NH Budapest City",
+    "nightlyPrice": 59,
+    "totalStayPrice": 238,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://www.nh-hotels.com/es/booking/step1-rates"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 55,
+    "totalStayPrice": 218,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/hungary_07_budapest/143747_nh-budapest-city"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 61,
+    "totalStayPrice": 245,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "es.KAYAK.com",
+    "nightlyPrice": 62,
+    "totalStayPrice": 247,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.es.kayak.com/semi/ha/hotel_ads/40285/es.html"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 64,
+    "totalStayPrice": 257,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=1061.07%26total_price=1114.14"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 69,
+    "totalStayPrice": 277,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=51256&PriceTotal=302.20&PriceTax=24.95"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 69,
+    "totalStayPrice": 278,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "es.momondo.com",
+    "nightlyPrice": 62,
+    "totalStayPrice": 247,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.es.momondo.com/semi/ha/hotel_ads/40285/es.html"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 69,
+    "totalStayPrice": 277,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 69,
+    "totalStayPrice": 278,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 69,
+    "totalStayPrice": 278,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Stayforlong",
+    "nightlyPrice": 66,
+    "totalStayPrice": 263,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.stayforlong.com/hotel-detail/24669"
+   },
+   {
+    "provider": "Vio.com",
+    "nightlyPrice": 69,
+    "totalStayPrice": 276,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.vio.com/"
+   },
+   {
+    "provider": "Skyscanner",
+    "nightlyPrice": 69,
+    "totalStayPrice": 278,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.skyscanner.net/hotels/search"
+   },
+   {
+    "provider": "Kiwi.com",
+    "nightlyPrice": 70,
+    "totalStayPrice": 281,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://hotels-tracker.kiwi.com/"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 69,
+    "totalStayPrice": 278,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Qantas Hotels",
+    "nightlyPrice": 75,
+    "totalStayPrice": 299,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.qantas.com/hotels/properties/34242"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 76,
+    "totalStayPrice": 302,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/648086661f174c2170a25bc0"
+   },
+   {
+    "provider": "goseek.com",
+    "nightlyPrice": 70,
+    "totalStayPrice": 281,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.goseek.com/"
+   },
+   {
+    "provider": "Catchit.com",
+    "nightlyPrice": 76,
+    "totalStayPrice": 302,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.catchit.com/tracking/A6-6524-HO-6697_0401202708012027_25800_1500_934_29100_31_payclick/es/hoteles/6697-0_x"
+   },
+   {
+    "provider": "TravelUp",
+    "nightlyPrice": 73,
+    "totalStayPrice": 292,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelup.com/en-us/hungary/budapest/nh-budapest-city"
+   },
+   {
+    "provider": "Etrip.net",
+    "nightlyPrice": 69,
+    "totalStayPrice": 276,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.etrip.net/"
+   },
+   {
+    "provider": "dealbase.com",
+    "nightlyPrice": 70,
+    "totalStayPrice": 281,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.dealbase.com/"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 70,
+    "totalStayPrice": 280,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 72,
+    "totalStayPrice": 289,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/oiXDtOXIzUopu6aw3KC3Hsz7Tv7HlO9V7Wo2rgUxtbKc7tuub3BAHfEzHZooOXWOrZqW3xRvoLHY_lveXpNV7p95Y3E-dqiKJsqSmf3D7DKwj_wPbA70AlkB0XWId5vT0"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Budapest, Hungary",
+  "searchLocation": "Budapest",
+  "position": 7,
+  "name": "Continental Hotel Budapest",
+  "hotelId": "ChgIpJyy8_OW2atZGgwvZy8xamt6NzAzeGwQAQ",
+  "placeId": "ChIJUWqhjWfcQUcRJI5sPrdkV1k",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": null,
+  "reviewsCount": null,
+  "pricePerNight": 82,
+  "totalPrice": 358,
+  "totalPriceBeforeTaxes": 328.69,
+  "taxesAndFees": 29.59,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 78,
+  "typicalPriceHigh": 178,
+  "lowestPrice": 82,
+  "lowestPriceProvider": "Traveluro",
+  "address": "Budapest, Dohány u. 42-44, 1074 Hungría",
+  "website": "http://continentalhotelbudapest.com/",
+  "latitude": 47.4970053,
+  "longitude": 19.067100699999997,
+  "countryCode": "HU",
+  "url": "https://www.google.com/travel/hotels/entity/ChgIpJyy8_OW2atZGgwvZy8xamt6NzAzeGwQAQ",
+  "bookingOptions": [
+   {
+    "provider": "Continental Hotel Budapest",
+    "nightlyPrice": 99,
+    "totalStayPrice": 395,
+    "isOfficialSite": true,
+    "memberDeal": null,
+    "bookingUrl": "https://linkcenter.derbysoftca.com/dplatform-linkcenter/booking.htm"
+   },
+   {
+    "provider": "Traveluro",
+    "nightlyPrice": 82,
+    "totalStayPrice": 329,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.traveluro.com/hotels/hungary_07_budapest/105676_continental-hotel-budapest"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 83,
+    "totalStayPrice": 332,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/hungary_07_budapest/105676_continental-hotel-budapest"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 87,
+    "totalStayPrice": 349,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=187560&PriceTotal=382.61&PriceTax=33.31"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 94,
+    "totalStayPrice": 376,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=242988&highlighted_hotels=242988&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=409.70&ext_price_tax=33.83"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 94,
+    "totalStayPrice": 376,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Vio.com",
+    "nightlyPrice": 89,
+    "totalStayPrice": 357,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.vio.com/"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 103,
+    "totalStayPrice": 411,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Stayforlong",
+    "nightlyPrice": 89,
+    "totalStayPrice": 357,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.stayforlong.com/hotel-detail/78707"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 96,
+    "totalStayPrice": 382,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 104,
+    "totalStayPrice": 416,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 99,
+    "totalStayPrice": 395,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=344.04%26total_price=361.24"
+   },
+   {
+    "provider": "goseek.com",
+    "nightlyPrice": 91,
+    "totalStayPrice": 365,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.goseek.com/"
+   },
+   {
+    "provider": "dealbase.com",
+    "nightlyPrice": 91,
+    "totalStayPrice": 365,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.dealbase.com/"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 103,
+    "totalStayPrice": 411,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 98,
+    "totalStayPrice": 392,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/594391187c00cb0e643914c5"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 103,
+    "totalStayPrice": 411,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 104,
+    "totalStayPrice": 415,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/qJQaQ7d5h3AINZskaCn3HY2AjuaqVJTrX3eAT4GzgtNDH1CjYe-0BHzLY3EwWrpC6HSgiiPlauvSCHR2GVurSySJd8wbKPG2SFpX9MSwFEHKWjMu-LRd9GRXFwrJCqCb0"
+   },
+   {
+    "provider": "Qantas Hotels",
+    "nightlyPrice": 112,
+    "totalStayPrice": 449,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.qantas.com/hotels/properties/32087"
+   },
+   {
+    "provider": "TravelUp",
+    "nightlyPrice": 108,
+    "totalStayPrice": 430,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelup.com/en-us/hungary/budapest/continental-hotel-budapest"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 103,
+    "totalStayPrice": 414,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   },
+   {
+    "provider": "Evendo",
+    "nightlyPrice": 100,
+    "totalStayPrice": 399,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://evendo.com/stays/continental-hotel-budapest/23476364"
+   },
+   {
+    "provider": "Hotelsnest.com",
+    "nightlyPrice": 145,
+    "totalStayPrice": 579,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotelsnest.com/hb/hotels/129949"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Budapest, Hungary",
+  "searchLocation": "Budapest",
+  "position": 8,
+  "name": "Eurostars Ambassador",
+  "hotelId": "ChkI1t3E3-TkstJmGg0vZy8xMXNtX212ejVfEAE",
+  "placeId": "ChIJdZMl75XfQUcR1i7xSybLpGY",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": null,
+  "reviewsCount": null,
+  "pricePerNight": 70,
+  "totalPrice": 303,
+  "totalPriceBeforeTaxes": 278.38,
+  "taxesAndFees": 25.06,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 78,
+  "typicalPriceHigh": 97,
+  "lowestPrice": 70,
+  "lowestPriceProvider": "trivago DEALS",
+  "address": "Budapest, Eötvös u. 12, 1067 Hungría",
+  "website": "https://www.eurostarsambassador.com/?referer_code=lb0gg00yx&utm_source=google&utm_medium=business&utm_campaign=lb0gg00yx",
+  "latitude": 47.5052944,
+  "longitude": 19.064853199999998,
+  "countryCode": "HU",
+  "url": "https://www.google.com/travel/hotels/entity/ChkI1t3E3-TkstJmGg0vZy8xMXNtX212ejVfEAE",
+  "bookingOptions": [
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 70,
+    "totalStayPrice": 278,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/hungary_07_budapest/4391211_eurostars-ambassador"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 71,
+    "totalStayPrice": 283,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=30613673&PriceTotal=308.04&PriceTax=25.43"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 77,
+    "totalStayPrice": 307,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=285.42%26total_price=299.69"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 86,
+    "totalStayPrice": 344,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=8119693&highlighted_hotels=8119693&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=374.78&ext_price_tax=30.95"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 87,
+    "totalStayPrice": 350,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 87,
+    "totalStayPrice": 350,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 87,
+    "totalStayPrice": 349,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 87,
+    "totalStayPrice": 350,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 87,
+    "totalStayPrice": 350,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "Kiwi.com",
+    "nightlyPrice": 91,
+    "totalStayPrice": 364,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://hotels-tracker.kiwi.com/"
+   },
+   {
+    "provider": "TravelUp",
+    "nightlyPrice": 92,
+    "totalStayPrice": 366,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelup.com/en-us/hungary/budapest/eurostars-ambassador"
+   },
+   {
+    "provider": "Hotelsnest.com",
+    "nightlyPrice": 101,
+    "totalStayPrice": 404,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotelsnest.com/hb/hotels/909894"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 88,
+    "totalStayPrice": 351,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 92,
+    "totalStayPrice": 368,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/e_vnv7RShv1t6pCVfMOswABJzCdN5soP4pXvKdowCUrtrpSM8d1VO6VrhCvgRpXyBevOR5UH7fnGAz7cKZ3HjhCUH5HlbN4mBpJlX9T9yjiMNTxX9Niq_QUoWSB81SZ80"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Budapest, Hungary",
+  "searchLocation": "Budapest",
+  "position": 9,
+  "name": "Economy Holló Apartments - One-Bedroom Apartment",
+  "hotelId": "ChoQ5tL5wbG_kdbDARoNL2cvMTF5NTV4dGMxbBAC",
+  "placeId": null,
+  "category": "Vacation rental",
+  "hotelClass": null,
+  "rating": 4.7,
+  "reviewsCount": 16,
+  "pricePerNight": 49,
+  "totalPrice": 207,
+  "totalPriceBeforeTaxes": 190.35,
+  "taxesAndFees": 17.13,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": null,
+  "typicalPriceHigh": null,
+  "lowestPrice": 49,
+  "lowestPriceProvider": "Bluepillow.com",
+  "address": null,
+  "website": null,
+  "latitude": 47.49917984008789,
+  "longitude": 19.059579849243164,
+  "countryCode": "HU",
+  "url": "https://www.google.com/travel/hotels/entity/ChoQ5tL5wbG_kdbDARoNL2cvMTF5NTV4dGMxbBAC",
+  "bookingOptions": [
+   {
+    "provider": "Bluepillow.com",
+    "nightlyPrice": 49,
+    "totalStayPrice": 198,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.bluepillow.com/search/65c9e252671b07d23c680a25"
+   }
+  ]
+ },
+ {
+  "recordType": "hotel",
+  "searchQuery": "hotels in Budapest, Hungary",
+  "searchLocation": "Budapest",
+  "position": 10,
+  "name": "TRIBE Budapest Stadium",
+  "hotelId": "ChoImNWI-b2MzuOQARoNL2cvMTFranliXzZodhAB",
+  "placeId": "ChIJ1eReM1fdQUcRmCoi32M4x5A",
+  "category": "Hotel",
+  "hotelClass": 4,
+  "rating": null,
+  "reviewsCount": null,
+  "pricePerNight": 48,
+  "totalPrice": 201,
+  "totalPriceBeforeTaxes": 193.34,
+  "taxesAndFees": 7.73,
+  "currency": "EUR",
+  "checkInDate": "2027-01-04",
+  "checkOutDate": "2027-01-08",
+  "nights": 4,
+  "adults": 2,
+  "typicalPriceLow": 62,
+  "typicalPriceHigh": 90,
+  "lowestPrice": 48,
+  "lowestPriceProvider": "trivago DEALS",
+  "address": "Budapest, Könyves Kálmán krt. 34, 1097 Hungría",
+  "website": "https://all.accor.com/lien_externe.svlt?goto=fiche_hotel&code_hotel=B875&merchantid=seo-maps-Hungary-B875&sourceid=aw-cen&utm_medium=seo%20maps&utm_source=google%20Maps&utm_campaign=seo%20maps",
+  "latitude": 47.473231399999996,
+  "longitude": 19.0959306,
+  "countryCode": "HU",
+  "url": "https://www.google.com/travel/hotels/entity/ChoImNWI-b2MzuOQARoNL2cvMTFranliXzZodhAB",
+  "bookingOptions": [
+   {
+    "provider": "TRIBE Budapest Stadium",
+    "nightlyPrice": 58,
+    "totalStayPrice": 233,
+    "isOfficialSite": true,
+    "memberDeal": "Precio para miembros, ahorra un 10 %",
+    "bookingUrl": "https://travel-productads.koddi.com/PropertyAdvocateAPI/ClickRedirect"
+   },
+   {
+    "provider": "trivago DEALS",
+    "nightlyPrice": 48,
+    "totalStayPrice": 193,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.trivago.deals/hotels/hungary_07_budapest/4964675_tribe-budapest-stadium"
+   },
+   {
+    "provider": "Traveluro",
+    "nightlyPrice": 48,
+    "totalStayPrice": 193,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.traveluro.com/hotels/hungary_07_budapest/4964675_tribe-budapest-stadium"
+   },
+   {
+    "provider": "Super.com",
+    "nightlyPrice": 57,
+    "totalStayPrice": 226,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.super.com/travel/transition/?data=price=244.2%26total_price=246.36"
+   },
+   {
+    "provider": "Agoda",
+    "nightlyPrice": 66,
+    "totalStayPrice": 262,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.agoda.com/es-es/partners/partnersearch.aspx?CkInDay=04&los=4&hid=47217490&PriceTotal=282.45&PriceTax=20.94"
+   },
+   {
+    "provider": "Booking.com",
+    "nightlyPrice": 68,
+    "totalStayPrice": 272,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.booking.com/searchresults.es.html?dest_id=10991675&highlighted_hotels=10991675&dest_type=hotel&checkin=2027-01-04&checkout=2027-01-08&ext_price_total=282.88&ext_price_tax=10.88"
+   },
+   {
+    "provider": "Expedia.com",
+    "nightlyPrice": 65,
+    "totalStayPrice": 260,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.expedia.com/Hotel-Search"
+   },
+   {
+    "provider": "Trip.com",
+    "nightlyPrice": 65,
+    "totalStayPrice": 259,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://us.trip.com/hotels/redirect"
+   },
+   {
+    "provider": "Priceline",
+    "nightlyPrice": 66,
+    "totalStayPrice": 264,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.priceline.com/r/"
+   },
+   {
+    "provider": "Hotels.com",
+    "nightlyPrice": 65,
+    "totalStayPrice": 260,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.hotels.com/Hotel-Search"
+   },
+   {
+    "provider": "Szallas.hu",
+    "nightlyPrice": 123,
+    "totalStayPrice": 493,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://szallas.hu/tribe-budapest-stadium-hotel-budapest"
+   },
+   {
+    "provider": "Orbitz.com",
+    "nightlyPrice": 65,
+    "totalStayPrice": 260,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.orbitz.com/Hotel-Search"
+   },
+   {
+    "provider": "Travelminit.ro",
+    "nightlyPrice": 123,
+    "totalStayPrice": 493,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://travelminit.ro/tribe-budapest-stadium-hotel-budapest"
+   },
+   {
+    "provider": "Stayforlong",
+    "nightlyPrice": 63,
+    "totalStayPrice": 252,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.stayforlong.com/hotel-detail/1351608"
+   },
+   {
+    "provider": "Travelocity.com",
+    "nightlyPrice": 65,
+    "totalStayPrice": 260,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://www.travelocity.com/Hotel-Search"
+   },
+   {
+    "provider": "goseek.com",
+    "nightlyPrice": 66,
+    "totalStayPrice": 262,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.goseek.com/"
+   },
+   {
+    "provider": "Clicktrip.com",
+    "nightlyPrice": 66,
+    "totalStayPrice": 265,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://clicktrip.com/hotels/details/vwJqfwBxsfDiZm6HxOAvup2pSVDlrPPx53FIjx_x6VSfYMyHcaglJNY10ePGL1ksJ4FDaoIGYYR0EEiDmA8LMdbaCCX4Lu9FebD0r-EaGYGs_qr7Zhbi7Tj5LbBTbmQW0"
+   },
+   {
+    "provider": "eDreams",
+    "nightlyPrice": 65,
+    "totalStayPrice": 260,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://accommodation.edreams.net/Hotel-Search"
+   },
+   {
+    "provider": "Etrip.net",
+    "nightlyPrice": 66,
+    "totalStayPrice": 262,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://deals.etrip.net/"
+   },
+   {
+    "provider": "Pilot",
+    "nightlyPrice": 77,
+    "totalStayPrice": 308,
+    "isOfficialSite": false,
+    "memberDeal": null,
+    "bookingUrl": "https://pilotplans.com/stays"
+   }
+  ]
+ }
+]
