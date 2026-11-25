@@ -11,8 +11,13 @@ import { buscarActividadesDestino } from './services/actividades-busqueda.js';
 import { buscarVuelosConEstado } from './services/vuelos.js';
 import { filtrarActividadesDeCiudad, actividadParaMultidestino } from './services/actividades-ciudad.js';
 import { parsearPrecio, extraerPrecio, esGratisVerificado } from './services/precios-actividades.js';
-import { buscarHotelesConEstado } from './services/searchapi.js';
+import { buscarHotelesConEstado, proveedorHoteles } from './services/hoteles.js';
 import { hotelOutputSchema } from './schemas/hotels.js';
+import { hotelApifyOutputSchema } from './schemas/hotels-apify.js';
+import { DESCRIPCION_HERRAMIENTA_HOTELES_APIFY, INSTRUCCIONES_HOTELES_APIFY_AGENTE, INSTRUCCIONES_HOTELES_APIFY_MANAGER } from './services/hoteles-instrucciones.js';
+
+// Proveedor de hoteles (HOTELES_PROVEEDOR): searchapi por defecto; apify = proveedor alternativo (ver services/hoteles.ts).
+const USAR_APIFY_HOTELES = proveedorHoteles() === 'apify';
 
 /* =========================================================
    1. FUNCIONES AUXILIARES
@@ -372,7 +377,9 @@ const flightAgent = new Agent({
 
 const buscarHoteles = tool({
   name: 'buscar_hoteles',
-  description: 'Busca alojamientos en Booking.com mediante SearchAPI con destino, fechas y número de adultos. Conserva los alojamientos reales aunque el proveedor no publique precio y marca el precio como no disponible.',
+  description: USAR_APIFY_HOTELES
+    ? DESCRIPCION_HERRAMIENTA_HOTELES_APIFY
+    : 'Busca alojamientos en Booking.com mediante SearchAPI con destino, fechas y número de adultos. Conserva los alojamientos reales aunque el proveedor no publique precio y marca el precio como no disponible.',
   parameters: {
     type: 'object',
     properties: {
@@ -392,7 +399,7 @@ const buscarHoteles = tool({
 
 const hotelAgent = new Agent({
   name: 'Hotel Agent',
-  outputType: hotelOutputSchema,
+  outputType: USAR_APIFY_HOTELES ? hotelApifyOutputSchema : hotelOutputSchema,
   instructions: `
     Eres un agente especializado exclusivamente en alojamiento.
 
@@ -443,7 +450,7 @@ const hotelAgent = new Agent({
     Si precioDisponible es false (precioTotal y precioPorNoche son 0), el proveedor no dio precio: NO lo presentes como 0 €, gratis ni como precio real. Indica "Precio no disponible; consultar proveedor". Si precioCalculado es true, el importe se ha derivado dividiendo/multiplicando por las noches: no lo presentes como dato literal del proveedor.
     Respeta valoracionEscala (la valoración de Booking suele ser sobre 10); no conviertas ni inventes escalas.
     No reduzcas las opciones a una única opción.
-    Conserva el enlace real que devuelve la herramienta (campo url). No inventes enlaces ni proveedores.
+    Conserva el enlace real que devuelve la herramienta (campo url). No inventes enlaces ni proveedores.${USAR_APIFY_HOTELES ? INSTRUCCIONES_HOTELES_APIFY_AGENTE : ''}
   `,
   tools: [buscarHoteles],
 });
@@ -1618,7 +1625,7 @@ export const travelAgent = new Agent({
     "Tenemos 1200 euros y nos gusta la cultura."
 
     entonces puedes ejecutar activities_agent
-    y calcular_presupuesto.
+    y calcular_presupuesto.${USAR_APIFY_HOTELES ? INSTRUCCIONES_HOTELES_APIFY_MANAGER : ''}
   `,
 
   tools: [
