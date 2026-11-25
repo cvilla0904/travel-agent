@@ -138,7 +138,7 @@ test('fuente única: la entrada curada de ciudades.ts y el destino editorial no 
   }
 });
 
-test('un catálogo sin ese país no ofrece destinos editoriales y el resto de búsquedas no cambia', () => {
+test('las búsquedas que no coinciden con un destino editorial no lo ofrecen (el caso del catálogo sin Italia está en geo-catalogo-sin-italia.test.ts)', () => {
   assert.deepEqual(geo('Madrid').map((r) => r.nombre).slice(0, 1), ['Madrid']);
   assert.ok(!geo('Madrid').some((r) => r.id.startsWith('ed:')));
   assert.ok(!geo('Lecce').some((r) => r.id.startsWith('ed:')), 'solo se ofrece cuando el nombre coincide');
