@@ -2,6 +2,7 @@ import express from 'express';
 import { run, MemorySession, type AgentInputItem } from '@openai/agents';
 import { Redis } from '@upstash/redis';
 import { travelAgent } from '../src/index.js';
+import { mensajeConDestinoSeleccionado } from '../src/services/destino-seleccionado.js';
 
 const app = express();
 
@@ -27,6 +28,8 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
+    const mensajeAgente = mensajeConDestinoSeleccionado(userMessage, req.body?.destinoSeleccionado);
+
     const history = await redis.get<AgentInputItem[]>(`chat:session:${sessionId}`);
     const session = new MemorySession({
       sessionId,
@@ -35,7 +38,7 @@ app.post('/api/chat', async (req, res) => {
 
     const result = await run(
       travelAgent,
-      userMessage,
+      mensajeAgente,
       {
         session,
       },

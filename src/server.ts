@@ -1,6 +1,7 @@
 import express from 'express';
 import { run, MemorySession } from '@openai/agents';
 import { travelAgent } from './index.js';
+import { mensajeConDestinoSeleccionado } from './services/destino-seleccionado.js';
 
 const app = express();
 
@@ -35,7 +36,7 @@ app.post('/api/chat', async (req, res) => {
 
     const result = await run(
       travelAgent,
-      userMessage,
+      mensajeConDestinoSeleccionado(userMessage, req.body?.destinoSeleccionado),
       {
         session,
       },

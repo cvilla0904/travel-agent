@@ -467,7 +467,14 @@
     }
 
     /* Función común para comunicarnos con el agente. */
-    async function consultarAgente(message) {
+    /* Destino elegido en el autocompletado, si el texto visible sigue siendo el elegido (null para destinos escritos a mano). */
+    function leerDestinoSeleccionado() {
+      const el = document.getElementById('destino');
+      if (!el || !el.dataset.destinoGeo) return null;
+      try { return ptDestinoSeleccionadoVigente(JSON.parse(el.dataset.destinoGeo), String(el.value || '').trim()); } catch (_) { return null; }
+    }
+
+    async function consultarAgente(message, destinoSeleccionado) {
       const response =
         await fetch('/api/chat', {
           method: 'POST',
@@ -481,7 +488,8 @@
               const selection = selected.map(item => '- ' + item.type + ': ' + item.name + (item.price ? (item.price.free ? ' (gratuita según el proveedor)' : item.price.basis === 'desde' ? ' (precio orientativo "desde" del proveedor: ' + item.price.value + ' ' + item.price.currency + '; no es un precio final garantizado)' : ' (importe mostrado: ' + item.price.value + ' ' + item.price.currency + ')') : ' (importe no identificado)')).join('\n');
               return message + '\n\n[Selección actual del viaje en la web; úsala como contexto. Si pido cambiar o quitar un elemento, actualiza la propuesta y confirma claramente el cambio. No inventes precios ni des por reservados los elementos.]\n' + selection;
             })(),
-            sessionId
+            sessionId,
+            ...(destinoSeleccionado ? { destinoSeleccionado } : {})
           })
         });
 
@@ -548,6 +556,8 @@
         input.dataset.paisCiudad = opcion.pais || '';
         if (opcion.id) input.dataset.geoId = opcion.id; else delete input.dataset.geoId;
         if (opcion.tipo) input.dataset.geoTipo = opcion.tipo; else delete input.dataset.geoTipo;
+        // Identidad geográfica elegida (la única fuente fiable para el backend; el texto visible puede ser ambiguo).
+        input.dataset.destinoGeo = JSON.stringify({nombre: opcion.ciudad, pais: opcion.pais || '', codigoPais: opcion.codigoPais || '', region: opcion.region || '', id: opcion.id || '', tipo: opcion.tipo || ''});
         cerrar();
         input.dispatchEvent(new Event('change',{bubbles:true}));
       }
@@ -579,7 +589,9 @@
               codigo: Array.isArray(item.aeropuertos) && item.aeropuertos.length ? item.aeropuertos[0] : '',
               codigos: Array.isArray(item.aeropuertos) ? item.aeropuertos.slice(0, 3).join(' · ') : '',
               id: item.id,
-              tipo: item.tipo
+              tipo: item.tipo,
+              codigoPais: item.codigoPais || '',
+              region: item.region || ''
             }));
           } else {
             throw new Error('Catálogo todavía no disponible');
@@ -599,6 +611,7 @@
         delete input.dataset.paisCiudad;
         delete input.dataset.geoId;
         delete input.dataset.geoTipo;
+        delete input.dataset.destinoGeo;
         activo=-1;
         clearTimeout(temporizador);
         temporizador=setTimeout(pintar,180);
@@ -771,9 +784,27 @@
       return out;
     }
 
+    /* Destino elegido en el autocompletado: solo vale si el texto visible sigue siendo el elegido (si se editó a mano, se ignora). */
+    function ptDestinoSeleccionadoVigente(sel, destinoVisible) {
+      if (!sel || typeof sel !== 'object' || Array.isArray(sel)) return null;
+      const nombre = String(sel.nombre == null ? '' : sel.nombre).trim();
+      if (!nombre || nombre !== destinoVisible) return null;
+      const t = valor => String(valor == null ? '' : valor).trim();
+      return {nombre: nombre, pais: t(sel.pais), codigoPais: t(sel.codigoPais), region: t(sel.region), id: t(sel.id), tipo: t(sel.tipo)};
+    }
+
+    /* «Salento, Quindío, Colombia»: nombre, región y país sin duplicar lo que el nombre ya contiene. */
+    function ptEtiquetaDestino(sel) {
+      const partes = [sel.nombre];
+      const yaEsta = p => !p || sel.nombre.toLowerCase().indexOf(p.toLowerCase()) !== -1;
+      if (!yaEsta(sel.region)) partes.push(sel.region);
+      if (!yaEsta(sel.pais)) partes.push(sel.pais);
+      return partes.join(', ');
+    }
+
     function ptFraseFormulario(f, incluirViajeros) {
       const partes = [];
-      if (f.origen || f.destino) partes.push('Quiero viajar' + (f.origen ? ' de ' + f.origen : '') + (f.destino ? ' a ' + f.destino : ''));
+      if (f.origen || f.destino) partes.push('Quiero viajar' + (f.origen ? ' de ' + f.origen : '') + (f.destino ? ' a ' + (f.destinoEtiqueta || f.destino) : ''));
       if (f.ida && f.vuelta) partes.push('del ' + f.ida + ' al ' + f.vuelta);
       else if (f.ida) partes.push('con fecha de ida ' + f.ida);
       else if (f.vuelta) partes.push('con fecha de vuelta ' + f.vuelta);
@@ -790,9 +821,11 @@
         idea: limpio(entrada.idea), origen: limpio(entrada.origen), destino: limpio(entrada.destino),
         ida: limpio(entrada.ida), vuelta: limpio(entrada.vuelta), viajeros: limpio(entrada.viajeros),
         presupuesto: limpio(entrada.presupuesto),
+        destinoSeleccionado: ptDestinoSeleccionadoVigente(entrada.destinoSeleccionado, limpio(entrada.destino)),
         preferencias: Array.isArray(entrada.preferencias) ? entrada.preferencias.map(limpio).filter(Boolean) : [],
         viajerosTocado: !!entrada.viajerosTocado
       };
+      f.destinoEtiqueta = f.destinoSeleccionado ? ptEtiquetaDestino(f.destinoSeleccionado) : '';
       /* "viajeros" trae un valor por defecto: solo cuenta como dato del usuario si lo ha cambiado. */
       const hayFormulario = !!(f.origen || f.destino || f.ida || f.vuelta || f.presupuesto || f.preferencias.length || f.viajerosTocado);
 
@@ -836,6 +869,7 @@
         idea: document.getElementById('ideaViaje').value,
         origen: document.getElementById('origen')?.value,
         destino: document.getElementById('destino')?.value,
+        destinoSeleccionado: leerDestinoSeleccionado(),
         ida: document.getElementById('ida')?.value,
         vuelta: document.getElementById('vuelta')?.value,
         viajeros: document.getElementById('viajeros')?.value,
@@ -860,6 +894,7 @@
       // si usa exactamente los mismos datos que una búsqueda anterior.
       iniciarNuevaBusqueda();
       const message = peticion.mensaje;
+      const destinoSeleccionado = leerDestinoSeleccionado();
       busquedaEnCurso = true;
 
       // Los resultados se muestran en /resultados.html (pestañas Vuelos / Hoteles / Actividades).
@@ -872,6 +907,7 @@
           idea: document.getElementById('ideaViaje').value,
           origen: document.getElementById('origen')?.value || '',
           destino: document.getElementById('destino')?.value || '',
+          destinoSeleccionado: destinoSeleccionado,
           ida: document.getElementById('ida')?.value || '',
           vuelta: document.getElementById('vuelta')?.value || '',
           viajeros: document.getElementById('viajeros')?.value || '',
@@ -888,7 +924,7 @@
 
       try {
         const respuesta =
-          await consultarAgente(message);
+          await consultarAgente(message, destinoSeleccionado);
 
         renderResultados(respuesta);
 

@@ -180,3 +180,43 @@ test('el texto libre #ideaViaje es visible (no oculto) y chatMessage sigue siend
   assert.match(html, /<textarea id="chatMessage"/);
   assert.match(html, /function enviarMensaje\(/);
 });
+
+/* ---- Destino elegido en el autocompletado: el texto enviado lleva nombre, región y país ---- */
+const SALENTO_ELEGIDO = { nombre: 'Salento', pais: 'Colombia', codigoPais: 'CO', region: 'Quindío', id: 'gn:3670352', tipo: 'ciudad' };
+
+test('destino elegido: la petición lleva «Salento, Quindío, Colombia», no solo «Salento»', () => {
+  const r = componer({ ...FORM, destino: 'Salento', destinoSeleccionado: SALENTO_ELEGIDO, idea: '', viajerosTocado: false });
+  assert.equal(r.estado, 'ok');
+  assert.match(r.mensaje, /^Quiero viajar de Madrid a Salento, Quindío, Colombia del 2026-12-10/);
+});
+
+test('destino elegido: el homónimo italiano no recibe región ni país colombianos', () => {
+  const r = componer({ ...FORM, destino: 'Salento', destinoSeleccionado: { nombre: 'Salento', pais: 'Italia', codigoPais: 'IT', id: 'gn:3168676', tipo: 'ciudad' }, idea: '', viajerosTocado: false });
+  assert.match(r.mensaje, /a Salento, Italia del/);
+  assert.doesNotMatch(r.mensaje, /Quindío|Colombia/);
+});
+
+test('destino escrito a mano o editado después de elegir: se usa solo el texto visible (compatibilidad)', () => {
+  const manual = componer({ ...FORM, destino: 'Florencia', destinoSeleccionado: null, idea: '', viajerosTocado: false });
+  assert.match(manual.mensaje, /a Florencia del/);
+  const editado = componer({ ...FORM, destino: 'Salento viejo', destinoSeleccionado: SALENTO_ELEGIDO, idea: '', viajerosTocado: false });
+  assert.match(editado.mensaje, /a Salento viejo del/);
+  assert.doesNotMatch(editado.mensaje, /Quindío/);
+});
+
+test('destino elegido: no cambia la detección de contradicciones entre formulario y texto', () => {
+  const r = componer({ ...FORM, destino: 'Florencia', destinoSeleccionado: { nombre: 'Florencia', pais: 'Italia', id: 'gn:3176959' }, idea: 'Quiero un viaje a Lisboa', viajerosTocado: false });
+  assert.equal(r.estado, 'aclaracion');
+  assert.ok(r.aclaraciones.some((a) => a.campo === 'destino'));
+});
+
+test('el navegador envía el destino elegido en las dos llamadas a /api/chat y lo conserva en el estado de la búsqueda', () => {
+  const index = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const resultados = readFileSync(new URL('../public/resultados.js', import.meta.url), 'utf8');
+  assert.match(index, /input\.dataset\.destinoGeo = JSON\.stringify\(/);
+  assert.match(index, /delete input\.dataset\.destinoGeo/);
+  assert.match(index, /\.\.\.\(destinoSeleccionado \? \{ destinoSeleccionado \} : \{\}\)/);
+  assert.match(index, /destinoSeleccionado: destinoSeleccionado,/);
+  assert.match(resultados, /estado\.formulario && estado\.formulario\.destinoSeleccionado/);
+  assert.match(resultados, /destinoSeleccionado: destinoSeleccionado/);
+});

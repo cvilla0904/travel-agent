@@ -272,11 +272,11 @@
     return message;
   }
 
-  async function consultarAgente(message, sessionId) {
+  async function consultarAgente(message, sessionId, destinoSeleccionado) {
     var response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: conContextoDeSeleccion(message), sessionId: sessionId })
+      body: JSON.stringify(Object.assign({ message: conContextoDeSeleccion(message), sessionId: sessionId }, destinoSeleccionado ? { destinoSeleccionado: destinoSeleccionado } : {}))
     });
     var data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Error en la búsqueda');
@@ -305,7 +305,8 @@
     // Se marca "en curso" ANTES de llamar: una recarga no repite la búsqueda (cada una consume créditos).
     global.MogavelEstado.marcarEnCurso();
     try {
-      var texto = await consultarAgente(estado.mensaje, estado.sessionId);
+      // Primera petición: viaja también el destino elegido en el autocompletado (si lo hubo). Los seguimientos no lo repiten.
+      var texto = await consultarAgente(estado.mensaje, estado.sessionId, estado.formulario && estado.formulario.destinoSeleccionado);
       global.MogavelEstado.agregarRespuesta(texto);
       pintarAgente(texto, aplicarRespuesta(texto));
       ajustarPestanaVacia();
