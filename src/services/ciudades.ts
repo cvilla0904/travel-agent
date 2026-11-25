@@ -24,7 +24,11 @@ function ciudadCatalogada(texto: string): Ciudad | null {
   try {
     const cat = obtenerCatalogoGeo();
     const partes = String(texto ?? '').split(',').map((p) => p.trim()).filter(Boolean);
-    const pais = partes.length > 1 ? paisDesdeTexto(cat, partes[partes.length - 1]!) : undefined;
+    // El país escrito acota; si no hay, la región escrita decide el país a través de la entrada curada que la declara
+    // («Cartagena, Murcia» -> España), de modo que el catálogo no resuelva otro homónimo.
+    const pais = partes.length > 1
+      ? paisDesdeTexto(cat, partes[partes.length - 1]!) ?? grupoCurado(texto)?.pais.toUpperCase()
+      : undefined;
     const resultado = resolverDestino(cat, nombreBaseCiudad(texto), pais ? { pais } : {});
     const ciudad = resultado.estado === 'reconocido' && resultado.identidad.tipo === 'ciudad' && resultado.identidad.pais
       ? cat.ciudad(resultado.identidad.id, resultado.identidad.pais) ?? null
@@ -109,7 +113,10 @@ export const CIUDADES_EQUIVALENTES: GrupoCiudadCurada[] = [
   { consulta: 'Saint Petersburg', nombres: ['san petersburgo', 'saint petersburg', 'st petersburg', 'st. petersburg'], pais: 'ru' },
   { consulta: 'New York', nombres: ['nueva york', 'new york', 'new york city'], pais: 'us' },
   { consulta: 'Mexico City', nombres: ['ciudad de mexico', 'mexico city'], pais: 'mx' },
-  { consulta: 'Cartagena de Indias', nombres: ['cartagena', 'cartagena de indias'], pais: 'co', paisNombre: 'Colombia' },
+  // Homónimos curados: el país y la región escritos eligen la entrada; sin ninguno, la primera de la lista (preferencia editorial).
+  { consulta: 'Cartagena de Indias', nombres: ['cartagena', 'cartagena de indias'], pais: 'co', regiones: ['bolivar', 'departamento de bolivar'], paisNombre: 'Colombia' },
+  { consulta: 'Cartagena', nombres: ['cartagena'], pais: 'es', regiones: ['murcia', 'region de murcia', 'provincia de murcia'], region: 'Región de Murcia', paisNombre: 'España',
+    centro: { es: 'Cartagena', lat: 37.60197, lng: -0.98397 } },
   { consulta: 'Bogota', nombres: ['bogota', 'bogota d.c.'], pais: 'co', paisNombre: 'Colombia' },
   { consulta: 'Medellin', nombres: ['medellin'], pais: 'co', paisNombre: 'Colombia' },
   { consulta: 'Paris', nombres: ['paris'], pais: 'fr' },

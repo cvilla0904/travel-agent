@@ -28,7 +28,7 @@ test('Salento de Italia no recibe Quindío ni Colombia: es el de Lecce (Apulia) 
 });
 
 test('homónimos: Cartagena de un itinerario por España no se convierte en Cartagena de Indias', () => {
-  assert.equal(normalizarCiudadBusquedaMultidestino('Cartagena', 'España'), 'Cartagena, España');
+  assert.equal(normalizarCiudadBusquedaMultidestino('Cartagena', 'España'), 'Cartagena, Región de Murcia, España');
   assert.equal(normalizarCiudadBusquedaMultidestino('Cartagena', 'Colombia'), 'Cartagena de Indias, Colombia');
   assert.equal(normalizarCiudadBusquedaMultidestino('Cartagena', undefined), 'Cartagena de Indias, Colombia');
   assert.equal(normalizarCiudadBusquedaMultidestino('Florencia', 'Colombia'), 'Florencia, Colombia');
@@ -56,10 +56,10 @@ test('cuatro tramos: cada uno conserva ciudad, región, país y sus fechas de en
   assert.equal(resultados.length, 4);
 });
 
-test('itinerario por España con Cartagena: el actor recibe Cartagena, España y su propia fecha', async () => {
+test('itinerario por España con Cartagena: el actor recibe Cartagena, Región de Murcia, España y su propia fecha', async () => {
   const k = cliente();
   await buscarHotelesTramo({ ciudad: 'Cartagena', fechaEntrada: '2027-03-10', fechaSalida: '2027-03-13' }, { pais: 'España', adultos: 2 }, deps(k));
-  assert.equal(k.llamadas[0]!.input.searchQueries[0], 'hotels in Cartagena, España');
+  assert.equal(k.llamadas[0]!.input.searchQueries[0], 'hotels in Cartagena, Región de Murcia, España');
   assert.equal(k.llamadas[0]!.input.checkInDate, '2027-03-10');
   assert.equal(k.llamadas[0]!.input.checkOutDate, '2027-03-13');
 });
