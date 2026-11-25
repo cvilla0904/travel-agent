@@ -248,7 +248,7 @@ export async function buscarHotelesApify(
     noches,
     moneda: MONEDA,
     paisCodigo,
-    centro: datos ? { lat: datos.lat, lng: datos.lng } : null,
+    centro: datos ? { lat: datos.lat, lng: datos.lng, ...(datos.radioKm ? { radioKm: datos.radioKm } : {}) } : null,
     nombresCiudad,
   });
 

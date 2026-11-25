@@ -115,7 +115,8 @@ export interface OpcionesNormalizacion {
   /** Código ISO-2 (cualquier caja) del país esperado. */
   paisCodigo?: string | undefined;
   /** Centro de la ciudad y nombre(s) aceptables para validar la ubicación. */
-  centro?: { lat: number; lng: number } | null;
+  /** `radioKm`: radio seguro propio cuando el destino es una zona (p. ej. el Salento de Lecce); por defecto RADIO_SEGURO_KM. */
+  centro?: { lat: number; lng: number; radioKm?: number } | null;
   nombresCiudad?: string[];
   umbralMediana?: number;
   proveedoresExcluidos?: readonly string[];
@@ -228,8 +229,10 @@ export function validarUbicacion(
   if (lat === null || lon === null) return { ok: false, motivo: 'sin_coordenadas', distanciaKm: null };
 
   const d = redondear(distanciaKm(lat, lon, centro.lat, centro.lng));
-  if (d <= RADIO_SEGURO_KM) return { ok: true, motivo: 'ok', distanciaKm: d };
-  if (d <= RADIO_MAXIMO_KM) {
+  const seguro = centro.radioKm ?? RADIO_SEGURO_KM;
+  const maximo = seguro + (RADIO_MAXIMO_KM - RADIO_SEGURO_KM);
+  if (d <= seguro) return { ok: true, motivo: 'ok', distanciaKm: d };
+  if (d <= maximo) {
     const direccion = texto(fila.address);
     const nombra = (opciones.nombresCiudad ?? []).some((n) => direccionNombraCiudad(direccion, n));
     if (nombra) return { ok: true, motivo: 'ok', distanciaKm: d };

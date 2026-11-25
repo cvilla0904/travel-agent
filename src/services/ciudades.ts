@@ -68,6 +68,11 @@ export interface GrupoCiudadCurada {
   region?: string;
   /** Nombre del país (español) para completar el destino cuando no se indica: «Salento» → «Salento, Quindío, Colombia». */
   paisNombre?: string;
+  /**
+   * Centro propio de la entrada (tiene prioridad sobre CENTROS_CIUDAD, que se indexa por `consulta` y por tanto no distingue
+   * homónimos). `radioKm` es el radio «seguro» de validación de ubicación cuando el destino es una zona y no un núcleo urbano.
+   */
+  centro?: { es: string; lat: number; lng: number; radioKm?: number };
 }
 export const CIUDADES_EQUIVALENTES: GrupoCiudadCurada[] = [
   { consulta: 'Amsterdam', nombres: ['amsterdam'], pais: 'nl' },
@@ -111,8 +116,12 @@ export const CIUDADES_EQUIVALENTES: GrupoCiudadCurada[] = [
   { consulta: 'Barcelona', nombres: ['barcelona'], pais: 'es' },
   { consulta: 'Madrid', nombres: ['madrid'], pais: 'es' },
   { consulta: 'Budapest', nombres: ['budapest'], pais: 'hu' },
-  // Nombre ambiguo (Salento, Italia): el país y la región acotan la entrada.
+  // Nombre ambiguo con tres destinos distintos. Sin región ni país manda el de Colombia (primero de la lista). En Italia, «Salento»
+  // es la península de Lecce (Apulia), no el municipio de 760 habitantes de Campania (gn:3168676), que se pide con «Salento, Campania».
   { consulta: 'Salento', nombres: ['salento'], pais: 'co', regiones: ['quindio', 'departamento del quindio'], region: 'Quindío', paisNombre: 'Colombia' },
+  { consulta: 'Salento', nombres: ['salento'], pais: 'it', regiones: ['lecce', 'provincia di lecce', 'provincia de lecce', 'puglia', 'apulia', 'pulla'], region: 'Apulia', paisNombre: 'Italia',
+    // Zona entre Lecce, Otranto y Gallipoli (a 12, 27 y 28 km): radio seguro de 30 km.
+    centro: { es: 'Salento', lat: 40.25, lng: 18.2, radioKm: 30 } },
 ];
 
 /**
@@ -167,17 +176,17 @@ const CENTROS_CIUDAD: Record<string, { es: string; lat: number; lng: number }> =
  */
 export function grupoCurado(ciudad: string): GrupoCiudadCurada | undefined {
   const clave = normalizarTexto(nombreBaseCiudad(ciudad));
-  const grupo = CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave));
-  if (!grupo) return undefined;
+  const homonimos = CIUDADES_EQUIVALENTES.filter((g) => g.nombres.includes(clave));
+  if (!homonimos.length) return undefined;
   const partes = String(ciudad ?? '').split(',').map((p) => p.trim()).filter(Boolean);
   const pais = codigoPaisDesdeDestino(ciudad);
-  if (pais && pais !== grupo.pais) return undefined;
-  if (grupo.regiones?.length) {
-    // Texto intermedio entre la ciudad y el país (si lo hay): «Salento, Quindío, Colombia» -> «quindio».
-    const intermedias = partes.slice(1, pais ? -1 : undefined).map(normalizarTexto).filter(Boolean);
-    if (intermedias.length && !intermedias.some((r) => grupo.regiones!.includes(r))) return undefined;
-  }
-  return grupo;
+  // Texto intermedio entre la ciudad y el país (si lo hay): «Salento, Quindío, Colombia» -> «quindio».
+  const intermedias = partes.slice(1, pais ? -1 : undefined).map(normalizarTexto).filter(Boolean);
+  const nombraRegion = (g: GrupoCiudadCurada) => !!g.regiones?.some((r) => intermedias.includes(r));
+  // El país escrito acota; después, la región: una entrada que declara regiones solo vale si la escrita es una de ellas.
+  const posibles = homonimos.filter((g) => (!pais || g.pais === pais) && (!intermedias.length || !g.regiones?.length || nombraRegion(g)));
+  // Con región escrita, la entrada que la declara gana a las que no declaran ninguna; sin ella, el orden editorial de la tabla.
+  return posibles.find(nombraRegion) ?? posibles[0];
 }
 
 /**
@@ -189,11 +198,14 @@ export function regionCurada(ciudad: string): string | undefined {
 }
 
 /** Nombre en español, nombre en inglés y centro de la ciudad, o null si no está en la tabla. */
-export function datosCiudad(ciudad: string): { es: string; en: string; lat: number; lng: number } | null {
+export function datosCiudad(ciudad: string): { es: string; en: string; lat: number; lng: number; radioKm?: number } | null {
   // La tabla curada manda (nombres en español revisados a mano); el catálogo cubre el resto de ciudades.
   const grupo = grupoCurado(ciudad);
-  const centro = grupo ? CENTROS_CIUDAD[grupo.consulta] : undefined;
-  if (grupo && centro) return { es: centro.es, en: grupo.consulta, lat: centro.lat, lng: centro.lng };
+  const centro = grupo ? grupo.centro ?? CENTROS_CIUDAD[grupo.consulta] : undefined;
+  if (grupo && centro) {
+    const radioKm = grupo.centro?.radioKm;
+    return { es: centro.es, en: grupo.consulta, lat: centro.lat, lng: centro.lng, ...(radioKm ? { radioKm } : {}) };
+  }
   const catalogada = ciudadCatalogada(ciudad);
   return catalogada ? { es: catalogada.nombre, en: catalogada.nombreAscii || catalogada.nombre, lat: catalogada.lat, lng: catalogada.lon } : null;
 }

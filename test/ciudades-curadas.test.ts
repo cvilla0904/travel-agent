@@ -44,9 +44,11 @@ test('Salento: la región Quindío solo se asocia al Salento colombiano', () => 
   assert.equal(regionCurada('Salento, Colombia'), 'Quindío');
   assert.equal(regionCurada('Salento, Quindío, Colombia'), 'Quindío');
   assert.equal(regionCurada('Salento'), 'Quindío');
-  assert.equal(regionCurada('Salento, Italia'), undefined);
-  assert.equal(regionCurada('Salento, Lecce, Italia'), undefined);
-  assert.equal(regionCurada('Salento, Lecce'), undefined, 'región distinta de Quindío y sin país: no es el Salento curado');
+  // En Italia «Salento» es la península de Lecce (Apulia): nunca Quindío (ver salento-tres-destinos.test.ts).
+  assert.equal(regionCurada('Salento, Italia'), 'Apulia');
+  assert.equal(regionCurada('Salento, Lecce, Italia'), 'Apulia');
+  assert.equal(regionCurada('Salento, Lecce'), 'Apulia', 'Lecce no es Quindío: se resuelve al Salento italiano');
+  assert.equal(regionCurada('Salento, Campania, Italia'), undefined, 'el municipio de Campania no es ninguno de los Salentos curados');
   assert.equal(regionCurada('Bogotá, Colombia'), undefined, 'solo las ciudades curadas con región la tienen');
   assert.equal(construirConsulta('Salento, Quindío, Colombia'), 'hotels in Salento, Quindío, Colombia', 'el actor recibe Quindío');
   assert.equal(codigoPaisDesdeDestino('Salento, Lecce, Italia'), 'it');

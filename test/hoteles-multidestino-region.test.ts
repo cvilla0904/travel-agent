@@ -21,9 +21,10 @@ test('Salento se transmite como «Salento, Quindío, Colombia» y nunca como «S
   assert.equal(normalizarCiudadBusquedaMultidestino('Salento'), 'Salento, Quindío, Colombia', 'sin país en el itinerario, la tabla curada completa el país');
 });
 
-test('Salento de Italia no recibe Quindío ni Colombia', () => {
-  assert.equal(normalizarCiudadBusquedaMultidestino('Salento', 'Italia'), 'Salento, Italia');
+test('Salento de Italia no recibe Quindío ni Colombia: es el de Lecce (Apulia) salvo que se diga Campania', () => {
+  assert.equal(normalizarCiudadBusquedaMultidestino('Salento', 'Italia'), 'Salento, Apulia, Italia');
   assert.equal(normalizarCiudadBusquedaMultidestino('Salento, Lecce, Italia', 'Italia'), 'Salento, Lecce, Italia');
+  assert.equal(normalizarCiudadBusquedaMultidestino('Salento, Campania, Italia', 'Italia'), 'Salento, Campania, Italia');
 });
 
 test('homónimos: Cartagena de un itinerario por España no se convierte en Cartagena de Indias', () => {

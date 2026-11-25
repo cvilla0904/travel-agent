@@ -48,7 +48,7 @@ test('calificador desconocido: no deja sin resultados ni cambia el orden de la c
 test('el resultado incluye la región cuando se conoce', () => {
   const r = buscarDestinos(cat, 'Salento', { limite: 5 });
   assert.equal(r.find((x) => x.id === SALENTO_CO)?.region, 'Quindío');
-  assert.equal(r.find((x) => x.id === SALENTO_IT)?.region, undefined);
+  assert.equal(r.find((x) => x.id === SALENTO_IT)?.region, 'Campania', 'el municipio italiano se distingue del de Lecce y del de Quindío');
   assert.equal(buscarDestinos(cat, 'Madrid')[0]!.region, undefined);
 });
 

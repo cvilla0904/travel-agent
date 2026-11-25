@@ -11,21 +11,23 @@ test('el destino elegido conserva nombre, país, región e identificador', () =>
   const d = normalizarDestinoSeleccionado(SALENTO_CO)!;
   assert.deepEqual(d, { nombre: 'Salento', pais: 'Colombia', codigoPais: 'CO', region: 'Quindío', id: 'gn:3670352', tipo: 'ciudad' });
   assert.equal(etiquetaDestino(d), 'Salento, Quindío, Colombia');
-  assert.equal(etiquetaDestino(normalizarDestinoSeleccionado(SALENTO_IT)!), 'Salento, Italia');
+  // El municipio italiano elegido en el catálogo (Campania) se etiqueta con su región para no confundirlo con el Salento de Lecce.
+  assert.equal(etiquetaDestino(normalizarDestinoSeleccionado(SALENTO_IT)!), 'Salento, Campania, Italia');
 });
 
 test('la región editorial del catálogo manda sobre la que envíe el cliente', () => {
   const d = normalizarDestinoSeleccionado({ ...SALENTO_CO, region: 'Atlántida' })!;
   assert.equal(d.region, 'Quindío');
-  assert.equal(normalizarDestinoSeleccionado({ ...SALENTO_IT, region: 'Quindío' })!.region, 'Quindío', 'sin id editorial se respeta el texto saneado; el nombre del país sigue acompañando');
+  assert.equal(normalizarDestinoSeleccionado({ ...SALENTO_IT, region: 'Quindío' })!.region, 'Campania', 'la región editorial del id (Campania) también manda sobre una región ajena');
+  assert.equal(normalizarDestinoSeleccionado({ nombre: 'Lima', pais: 'Perú', id: 'gn:3936456', region: 'Lima' })!.region, 'Lima', 'sin región editorial se respeta el texto saneado');
 });
 
 test('homónimos: el mismo nombre con distinto país da etiquetas y contextos distintos', () => {
   const a = contextoDestinoSeleccionado(normalizarDestinoSeleccionado(SALENTO_CO)!);
   const b = contextoDestinoSeleccionado(normalizarDestinoSeleccionado(SALENTO_IT)!);
   assert.match(a, /«Salento, Quindío, Colombia»/); assert.match(a, /gn:3670352/);
-  assert.match(b, /«Salento, Italia»/); assert.match(b, /gn:3168676/);
-  assert.doesNotMatch(b, /Quindío|Colombia/);
+  assert.match(b, /«Salento, Campania, Italia»/); assert.match(b, /gn:3168676/);
+  assert.doesNotMatch(b, /Quindío|Colombia|Apulia/);
 });
 
 test('no duplica país ni región si el nombre ya los contiene', () => {

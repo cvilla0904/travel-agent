@@ -11,6 +11,7 @@ export interface RegionEditorial { nombre: string; claves: string[] }
 export const REGIONES_EDITORIALES: Record<string, RegionEditorial> = {
   'gn:3670352': { nombre: 'Quindío', claves: ['quindio', 'departamento del quindio'] },          // Salento (Colombia)
   'gn:3687238': { nombre: 'Bolívar', claves: ['bolivar', 'departamento de bolivar'] },            // Cartagena de Indias (Colombia)
+  'gn:3168676': { nombre: 'Campania', claves: ['campania', 'provincia di salerno', 'salerno'] },     // Salento (Italia, municipio de Campania)
   'gn:2520058': { nombre: 'Región de Murcia', claves: ['murcia', 'region de murcia'] },           // Cartagena (España)
 };
 
