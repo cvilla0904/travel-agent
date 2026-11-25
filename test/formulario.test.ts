@@ -153,14 +153,14 @@ test('cableado en buscarViaje: una sola composición, una sola llamada al agente
   assert.ok(fn, 'buscarViaje no encontrada');
   const cuerpo = fn![1]!;
   assert.equal((cuerpo.match(/componerPeticionViaje\(/g) || []).length, 1);
-  assert.equal((cuerpo.match(/consultarAgente\(/g) || []).length, 1);
+  assert.equal((cuerpo.match(/consultarAgente(?:Datos)?\(/g) || []).length, 1);
   assert.ok(cuerpo.indexOf('componerPeticionViaje(') < cuerpo.indexOf('iniciarNuevaBusqueda()'), 'primero se compone');
   const iAcl = cuerpo.indexOf("peticion.estado === 'aclaracion'");
   const iReturn = cuerpo.indexOf('return;', iAcl);
   assert.ok(iAcl > -1 && iReturn > iAcl && iReturn < cuerpo.indexOf('iniciarNuevaBusqueda()'), 'la aclaración sale antes de nueva sesión y de buscar');
   // Fase 1: la búsqueda se delega en /resultados.html (que hace la única llamada) antes del flujo antiguo de respaldo.
   assert.ok(cuerpo.indexOf("location.assign('/resultados.html')") > cuerpo.indexOf('iniciarNuevaBusqueda()'), 'navega a resultados tras crear sesión nueva');
-  assert.ok(cuerpo.indexOf("location.assign('/resultados.html')") < cuerpo.indexOf('consultarAgente('), 'navega antes del respaldo en la misma página');
+  assert.ok(cuerpo.indexOf("location.assign('/resultados.html')") < cuerpo.indexOf('consultarAgenteDatos('), 'navega antes del respaldo en la misma página');
   assert.match(cuerpo, /if \(busquedaEnCurso\) return;/);
   assert.match(cuerpo, /finally \{\s*busquedaEnCurso = false;/);
 });

@@ -63,6 +63,8 @@ async function nueva() {
   const b = await chromium.launch(EXEC ? { executablePath: EXEC } : {});
   const p = await b.newPage();
   await p.setContent('<div id="res"></div>');
+  // Con tsx (esbuild keepNames) las funciones con nombre dentro de page.evaluate llaman a __name: se define en la página.
+  await p.addScriptTag({ content: 'window.__name = (f) => f;' });
   await p.addScriptTag({ path: path.join(root, 'public/render-datos.js') });
   return { b, p };
 }
@@ -185,6 +187,7 @@ async function pagina(respuestas: Array<{ response: string; resultados: unknown;
   const p = await (await b.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
   const errores: string[] = [];
   p.on('pageerror', (e: Error) => errores.push(e.message));
+  await p.addInitScript('window.__name = (f) => f;');
   const cola = [...respuestas];
   const peticiones: any[] = [];
   await p.route((u: URL) => !u.href.startsWith(base), (r: any) => r.abort());
