@@ -12,6 +12,8 @@ import { buscarVuelosConEstado } from './services/vuelos.js';
 import { filtrarActividadesDeCiudad, actividadParaMultidestino } from './services/actividades-ciudad.js';
 import { parsearPrecio, extraerPrecio, esGratisVerificado } from './services/precios-actividades.js';
 import { buscarHotelesConEstado, proveedorHoteles } from './services/hoteles.js';
+import { buscarHotelesTramo } from './services/hoteles-multidestino.js';
+import { crearPresupuestoApify } from './services/apify-hoteles.js';
 import { hotelOutputSchema } from './schemas/hotels.js';
 import { hotelApifyOutputSchema } from './schemas/hotels-apify.js';
 import { DESCRIPCION_HERRAMIENTA_HOTELES_APIFY, INSTRUCCIONES_HOTELES_APIFY_AGENTE, INSTRUCCIONES_HOTELES_APIFY_MANAGER } from './services/hoteles-instrucciones.js';
@@ -670,53 +672,6 @@ const activitiesAgentTool =
       'Busca lugares y actividades reales utilizando el Activities Agent.',
   });
 
-function obtenerCodigoPais(pais: string): string | undefined {
-  const clave = pais
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
-
-  const codigos: Record<string, string> = {
-    colombia: 'co',
-    espana: 'es',
-    españa: 'es',
-    italia: 'it',
-    francia: 'fr',
-    portugal: 'pt',
-    alemania: 'de',
-    austria: 'at',
-    'reino unido': 'gb',
-    japon: 'jp',
-    mexico: 'mx',
-    méxico: 'mx',
-    'estados unidos': 'us',
-  };
-
-  return codigos[clave];
-}
-
-function normalizarCiudadBusquedaMultidestino(ciudad: string, pais?: string): string {
-  const valor = ciudad.trim();
-
-  const equivalencias: Record<string, string> = {
-    'cartagena': 'Cartagena de Indias, Colombia',
-    'cartagena de indias': 'Cartagena de Indias, Colombia',
-    'bogota': 'Bogotá, Colombia',
-    'bogotá': 'Bogotá, Colombia',
-    'medellin': 'Medellín, Colombia',
-    'medellín': 'Medellín, Colombia',
-  };
-
-  const clave = valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-
-  if (equivalencias[clave]) {
-    return equivalencias[clave];
-  }
-
-  return pais ? `${valor}, ${pais}` : valor;
-}
-
 /* =========================================================
    7. TOOL: RECURSOS PARA RUTA MULTIDESTINO
    ========================================================= */
@@ -837,20 +792,21 @@ const buscarRecursosMultidestino = tool({
     }
 
     const resultados = [];
+    // Un presupuesto de Apify por itinerario: todas las ciudades comparten el mismo tope.
+    const presupuestoApify = crearPresupuestoApify(
+      Number(process.env.APIFY_HOTELS_ITINERARY_BUDGET_USD) > 0
+        ? Number(process.env.APIFY_HOTELS_ITINERARY_BUDGET_USD)
+        : undefined,
+    );
 
     for (const tramo of tramos) {
       const { ciudad, dias, fechaEntrada, fechaSalida } = tramo;
 
-      const hotelResult = await buscarHotelesConEstado({
-        destino: normalizarCiudadBusquedaMultidestino(
-          ciudad,
-          rutaGuardada.pais,
-        ),
-        fechaEntrada,
-        fechaSalida,
-        adultos,
-        paisCodigo: obtenerCodigoPais(rutaGuardada.pais),
-      });
+      const hotelResult = await buscarHotelesTramo(
+        { ciudad, fechaEntrada, fechaSalida },
+        { pais: rutaGuardada.pais, adultos },
+        { apify: { presupuesto: presupuestoApify } },
+      );
       const hoteles: any[] = hotelResult.hoteles.slice(0, 10);
       const errorAlojamientos: string | null = hotelResult.error;
 
