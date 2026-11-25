@@ -130,6 +130,30 @@ export interface DependenciasSearchApi {
   apiKey?: string | undefined;
   fetch?: typeof fetch;
   registrar?: (evento: string, datos: Record<string, unknown>) => void;
+  /** Para pruebas: sustituye la espera real del reintento por 429. */
+  dormir?: (ms: number) => Promise<void>;
+}
+
+/** Reintento por HTTP 429: UNO por llamada, solo si la espera razonable cabe en el tiempo de la función. */
+export const REINTENTO_429_ESPERA_POR_DEFECTO_MS = 1_500;
+export const REINTENTO_429_ESPERA_MAXIMA_MS = 8_000;
+
+/**
+ * Espera (ms) antes del único reintento tras un 429, respetando Retry-After (segundos o fecha HTTP). null = no reintentar:
+ * el proveedor pide esperar más de lo razonable (no se bloquea la petición del usuario) o indica que la cuota está agotada.
+ */
+export function esperaReintento429(retryAfter: string | null, codigo: string, ahora: number = Date.now()): number | null {
+  if (codigo === 'limite_uso' || codigo === 'autenticacion') return null;
+  if (!retryAfter) return REINTENTO_429_ESPERA_POR_DEFECTO_MS;
+  let ms: number;
+  if (/^\d+$/.test(retryAfter)) ms = Number(retryAfter) * 1000;
+  else {
+    const fecha = Date.parse(retryAfter);
+    if (!Number.isFinite(fecha)) return REINTENTO_429_ESPERA_POR_DEFECTO_MS;
+    ms = fecha - ahora;
+  }
+  if (ms > REINTENTO_429_ESPERA_MAXIMA_MS) return null;
+  return Math.max(250, ms);
 }
 
 const registradorPorDefecto = (evento: string, datos: Record<string, unknown>) => {
@@ -423,11 +447,15 @@ function mensajeDeCuerpo(cuerpo: unknown): string {
   return bruto.replace(/\s+/g, ' ').trim().slice(0, 300);
 }
 
+const dormirReal = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
 async function llamar(
   url: URL,
   etapa: string,
   clave: string,
   llamarFetch: typeof fetch,
+  dep: Pick<DependenciasSearchApi, 'registrar' | 'dormir'> = {},
+  reintentado = false,
 ): Promise<Record<string, unknown>> {
   let respuesta: Response;
   try {
@@ -458,9 +486,20 @@ async function llamar(
     const detalle = limpiarSecretos(mensajeDeCuerpo(cuerpo) || textoRespuesta.slice(0, 200), clave).slice(0, 300);
     const retryAfter = leerRetryAfter(respuesta);
     const codigo = clasificarError(respuesta.status, detalle);
+    // HTTP 429: UN reintento tras una espera razonable que respeta Retry-After. Nada de bucles; cada intento queda registrado.
+    if (respuesta.status === 429 && !reintentado) {
+      const espera = esperaReintento429(retryAfter, codigo);
+      (dep.registrar ?? registradorPorDefecto)('reintento_429', {
+        proveedor: 'searchapi', fase: etapa, httpStatus: 429, codigo, retryAfter, esperaMs: espera, reintenta: espera !== null,
+      });
+      if (espera !== null) {
+        await (dep.dormir ?? dormirReal)(espera);
+        return llamar(url, etapa, clave, llamarFetch, dep, true);
+      }
+    }
     throw new HotelesProveedorError(
       codigo,
-      construirMensajeError(codigo, { etapa, httpStatus: respuesta.status, detalle, retryAfter }),
+      construirMensajeError(codigo, { etapa, httpStatus: respuesta.status, detalle, retryAfter }) + (reintentado ? ' Se reintentó una vez tras esperar y el proveedor volvió a rechazar la petición.' : ''),
       { httpStatus: respuesta.status, retryAfter, detalleProveedor: detalle || null, etapa },
     );
   }
@@ -491,13 +530,14 @@ async function autocompletar(
   consulta: string,
   clave: string,
   llamarFetch: typeof fetch,
+  dep: Pick<DependenciasSearchApi, 'registrar' | 'dormir'> = {},
 ): Promise<unknown[]> {
   const url = new URL(URL_BASE);
   url.searchParams.set('engine', 'booking_autocomplete');
   url.searchParams.set('q', consulta);
   url.searchParams.set('num', '10');
   url.searchParams.set('language', 'en-us');
-  const datos = await llamar(url, 'autocompletado', clave, llamarFetch);
+  const datos = await llamar(url, 'autocompletado', clave, llamarFetch, dep);
   return Array.isArray(datos.suggestions) ? datos.suggestions : [];
 }
 
@@ -534,7 +574,7 @@ export async function buscarHotelesSearchApi(
   let destino: DestinoBooking | null = null;
   const etiquetasVistas: string[] = [];
   for (const consulta of consultas) {
-    const sugerencias = await autocompletar(consulta, clave, llamarFetch);
+    const sugerencias = await autocompletar(consulta, clave, llamarFetch, { registrar, ...(dependencias.dormir ? { dormir: dependencias.dormir } : {}) });
     destino = resolverDestinoBooking(sugerencias, params.destino, pais || undefined);
     if (destino) break;
     for (const s of sugerencias.slice(0, 3)) {
@@ -571,7 +611,7 @@ export async function buscarHotelesSearchApi(
   url.searchParams.set('currency', MONEDA_SOLICITADA);
   url.searchParams.set('language', 'en-us');
 
-  const datos = await llamar(url, 'búsqueda', clave, llamarFetch);
+  const datos = await llamar(url, 'búsqueda', clave, llamarFetch, { registrar, ...(dependencias.dormir ? { dormir: dependencias.dormir } : {}) });
 
   const paisDestino = normalizarTexto(
     (datos.search_information as { destination?: { country_code?: unknown } } | undefined)?.destination?.country_code,
@@ -657,6 +697,8 @@ export async function buscarHotelesConEstado(
   } catch (error) {
     if (error instanceof HotelesProveedorError) {
       registrar('error_proveedor', {
+        proveedor: 'searchapi',
+        fase: error.etapa,
         codigo: error.codigo,
         httpStatus: error.httpStatus,
         retryAfter: error.retryAfter,

@@ -320,7 +320,7 @@ export async function buscarHotelesApifyConEstado(
   } catch (error) {
     if (error instanceof HotelesProveedorError) {
       registrar('error_proveedor', {
-        codigo: error.codigo, httpStatus: error.httpStatus, etapa: error.etapa,
+        proveedor: 'apify', fase: error.etapa, codigo: error.codigo, httpStatus: error.httpStatus, retryAfter: error.retryAfter, etapa: error.etapa,
         detalleProveedor: error.detalleProveedor, mensaje: error.message, destino: params.destino,
       });
       return {
