@@ -14,6 +14,8 @@
  *  - Es un precio "desde" orientativo; no se convierte en precio final.
  */
 
+import { monedaDesdeTexto, monedaIso } from './moneda.js';
+
 export function parsearPrecio(valor: unknown): number | null {
   if (typeof valor === 'number' && Number.isFinite(valor) && valor >= 0) return valor;
   if (typeof valor === 'string' && valor.trim()) {
@@ -39,8 +41,23 @@ export function extraerPrecio(actividad: any): number | null {
   // Respaldo para textos tipo "Desde 19,90 €".
   const texto = CAMPOS_TEXTO_PRECIO.map((campo) => actividad?.[campo]).find((v) => typeof v === 'string' && v.trim());
   if (typeof texto === 'string') {
-    const match = texto.match(/(?:desde\s*)?(\d[\d.,]*)\s*(?:€|EUR|USD|GBP)/i) || texto.match(/(?:€|EUR|USD|GBP)\s*(\d[\d.,]*)/i);
+    const MON = '(?:€|£|US\\$|EUR|USD|GBP|CHF|CAD|AUD|NZD|JPY|MXN|COP|BAM|HUF|CZK|PLN|SEK|NOK|DKK|RON|BGN|TRY|RSD)';
+    const match = texto.match(new RegExp('(?:desde\\s*)?(\\d[\\d.,]*)\\s*' + MON, 'i')) || texto.match(new RegExp(MON + '\\s*(\\d[\\d.,]*)', 'i'));
     if (match) return parsearPrecio(match[1]);
+  }
+  return null;
+}
+
+/**
+ * Moneda del precio de una actividad: la que declara el proveedor (priceCurrency, código ISO) o, si no, una moneda inequívoca
+ * en su texto de precio («19,90 €», «25 USD»). Si ninguna: null («Moneda no confirmada»). Nunca EUR por defecto.
+ */
+export function extraerMoneda(actividad: any): string | null {
+  const declarada = monedaIso(actividad?.priceCurrency) ?? monedaIso(actividad?.currency);
+  if (declarada) return declarada;
+  for (const campo of CAMPOS_TEXTO_PRECIO) {
+    const m = monedaDesdeTexto(actividad?.[campo]);
+    if (m) return m;
   }
   return null;
 }

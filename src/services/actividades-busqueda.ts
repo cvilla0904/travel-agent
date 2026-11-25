@@ -10,7 +10,7 @@
  */
 import type { EjecucionActor } from './apify.js';
 import { filtrarActividadesDeCiudad, type DiagnosticoActividades } from './actividades-ciudad.js';
-import { extraerPrecio, esGratisVerificado, parsearPrecio } from './precios-actividades.js';
+import { extraerPrecio, esGratisVerificado, extraerMoneda, parsearPrecio } from './precios-actividades.js';
 import { normalizarTexto } from './ciudades.js';
 
 export type EstadoActividades = 'ok' | 'parcial' | 'sin_resultados' | 'error';
@@ -75,7 +75,7 @@ function construirSalida(args: {
       precio: a._precioNormalizado as number | null,
       esGratis: a._esGratisVerificado as boolean,
       precioTexto: typeof a.priceText === 'string' ? a.priceText : typeof a.priceLabel === 'string' ? a.priceLabel : null,
-      moneda: typeof a.priceCurrency === 'string' && a.priceCurrency.trim() ? a.priceCurrency.trim().toUpperCase() : null,
+      moneda: extraerMoneda(a),
       valoracion: Number.isFinite(Number(a.rating)) ? Number(a.rating) : 0,
       numeroResenas: Number.isFinite(Number(a.reviewCount)) ? Number(a.reviewCount) : 0,
       duracion: typeof a.durationText === 'string' ? a.durationText : '',

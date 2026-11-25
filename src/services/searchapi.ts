@@ -12,6 +12,7 @@
  *    de otros (total <-> noche) se marcan con `precioCalculado`.
  */
 
+import { monedaDesdeTexto, monedaIso } from './moneda.js';
 import {
   codigoPaisDesdeDestino,
   codigoPaisDesdeNombre,
@@ -182,18 +183,7 @@ function primerPrecio(...valores: unknown[]): number {
   return 0;
 }
 
-/** Moneda inequívoca a partir de un texto de precio. "$" a secas es ambiguo. */
-export function monedaDesdeTexto(texto: unknown): string | null {
-  if (typeof texto !== 'string') return null;
-  if (/€|\bEUR\b/i.test(texto)) return 'EUR';
-  if (/£|\bGBP\b/i.test(texto)) return 'GBP';
-  if (/US\$|\bUSD\b/i.test(texto)) return 'USD';
-  return null;
-}
-
-function monedaIso(valor: unknown): string | null {
-  return typeof valor === 'string' && /^[A-Za-z]{3}$/.test(valor.trim()) ? valor.trim().toUpperCase() : null;
-}
+export { monedaDesdeTexto, monedaIso };
 
 export function calcularNoches(fechaEntrada: string, fechaSalida: string): number {
   const dias = (Date.parse(`${fechaSalida}T00:00:00Z`) - Date.parse(`${fechaEntrada}T00:00:00Z`)) / 86_400_000;
@@ -316,9 +306,9 @@ export function normalizarPropiedades(
       precioDisponible,
       precioCalculado: precioDisponible && precioCalculado,
       fuentePrecio: precioDisponible ? 'SearchAPI / Booking.com' : '',
-      // La petición se hace con currency=EUR; si el proveedor declara otra
-      // moneda, prevalece la del proveedor.
-      moneda: monedaProveedor ?? monedaPeticion,
+      // Solo la moneda que declara el proveedor. La petición se hace con currency=EUR, pero eso es lo que se PIDE, no lo que
+      // se recibe: si el proveedor no la declara, queda vacía («Moneda no confirmada»).
+      moneda: monedaProveedor ?? '',
       habitacion: texto(p.room_type),
       disponibilidad: texto(p.availability),
       habitacionesDisponibles: Math.max(0, Math.round(aNumero(p.rooms_left) ?? 0)),

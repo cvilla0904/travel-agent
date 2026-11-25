@@ -1,5 +1,6 @@
 import { resolverAeropuertoVuelo, type AeropuertoResuelto } from './aeropuertos-vuelos.js';
 import { aeropuertoFijadoPara } from './destino-fijado.js';
+import { monedaComun, monedaDesdeTexto, monedaIso } from './moneda.js';
 /**
  * Vuelos (Apify / Google Flights): normalización y orquestación de la búsqueda.
  *
@@ -101,7 +102,7 @@ export function parsearPrecioApify(value: any): number {
 export function crearEnlaceBusquedaGoogleFlights(origen: string, destino: string, fechaIda: string, fechaVuelta = ''): string {
   const ida = `Flights from ${origen} to ${destino} on ${fechaIda}`;
   const consulta = fechaVuelta ? `${ida} through ${fechaVuelta}` : ida;
-  return `https://www.google.com/travel/flights?hl=es&gl=es&curr=EUR&q=${encodeURIComponent(consulta)}`;
+  return `https://www.google.com/travel/flights?hl=es&gl=es&q=${encodeURIComponent(consulta)}`;
 }
 
 export function normalizarVueloIdaVuelta(vuelo: any, ctx: {
@@ -117,7 +118,8 @@ export function normalizarVueloIdaVuelta(vuelo: any, ctx: {
     aerolinea: String(Array.isArray(vuelo.airlines) ? vuelo.airlines.join(' + ') : (vuelo.airlines || aerolineas.join(' + ') || 'Aerolínea no indicada')),
     precioPorPersona: Number(vuelo.pricePerPassenger ?? vuelo.price_per_passenger ?? (precioTotal / ctx.pasajeros)),
     precioTotal,
-    moneda: String(vuelo.currency ?? 'EUR'),
+    // Solo la moneda que declara el proveedor ('' = moneda no confirmada); nunca EUR por defecto.
+    moneda: monedaIso(vuelo.currency) ?? monedaDesdeTexto(vuelo.price) ?? '',
     enlace: String(vuelo.booking_url ?? vuelo.bookingUrl ?? vuelo.googleFlightsUrl ?? vuelo.google_flights_url ?? vuelo.url ?? crearEnlaceBusquedaGoogleFlights(ctx.origen, ctx.destino, ctx.fechaIda, ctx.fechaVuelta)),
     esIdaVuelta: true,
     tipo: 'Ida y vuelta',
@@ -152,7 +154,9 @@ export function combinarItinerarioAbierto(idaRaw: any, vueltaRaw: any, ctx: {
     aerolinea: [ida.aerolinea, vuelta.aerolinea].filter(Boolean).join(' + '),
     precioPorPersona: Math.round(precioTotal / ctx.pasajeros),
     precioTotal,
-    moneda: ida.moneda || vuelta.moneda || 'EUR',
+    // Dos tramos se suman solo si declaran la misma moneda; si no, queda sin confirmar (y se descarta la combinación).
+    moneda: monedaComun([ida.moneda, vuelta.moneda]),
+    monedasDistintas: Boolean(ida.moneda && vuelta.moneda && ida.moneda !== vuelta.moneda),
     enlace: crearEnlaceBusquedaGoogleFlights(ctx.origen, ctx.destino, ctx.fechaIda, ctx.fechaVuelta),
     esIdaVuelta: true,
     tipo: ctx.destinoRegreso === ctx.destino ? 'Ida y vuelta' : 'Itinerario abierto / multidestino',
@@ -337,7 +341,9 @@ export async function buscarVuelosConEstado(
           ? { origen: p.origen, destino: p.destino, destinoRegreso: p.destinoRegreso!, fechaIda: p.fechaIda, fechaVuelta: p.fechaVuelta, pasajeros: p.pasajeros }
           : { origen: p.origen, destino: destinoBusqueda, destinoRegreso: destinoBusqueda, fechaIda: p.fechaIda, fechaVuelta: p.fechaVuelta, pasajeros: p.pasajeros },
         )));
-      const lista = ordenar(combinados);
+      const compatibles = combinados.filter((c: any) => !c.monedasDistintas);
+      if (compatibles.length < combinados.length) avisos.push('Se omitieron combinaciones de ida y vuelta cuyos precios vienen en monedas distintas (no se suman ni se convierten).');
+      const lista = ordenar(compatibles);
       if (lista.length) return resultado('ok', lista, null);
     }
     // Una dirección respondió pero sin ningún vuelo con precio: se conservan las opciones válidas de la otra.

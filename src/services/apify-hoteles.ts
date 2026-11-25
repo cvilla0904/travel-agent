@@ -246,7 +246,6 @@ export async function buscarHotelesApify(
   const noches = calcularNoches(params.fechaEntrada, params.fechaSalida);
   const { hoteles, diagnostico: diagnosticoApify } = normalizarFilasApify(filas, {
     noches,
-    moneda: MONEDA,
     paisCodigo,
     centro: datos ? { lat: datos.lat, lng: datos.lng, ...(datos.radioKm ? { radioKm: datos.radioKm } : {}) } : null,
     nombresCiudad,

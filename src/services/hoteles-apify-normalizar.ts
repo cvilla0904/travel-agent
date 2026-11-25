@@ -15,6 +15,7 @@
  *  - Sin valoración/estrellas: se devuelve null, no 0.
  */
 import { aNumero } from './searchapi.js';
+import { monedaIso } from './moneda.js';
 
 export const UMBRAL_MEDIANA_POR_DEFECTO = 1.5;
 /** Mínimo de ofertas para que la mediana tenga sentido. */
@@ -274,7 +275,7 @@ export function leerPrecioEnlace(url: string, moneda: string): { total: number; 
   const impuestos = aNumero(esBooking ? minus.get('ext_price_tax') : minus.get('pricetax'));
   const monedaUrl = (esBooking ? minus.get('selected_currency') : minus.get('currency'))?.toUpperCase();
   if (total === null || impuestos === null || impuestos < 0) return null;
-  if (monedaUrl && monedaUrl !== moneda.toUpperCase()) return null;
+  if (monedaUrl && moneda && monedaUrl !== moneda.toUpperCase()) return null;
   return { total: redondear(total), impuestos: redondear(impuestos) };
 }
 
@@ -434,7 +435,8 @@ export function normalizarFila(
   opciones: OpcionesNormalizacion,
   ubicacion: ResultadoUbicacion,
 ): { hotel: HotelApify; resultadoOfertas: ResultadoOfertas } {
-  const moneda = (texto(fila.currency) || opciones.moneda || 'EUR').toUpperCase();
+  // Moneda: la que declara el actor en la fila; si no la declara, ninguna (nunca EUR por defecto).
+  const moneda = monedaIso(fila.currency) ?? '';
   const noches = opciones.noches > 0 ? opciones.noches : 1;
   const resultadoOfertas = procesarOfertas(fila, noches, moneda, opciones);
   const { ofertas } = resultadoOfertas;

@@ -3,6 +3,7 @@
 // los registros reales antes de entregarlos al agente.
 import { resolverAeropuertoVuelo } from './aeropuertos-vuelos.js';
 import { ErrorVuelos } from './errores-vuelos.js';
+import { monedaDesdeTexto, monedaIso } from './moneda.js';
 const ACTOR_ID = 'johnvc/google-flights-data-scraper-flight-and-price-search';
 const MAX_RESULTS = 10;
 const WAIT_SECS = 60;
@@ -44,7 +45,8 @@ function obtenerCampo(objeto: Record<string, any>, aliases: string[]): any {
 
 function normalizarRegistroVuelo(value: Record<string, any>): Record<string, any> {
   const price = obtenerCampo(value, ['price', 'price_total', 'priceTotal', 'total_price', 'totalPrice']);
-  const currency = obtenerCampo(value, ['currency']) ?? 'EUR';
+  // Moneda: solo la que declara el actor (código ISO válido); si no la declara queda vacía («Moneda no confirmada»), nunca EUR por defecto.
+  const currency = monedaIso(obtenerCampo(value, ['currency'])) ?? monedaDesdeTexto(obtenerCampo(value, ['price'])) ?? '';
   const airline = obtenerCampo(value, ['airlines', 'airline(s)', 'airline', 'airlineName']);
   const departureAirport = obtenerCampo(value, ['departure_airport', 'departureAirport']);
   const arrivalAirport = obtenerCampo(value, ['arrival_airport', 'arrivalAirport']);
