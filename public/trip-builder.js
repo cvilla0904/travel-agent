@@ -21,6 +21,41 @@
     return price.basis === 'desde' ? 'Desde ' + text : price.basis === 'noche' ? text + ' por noche' : price.basis === 'total' ? text + ' total' : text;
   };
 
+  // Total comparable de la selección. Solo se suma cuando TODOS los importes son del mismo concepto («total», «por noche» o
+  // «desde») y de la misma moneda confirmada; las actividades gratuitas aportan 0 y no cambian el concepto. Nunca se suman
+  // precios por noche con totales de estancia ni monedas distintas, y un elemento sin importe impide el total.
+  // Devuelve { total: {value, currency, basis} | null, motivos: [...], aviso: string | null }; cada elemento conserva su importe individual.
+  const MOTIVOS = {
+    sin_importe: 'Hay elementos sin importe confirmado.',
+    moneda_no_confirmada: 'Algún importe no tiene moneda confirmada.',
+    monedas_distintas: 'Los importes están en monedas distintas.',
+    conceptos_distintos: 'Los importes son de conceptos distintos (por noche, total o precio «desde»).'
+  };
+  function resumenPrecios(items) {
+    const lista = (items || []).filter(Boolean);
+    if (!lista.length) return { total: null, motivos: [], aviso: null };
+    const motivos = [];
+    if (lista.some(x => !x.price)) motivos.push('sin_importe');
+    const pagados = lista.filter(x => x.price && !x.price.free);
+    if (pagados.some(x => !(x.price.currency && /^[A-Z]{3}$/.test(x.price.currency)))) motivos.push('moneda_no_confirmada');
+    else if (new Set(pagados.map(x => x.price.currency)).size > 1) motivos.push('monedas_distintas');
+    if (new Set(pagados.map(x => x.price.basis || 'total')).size > 1) motivos.push('conceptos_distintos');
+    if (motivos.length) {
+      return { total: null, motivos, aviso: motivos.map(m => MOTIVOS[m]).join(' ') + ' No se calcula un total conjunto: consulta los importes en cada proveedor.' };
+    }
+    const value = Math.round(pagados.reduce((suma, x) => suma + x.price.value, 0) * 100) / 100;
+    const currency = pagados.length ? pagados[0].price.currency : null;
+    const basis = pagados.length ? (pagados[0].price.basis || 'total') : 'gratuita';
+    return { total: { value, currency, basis }, motivos: [], aviso: null };
+  }
+  const totalLabel = total => {
+    if (total.basis === 'gratuita') return 'Gratuita';
+    const text = formatMoney(total.value, total.currency);
+    if (total.basis === 'noche') return text + ' / noche';
+    if (total.basis === 'desde') return 'Desde ' + text;
+    return text;
+  };
+
   const textOf = el => (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
   const titleOf = (card, kind) => {
     if (card.dataset && card.dataset.titulo) return card.dataset.titulo;
@@ -168,14 +203,14 @@
       document.querySelectorAll('.mtb-select').forEach(b => refreshButton(b));
       render();
     }));
-    const priced = items.filter(x => x.price);
-    const currencies = [...new Set(priced.map(x => x.price.currency))];
-    // Los proveedores expresan importes con unidades distintas (por viaje, noche, persona o actividad). No sumarlos sin una base común.
-    const complete = false;
-    const total = complete ? priced.reduce((sum,x) => sum + x.price.value,0) : null;
-    panel.querySelector('.mtb-total').innerHTML = total !== null
-      ? 'Total no calculado: los precios pueden corresponder a unidades diferentes.'
-      : 'Hay precios pendientes o monedas distintas. Consulta los importes en cada proveedor.';
+    // El total solo se calcula si los importes son comparables (resumenPrecios); si no, se dice la causa concreta.
+    const resumen = resumenPrecios(items);
+    const totalEl = panel.querySelector('.mtb-total');
+    totalEl.dataset.estado = !items.length ? 'vacio' : resumen.total ? 'total' : 'aviso';
+    totalEl.innerHTML = !items.length ? ''
+      : resumen.total
+        ? '<small>' + (items.length > 1 ? 'Total estimado' : 'Importe') + '</small><strong>' + esc(totalLabel(resumen.total)) + '</strong>'
+        : esc(resumen.aviso);
   }
   function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   function refreshButton(button) {
@@ -235,6 +270,7 @@
   }
   window.MogavelTripBuilder = {
     contexto: contextoSeleccion,
+    resumenPrecios,
     rellenarPropuesta: fillReview,
     snapshot: () => allSelected().map(item => ({ kind: item.kind, type: item.type, name: item.name, price: item.price })),
     reset: () => { chosen.flight = null; chosen.hotel = null; chosen.activities.clear(); try { sessionStorage.removeItem(storageKey); } catch (_) {} document.querySelectorAll('.mtb-select').forEach(refreshButton); render(); }
