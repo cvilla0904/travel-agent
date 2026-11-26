@@ -108,6 +108,13 @@ export interface DiagnosticoApify {
   hotelesSinOfertaValida: number;
   hotelesConOfertaIndividual: number;
   hotelesConImpuestosIncluidos: number;
+  /** Valoración de usuarios (`rating`) en las filas de alojamiento recibidas del actor, antes de cualquier descarte. */
+  filasConRating: number;
+  filasSinRating: number;
+  /** Filas con categoría (`hotelClass`, estrellas) pero SIN `rating`: la categoría nunca se convierte en valoración. */
+  filasConEstrellasSinRating: number;
+  /** Filas con número de reseñas (`reviewsCount`). */
+  filasConResenas: number;
 }
 
 export interface OpcionesNormalizacion {
@@ -516,6 +523,10 @@ export function normalizarFilasApify(
     hotelesSinOfertaValida: 0,
     hotelesConOfertaIndividual: 0,
     hotelesConImpuestosIncluidos: 0,
+    filasConRating: 0,
+    filasSinRating: 0,
+    filasConEstrellasSinRating: 0,
+    filasConResenas: 0,
   };
   const hoteles: HotelApify[] = [];
   const vistos = new Set<string>();
@@ -527,6 +538,12 @@ export function normalizarFilasApify(
     if (fila.recordType !== undefined && fila.recordType !== 'hotel') continue;
     if (!texto(fila.name)) continue;
     diagnostico.filasHotel++;
+    if (positivo(fila.rating) !== null) diagnostico.filasConRating++;
+    else {
+      diagnostico.filasSinRating++;
+      if (positivo(fila.hotelClass) !== null) diagnostico.filasConEstrellasSinRating++;
+    }
+    if (positivo(fila.reviewsCount) !== null) diagnostico.filasConResenas++;
 
     const clave =
       texto(fila.hotelId) || texto(fila.placeId) ||

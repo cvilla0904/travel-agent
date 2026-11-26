@@ -202,8 +202,11 @@
     var main = el('div', 'hotel-main');
     main.appendChild(el('div', 'hotel-name', h.nombre));
     var det = [h.tipoAlojamiento, num(h.estrellas) !== null ? '★'.repeat(Math.max(1, Math.min(5, Math.round(h.estrellas)))) : null];
-    if (num(h.valoracion) !== null) det.push(decimal(h.valoracion) + (num(h.valoracionEscala) ? '/' + decimal(h.valoracionEscala) : '') + (num(h.numeroResenas) ? ' (' + h.numeroResenas.toLocaleString('es-ES') + ' reseñas)' : ''));
-    else det.push('Sin valoración');
+    // Valoración de usuarios del proveedor. Sin ella se dice «Sin valoración del proveedor» (nunca se inventa ni se sustituye por
+    // las estrellas de categoría) y el número de reseñas se conserva si el proveedor lo da.
+    var resenas = num(h.numeroResenas) ? h.numeroResenas.toLocaleString('es-ES') + ' reseñas' : null;
+    if (num(h.valoracion) !== null) det.push(decimal(h.valoracion) + (num(h.valoracionEscala) ? '/' + decimal(h.valoracionEscala) : '') + (resenas ? ' (' + resenas + ')' : ''));
+    else det.push('Sin valoración del proveedor' + (resenas ? ' (' + resenas + ')' : ''));
     det.push(h.zona, h.distanciaCentro && 'a ' + h.distanciaCentro + ' del centro', h.habitacion, h.cancelacionGratuita ? 'Cancelación gratuita' + (h.cancelacionHasta ? ' hasta ' + h.cancelacionHasta : '') : null);
     var p = h.precio || {};
     var porNoche = p.disponible ? formatearImporte(p.porNoche, p.moneda) : null;
