@@ -7,6 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import type { Aeropuerto } from '../src/geo/tipos.ts';
 import { Catalogo, DIR_CATALOGO, fuenteEnDisco } from '../src/geo/catalogo.ts';
 import { buscarDestinos } from '../src/geo/buscar.ts';
 import { DESTINOS_EDITORIALES } from '../src/geo/destinos-editoriales.ts';
@@ -121,7 +122,7 @@ test('ciudad, aeropuerto y código de ciudad son cosas distintas: máximo 3 aero
       assert.ok(c.aeropuertos.length <= 3, `${c.nombre}: ${c.aeropuertos.join(',')}`);
       assert.equal(new Set(c.aeropuertos).size, c.aeropuertos.length, `${c.nombre}: aeropuertos repetidos`);
       for (const i of c.aeropuertos) {
-        const ap = s.aeropuertos[i];
+        const ap: Aeropuerto | undefined = s.aeropuertos[i];
         assert.ok(ap, `${c.nombre}: ${i} no existe en el país ${p.iso}`);
         assert.equal(ap!.ciudadId, c.id, `${i} debe pertenecer a ${c.nombre}`);
       }
