@@ -34,8 +34,12 @@ const textoDeItem = (item: any): string => {
   return '';
 };
 const itemsDe = (request: any): any[] => (Array.isArray(request.input) ? request.input : [{ role: 'user', content: String(request.input ?? '') }]);
-const resultadoDe = (request: any, herramienta: string): any =>
-  itemsDe(request).filter((i) => i?.type === 'function_call_result' && i?.name === herramienta).at(-1);
+/** Resultado de una herramienta en el TURNO ACTUAL: solo cuentan los elementos posteriores al último mensaje del usuario (el historial de la sesión trae los de turnos anteriores). */
+const resultadoDe = (request: any, herramienta: string): any => {
+  const items = itemsDe(request);
+  const ultimoUsuario = items.map((i) => i?.role).lastIndexOf('user');
+  return items.slice(ultimoUsuario + 1).filter((i) => i?.type === 'function_call_result' && i?.name === herramienta).at(-1);
+};
 const textoSalida = (item: any): string => {
   const o = item?.output;
   if (typeof o === 'string') return o;
