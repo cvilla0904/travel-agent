@@ -95,6 +95,7 @@ function crearModelo(registro: Registro[]) {
           fechaEntrada: '2027-03-10',
           fechaSalida: '2027-03-13',
           adultos: 2,
+          proveedor: 'Google Hotels (Apify)',
           estado: estados.includes(r.estado) ? r.estado : 'error_interno',
           error: typeof r.detalleProveedor === 'string' ? r.detalleProveedor : (typeof r.error === 'string' ? r.error : null),
           codigoError: typeof r.codigoError === 'string' ? r.codigoError : null,
