@@ -262,7 +262,9 @@ async function conServidorHttp<T>(fn: (post: (cuerpo: any) => Promise<{ status: 
     if (url.hostname === 'redis-de-prueba.invalid') {
       const base64 = String(init?.headers?.['Upstash-Encoding'] ?? new Headers(init?.headers).get('Upstash-Encoding') ?? '') === 'base64';
       const cuerpo = JSON.parse(String(init?.body ?? '[]'));
-      return new Response(JSON.stringify(redis.manejar(cuerpo, base64)), { status: 200, headers: { 'content-type': 'application/json' } });
+      // El cliente agrupa los comandos en un pipeline (cuerpo = lista de comandos → respuesta = lista de resultados).
+      const respuesta = Array.isArray(cuerpo[0]) ? cuerpo.map((c: unknown) => redis.manejar(c, base64)) : redis.manejar(cuerpo, base64);
+      return new Response(JSON.stringify(respuesta), { status: 200, headers: { 'content-type': 'application/json' } });
     }
     if (url.hostname === '127.0.0.1') return fetchOriginal(entrada, init);
     throw new Error(`Red bloqueada en la prueba: ${url.hostname}`);
