@@ -12,7 +12,7 @@ function cliente(filas: any[] = []) {
   };
   return { c, llamadas };
 }
-const deps = (k: ReturnType<typeof cliente>) => ({ proveedor: 'apify' as const, apify: { crearCliente: () => k.c, token: 't', registrar: () => {}, env: {} } });
+const deps = (k: ReturnType<typeof cliente>) => ({ apify: { crearCliente: () => k.c, token: 't', registrar: () => {}, env: {} } });
 
 test('Salento se transmite como «Salento, Quindío, Colombia» y nunca como «Salento, Colombia»', () => {
   for (const entrada of ['Salento', 'Salento, Colombia', 'Salento, Quindío', 'Salento, Quindío, Colombia']) {

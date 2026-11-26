@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "test": "tsx --test test/*.test.ts",
-    "probar:hoteles": "tsx scripts/probar-hoteles.ts",
     "start": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
     "geo:descargar": "bash scripts/descargar-datos-geo.sh",

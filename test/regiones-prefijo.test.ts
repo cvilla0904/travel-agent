@@ -94,7 +94,7 @@ function cliente() {
     dataset: () => ({ listItems: async () => ({ items: [] }) }),
     run: () => ({ abort: async () => {} }),
   };
-  return { llamadas, deps: { proveedor: 'apify' as const, apify: { crearCliente: () => c, token: 't', registrar: () => {}, env: {} } } };
+  return { llamadas, deps: { apify: { crearCliente: () => c, token: 't', registrar: () => {}, env: {} } } };
 }
 
 test('multidestino: itinerarios por Colombia, Italia y España llegan al proveedor con su región, país y fechas propias', async () => {

@@ -1,16 +1,14 @@
 /**
- * Instrucciones adicionales para los agentes cuando HOTELES_PROVEEDOR=apify.
- * Se AÑADEN al final de las instrucciones existentes (que siguen intactas para SearchAPI)
- * y prevalecen sobre ellas en lo relativo a Booking.com/SearchAPI, la escala de valoración
- * y la presentación de precios.
+ * Instrucciones de los agentes para el proveedor único de hoteles (Apify / Google Hotels).
+ * Se añaden al final de las instrucciones de hotel_agent y del Travel Manager.
  */
-/** Descripción de la herramienta buscar_hoteles cuando el proveedor es Apify (vive aquí, no en index.ts). */
+/** Descripción de la herramienta buscar_hoteles. */
 export const DESCRIPCION_HERRAMIENTA_HOTELES_APIFY =
   'Busca alojamientos en Google Hotels (con ofertas de varios proveedores de reserva) con destino, fechas y número de adultos. Conserva los alojamientos reales aunque no haya una oferta con precio verificable y marca el precio como no disponible.';
 
 export const INSTRUCCIONES_HOTELES_APIFY_AGENTE = `
 
-    PROVEEDOR ACTIVO: "Apify / Google Hotels" (campo "proveedor"). Para este proveedor, lo dicho antes sobre Booking.com, SearchAPI y la escala de 10 puntos NO se aplica. Sí se aplican las reglas de "estado" y de errores.
+    PROVEEDOR ACTIVO: "Apify / Google Hotels" (campo "proveedor"). Se aplican las reglas de "estado" y de errores.
     - tipoAlojamiento indica si es hotel, hostal, resort, apartamento vacacional, etc. Respétalo: no llames "hotel" a un hostal o a un apartamento.
     - estrellas, valoracion, valoracionEscala y numeroResenas son null cuando no hay dato. Déjalos null (o "Sin valoración"); NUNCA los conviertas en 0 ni los inventes. Si hay valoración, usa valoracionEscala tal cual.
     - precioTotal es el total de la estancia y precioPorNoche es precioTotal dividido entre las noches (derivado). Si impuestosIncluidos es true, el total incluye impuestos. Si es false, el total es SIN impuestos y pueden añadirse al reservar. No sumes, restes ni estimes impuestos.
@@ -23,7 +21,7 @@ export const INSTRUCCIONES_HOTELES_APIFY_AGENTE = `
 
 export const INSTRUCCIONES_HOTELES_APIFY_MANAGER = `
 
-    PROVEEDOR DE ALOJAMIENTO "Apify / Google Hotels" (campo "proveedor" de hotel_agent y de buscar_recursos_multidestino). Con este proveedor, lo dicho antes sobre la escala de 10 puntos de Booking.com y sobre enlazar solo con url NO se aplica así:
+    PROVEEDOR DE ALOJAMIENTO "Apify / Google Hotels" (campo "proveedor" de hotel_agent y de buscar_recursos_multidestino).:
     - Si valoracion es null, no escribas valoración ni "0": escribe "Sin valoración" o nada. Con valoración, usa valoracionEscala (normalmente 5).
     - Indica el tipoAlojamiento (hotel, hostal, resort, apartamento vacacional...).
     - Muestra el total con su estado de impuestos: impuestosIncluidos true → "impuestos incluidos"; false → "sin impuestos". Y el precio por noche (precioPorNoche).

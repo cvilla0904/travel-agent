@@ -13,15 +13,11 @@ import { buscarActividadesDestino } from './services/actividades-busqueda.js';
 import { buscarVuelosConEstado } from './services/vuelos.js';
 import { filtrarActividadesDeCiudad, actividadParaMultidestino } from './services/actividades-ciudad.js';
 import { parsearPrecio, extraerPrecio, esGratisVerificado } from './services/precios-actividades.js';
-import { buscarHotelesConEstado, proveedorHoteles } from './services/hoteles.js';
+import { buscarHotelesConEstado } from './services/hoteles.js';
 import { buscarHotelesTramo } from './services/hoteles-multidestino.js';
 import { crearPresupuestoApify } from './services/apify-hoteles.js';
-import { hotelOutputSchema } from './schemas/hotels.js';
 import { hotelApifyOutputSchema } from './schemas/hotels-apify.js';
 import { DESCRIPCION_HERRAMIENTA_HOTELES_APIFY, INSTRUCCIONES_HOTELES_APIFY_AGENTE, INSTRUCCIONES_HOTELES_APIFY_MANAGER } from './services/hoteles-instrucciones.js';
-
-// Proveedor de hoteles (HOTELES_PROVEEDOR): searchapi por defecto; apify = proveedor alternativo (ver services/hoteles.ts).
-const USAR_APIFY_HOTELES = proveedorHoteles() === 'apify';
 
 /* =========================================================
    1. FUNCIONES AUXILIARES
@@ -379,9 +375,7 @@ const flightAgent = new Agent({
 
 const buscarHoteles = tool({
   name: 'buscar_hoteles',
-  description: USAR_APIFY_HOTELES
-    ? DESCRIPCION_HERRAMIENTA_HOTELES_APIFY
-    : 'Busca alojamientos en Booking.com mediante SearchAPI con destino, fechas y número de adultos. Conserva los alojamientos reales aunque el proveedor no publique precio y marca el precio como no disponible.',
+  description: DESCRIPCION_HERRAMIENTA_HOTELES_APIFY,
   parameters: {
     type: 'object',
     properties: {
@@ -401,13 +395,13 @@ const buscarHoteles = tool({
 
 const hotelAgent = new Agent({
   name: 'Hotel Agent',
-  outputType: USAR_APIFY_HOTELES ? hotelApifyOutputSchema : hotelOutputSchema,
+  outputType: hotelApifyOutputSchema,
   instructions: `
     Eres un agente especializado exclusivamente en alojamiento.
 
     Utiliza SIEMPRE la herramienta buscar_hoteles.
 
-    La herramienta buscar_hoteles obtiene alojamientos mediante Booking.com a través de SearchAPI.
+    La herramienta buscar_hoteles obtiene alojamientos de Google Hotels mediante Apify.
 
     Necesitas:
     - destino
@@ -444,15 +438,15 @@ const hotelAgent = new Agent({
     Copia también "diagnostico".
 
     REGLAS PARA EXPLICAR UN ERROR DEL PROVEEDOR:
-    - Comunica únicamente lo que respalda la respuesta de SearchAPI: el texto de "error", "detalleProveedor", "httpStatus" y "retryAfter".
-    - Según "codigoError": "limite_uso" = el proveedor indica cuota o créditos agotados (cita su detalle); "limite_peticiones" = el proveedor indica un límite de frecuencia de peticiones; "rechazo_sin_causa" = el proveedor rechazó la petición y NO se conoce el motivo; "autenticacion" = el proveedor respondió 401/403.
+    - Comunica únicamente lo que respalda la respuesta del proveedor: el texto de "error", "detalleProveedor", "httpStatus" y "retryAfter".
+    - Según "codigoError": "limite_uso" = el proveedor indica cuota o créditos agotados (cita su detalle); "limite_peticiones" = el proveedor indica un límite de frecuencia de peticiones; "autenticacion" = el proveedor respondió 401/403.
     - Si el motivo no está confirmado, dilo claramente. NO deduzcas ni inventes causas ni plazos de recuperación: no digas "límite mensual", "cuota agotada", "créditos agotados" ni "clave inválida", ni cuándo se restablecerá el servicio, salvo que figuren en la respuesta del proveedor. Una hipótesis nunca se presenta como un hecho.
     - No muestres claves ni datos de configuración.
 
     Si precioDisponible es false (precioTotal y precioPorNoche son 0), el proveedor no dio precio: NO lo presentes como 0, gratis ni como precio real. Indica "Precio no disponible; consultar proveedor". Respeta el campo moneda de cada importe; si la moneda viene vacía indica "Moneda no confirmada" y no supongas ninguna. Si precioCalculado es true, el importe se ha derivado dividiendo/multiplicando por las noches: no lo presentes como dato literal del proveedor.
-    Respeta valoracionEscala (la valoración de Booking suele ser sobre 10); no conviertas ni inventes escalas.
+    Respeta valoracionEscala; no conviertas ni inventes escalas.
     No reduzcas las opciones a una única opción.
-    Conserva el enlace real que devuelve la herramienta (campo url). No inventes enlaces ni proveedores.${USAR_APIFY_HOTELES ? INSTRUCCIONES_HOTELES_APIFY_AGENTE : ''}
+    Conserva el enlace real que devuelve la herramienta (campo url). No inventes enlaces ni proveedores.${INSTRUCCIONES_HOTELES_APIFY_AGENTE}
   `,
   tools: [buscarHoteles],
 });
@@ -1495,7 +1489,7 @@ export const travelAgent = new Agent({
     "Tenemos 1200 euros y nos gusta la cultura."
 
     entonces puedes ejecutar activities_agent
-    y calcular_presupuesto.${USAR_APIFY_HOTELES ? INSTRUCCIONES_HOTELES_APIFY_MANAGER : ''}
+    y calcular_presupuesto.${INSTRUCCIONES_HOTELES_APIFY_MANAGER}
   `,
 
   tools: [

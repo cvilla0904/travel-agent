@@ -1,6 +1,6 @@
 /**
  * Contrato de /api/chat con resultados estructurados (versión 1): se ejecutan las herramientas REALES de vuelos, hoteles
- * (SearchAPI y Apify) y actividades con proveedores simulados (sin red ni créditos) DENTRO de turnoChat (el mismo código que
+ * (Apify) y actividades con proveedores simulados (sin red ni créditos) DENTRO de turnoChat (el mismo código que
  * usan api/index.ts y src/server.ts) y se comprueba el cuerpo que recibiría la web.
  */
 import test from 'node:test';
@@ -42,7 +42,7 @@ function hotelesApifyFalso(filas: any[]) {
     dataset: () => ({ listItems: async () => ({ items: filas }) }),
     run: () => ({ abort: async () => {} }),
   };
-  return { proveedor: 'apify' as const, apify: { crearCliente: () => c as any, token: 't', registrar: silencio, env: {} } };
+  return { apify: { crearCliente: () => c as any, token: 't', registrar: silencio, env: {} } };
 }
 const filaHotel = (nombre: string, moneda: string | null, extra: Record<string, unknown> = {}) => ({
   recordType: 'hotel', name: nombre, hotelId: 'id-' + nombre, category: 'Hotel', hotelClass: 4, rating: 4.6, reviewsCount: 1200,
@@ -50,17 +50,6 @@ const filaHotel = (nombre: string, moneda: string | null, extra: Record<string, 
   nights: 4, adults: 2, address: 'Centro', url: 'https://www.google.com/travel/hotels/entity/x',
   bookingOptions: [{ provider: 'Booking.com', nightlyPrice: 95, totalStayPrice: 380, bookingUrl: 'https://www.booking.com/hotel/x.html' }], ...extra,
 });
-function hotelesSearchApiFalso(propiedades: unknown[], destinoNombre: string, destId: string) {
-  const f = (async (input: URL) => {
-    const url = new URL(String(input));
-    const resp = (cuerpo: unknown) => new Response(JSON.stringify(cuerpo), { status: 200, headers: { 'content-type': 'application/json' } });
-    if (url.searchParams.get('engine') === 'booking_autocomplete') {
-      return resp({ suggestions: [{ value: destinoNombre, type: 'city', id: destId, label: destinoNombre }].map((s) => ({ ...s, dest_id: s.id, dest_type: 'city', country_code: 'be', title: s.value, subtitle: s.label })) });
-    }
-    return resp({ properties: propiedades });
-  }) as unknown as typeof fetch;
-  return { proveedor: 'searchapi' as const, searchapi: { apiKey: 'k', fetch: f, registrar: silencio } };
-}
 const ejec = (items: any[], status = 'SUCCEEDED', completa?: boolean): EjecucionActor =>
   ({ items, status, runId: 'run', datasetId: 'ds', consultas: [], ...(completa === undefined ? {} : { completa }) });
 let n = 0;
@@ -162,22 +151,14 @@ const BASE_H = { fechaEntrada: '2027-03-10', fechaSalida: '2027-03-14', adultos:
 const CAMPOS_HOTEL = ['id', 'nombre', 'tipoAlojamiento', 'estrellas', 'valoracion', 'valoracionEscala', 'numeroResenas', 'precio', 'enlace', 'enlaceEsAlternativo', 'ofertas'];
 
 for (const destino of ['Bruselas', 'Sarajevo', 'París']) {
-  test(`hoteles ${destino}: Apify y SearchAPI producen bloques con el MISMO esquema y la moneda del proveedor`, async () => {
+  test(`hoteles ${destino}: bloque con el esquema estable y la moneda del proveedor`, async () => {
     const apify = await turnoChat(undefined, async () => {
       await buscarHotelesConEstado({ destino, ...BASE_H }, hotelesApifyFalso([filaHotel('Hotel A', 'EUR', UBIC[destino]), filaHotel('Hotel B', 'BAM', { rating: null, reviewsCount: null, ...UBIC[destino] })]));
       return { finalOutput: '' };
     });
-    const sa = await turnoChat(undefined, async () => {
-      await buscarHotelesConEstado({ destino, ...BASE_H }, hotelesSearchApiFalso([
-        { title: 'Hotel A', rating: 8.6, reviews: 1234, extracted_price: 480, link: 'https://www.booking.com/hotel/a.html', currency: 'EUR' },
-        { title: 'Hotel Sin Precio', rating: 7, reviews: 10, link: 'https://www.booking.com/hotel/c.html' },
-      ], destino, '-1'));
-      return { finalOutput: '' };
-    });
-    const ba = (apify.body as any).resultados.hoteles[0], bs = (sa.body as any).resultados.hoteles[0];
+    const ba = (apify.body as any).resultados.hoteles[0];
     assert.equal(ba.proveedor.id, 'apify-google-hotels');
-    assert.equal(bs.proveedor.id, 'searchapi-booking');
-    for (const b of [ba, bs]) {
+    for (const b of [ba]) {
       assert.equal(b.tipo, 'hoteles');
       assert.equal(b.total, b.opciones.length);
       for (const campo of CAMPOS_HOTEL) assert.ok(campo in b.opciones[0], `${b.proveedor.id} sin campo ${campo}`);
@@ -185,22 +166,17 @@ for (const destino of ['Bruselas', 'Sarajevo', 'París']) {
     }
     assert.deepEqual(ba.opciones.map((h: any) => h.precio.moneda), ['EUR', 'BAM']);
     assert.equal(ba.opciones[1].valoracion, null, 'sin valoración = null, nunca 0');
-    const sinPrecio = bs.opciones.find((h: any) => h.nombre === 'Hotel Sin Precio');
-    assert.deepEqual([sinPrecio.precio.disponible, sinPrecio.precio.moneda, sinPrecio.precio.total], [false, null, null]);
-    assert.equal(bs.opciones.find((h: any) => h.nombre === 'Hotel A').precio.moneda, 'EUR');
   });
 }
 
-test('hoteles: error del proveedor (HTTP 429) → error_proveedor con diagnóstico, no «sin alojamientos»', async () => {
-  const f = (async (input: URL) => {
-    const url = new URL(String(input));
-    if (url.searchParams.get('engine') === 'booking_autocomplete') {
-      return new Response(JSON.stringify({ suggestions: [{ value: 'Brussels', type: 'city', id: '-1', title: 'Brussels', subtitle: 'Belgium', dest_id: '-1', dest_type: 'city', country_code: 'be' }] }), { status: 200 });
-    }
-    return new Response(JSON.stringify({ error: 'rate limited' }), { status: 429, headers: { 'retry-after': '30' } });
-  }) as unknown as typeof fetch;
+test('hoteles: error del proveedor (HTTP 429 de Apify) → error_proveedor con diagnóstico, no «sin alojamientos»', async () => {
+  const c = {
+    actor: () => ({ call: async () => { throw Object.assign(new Error('Too many requests'), { statusCode: 429 }); } }),
+    dataset: () => ({ listItems: async () => ({ items: [] }) }),
+    run: () => ({ abort: async () => {} }),
+  };
   const r = await turnoChat(undefined, async () => {
-    await buscarHotelesConEstado({ destino: 'Bruselas', ...BASE_H }, { proveedor: 'searchapi', searchapi: { apiKey: 'k', fetch: f, registrar: silencio, dormir: async () => {} } as any });
+    await buscarHotelesConEstado({ destino: 'Bruselas', ...BASE_H }, { apify: { crearCliente: () => c as any, token: 't', registrar: silencio, env: {} } });
     return { finalOutput: '' };
   });
   const b = (r.body as any).resultados.hoteles[0];

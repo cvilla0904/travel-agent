@@ -119,7 +119,7 @@ test('presupuesto: un itinerario de 4 ciudades con presupuesto 0,25 lanza 2 bús
   const presupuesto = crearPresupuestoApify(0.25);
   const estados: string[] = [];
   for (const ciudad of ['Bogotá', 'Medellín', 'Cartagena', 'Salento']) {
-    const r = await buscarHotelesTramo({ ciudad, ...fechas }, { pais: 'Colombia', adultos: 2 }, { proveedor: 'apify', apify: deps(k, { presupuesto }) });
+    const r = await buscarHotelesTramo({ ciudad, ...fechas }, { pais: 'Colombia', adultos: 2 }, { apify: deps(k, { presupuesto }) });
     estados.push(String(r.codigoError ?? r.estado));
   }
   assert.equal(k.llamadas.length, 2);
@@ -221,7 +221,7 @@ test('multidestino: cada ciudad recibe SUS fechas y su consulta (Bogotá, Medell
     { ciudad: 'Cartagena', fechaEntrada: '2027-01-11', fechaSalida: '2027-01-15' },
     { ciudad: 'Salento', fechaEntrada: '2027-01-15', fechaSalida: '2027-01-17' },
   ];
-  for (const t of tramos) await buscarHotelesTramo(t, { pais: 'Colombia', adultos: 3 }, { proveedor: 'apify', apify: deps(k) });
+  for (const t of tramos) await buscarHotelesTramo(t, { pais: 'Colombia', adultos: 3 }, { apify: deps(k) });
   assert.equal(k.llamadas.length, 4);
   assert.deepEqual(k.llamadas.map((l) => [l.input.searchQueries[0], l.input.checkInDate, l.input.checkOutDate, l.input.adults]), [
     ['hotels in Bogotá, Colombia', '2027-01-04', '2027-01-07', 3],
@@ -238,22 +238,12 @@ test('multidestino: las noches de cada ciudad se calculan con sus propias fechas
     return [{ ...fila(noches), totalPrice: 100 * noches, totalPriceBeforeTaxes: 100 * noches, pricePerNight: 100,
       bookingOptions: [{ provider: 'Booking.com', totalStayPrice: 100 * noches, nightlyPrice: 100, bookingUrl: 'https://www.booking.com/h' }] }];
   } });
-  const r3 = await buscarHotelesTramo({ ciudad: 'Bogotá', fechaEntrada: '2027-01-04', fechaSalida: '2027-01-07' }, { pais: 'Colombia', adultos: 2 }, { proveedor: 'apify', apify: deps(k) });
-  const r4 = await buscarHotelesTramo({ ciudad: 'Bogotá', fechaEntrada: '2027-01-07', fechaSalida: '2027-01-11' }, { pais: 'Colombia', adultos: 2 }, { proveedor: 'apify', apify: deps(k) });
+  const r3 = await buscarHotelesTramo({ ciudad: 'Bogotá', fechaEntrada: '2027-01-04', fechaSalida: '2027-01-07' }, { pais: 'Colombia', adultos: 2 }, { apify: deps(k) });
+  const r4 = await buscarHotelesTramo({ ciudad: 'Bogotá', fechaEntrada: '2027-01-07', fechaSalida: '2027-01-11' }, { pais: 'Colombia', adultos: 2 }, { apify: deps(k) });
   assert.equal((r3.hoteles[0] as any).precioTotal, 300);
   assert.equal((r4.hoteles[0] as any).precioTotal, 400);
   assert.equal((r3.hoteles[0] as any).precioPorNoche, 100);
   assert.equal((r4.hoteles[0] as any).precioPorNoche, 100);
-});
-
-test('multidestino: con proveedor searchapi no se toca Apify', async () => {
-  const k = cliente();
-  let sa = 0;
-  await buscarHotelesTramo({ ciudad: 'Bogotá', ...fechas }, { pais: 'Colombia', adultos: 2 }, {
-    proveedor: 'searchapi', apify: deps(k),
-    searchapi: { apiKey: 'x', fetch: (async () => { sa++; return new Response('{}', { status: 200 }); }) as any, registrar: sinLog } as any,
-  }).catch(() => {});
-  assert.equal(k.llamadas.length, 0);
 });
 
 test('multidestino: normalización de ciudad (Cartagena de Indias, ciudades sin equivalencia llevan el país)', () => {

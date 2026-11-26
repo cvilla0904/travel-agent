@@ -92,7 +92,7 @@ function cliente(filas: any[]) {
     dataset: () => ({ listItems: async () => ({ items: filas }) }),
     run: () => ({ abort: async () => {} }),
   };
-  return { llamadas, deps: { proveedor: 'apify' as const, apify: { crearCliente: () => c, token: 't', registrar: () => {}, env: {} } } };
+  return { llamadas, deps: { apify: { crearCliente: () => c, token: 't', registrar: () => {}, env: {} } } };
 }
 const params = (destino: string, extra: object = {}) => ({ destino, fechaEntrada: '2027-06-10', fechaSalida: '2027-06-13', adultos: 2, ...extra });
 

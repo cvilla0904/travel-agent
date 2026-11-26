@@ -4,10 +4,10 @@
 // (AsyncLocalStorage en src/services/destino-fijado.ts).
 //
 // QUÉ ES REAL: @openai/agents (Runner, Agent.asTool, ejecución de herramientas), los agentes reales de src/index.ts
-//   (travelAgent, hotelAgent, buscar_hoteles), hoteles.ts → searchapi.ts y destino-fijado.ts.
+//   (travelAgent, hotelAgent, buscar_hoteles), hoteles.ts → apify-hoteles.ts y destino-fijado.ts.
 // QUÉ ESTÁ SIMULADO: (1) el modelo: un `Model` propio que responde con llamadas a herramientas deterministas, sin API de OpenAI;
-//   (2) globalThis.fetch: solo atiende al autocompletado de SearchAPI (siempre sin sugerencias) y rechaza cualquier otro host,
-//   de modo que no hay red ni créditos; (3) la clave de SearchAPI y las de Upstash son valores de prueba.
+//   (2) el cliente de Apify (se inyecta con fijarDependenciasHoteles): registra la consulta que recibe y falla, de modo que no hay
+//   red ni créditos; globalThis.fetch rechaza cualquier host; (3) el token de Apify y las de Upstash son valores de prueba.
 // Por qué no ScriptedModel (@openai/agents/testing): consume los pasos en orden de llamada y aquí hay dos corridas concurrentes
 //   sobre los mismos agentes; un modelo sin estado que responde según la petición mantiene el reparto determinista.
 //
@@ -96,7 +96,7 @@ function crearModelo(registro: Registro[]) {
           fechaSalida: '2027-03-13',
           adultos: 2,
           estado: estados.includes(r.estado) ? r.estado : 'error_interno',
-          error: typeof r.error === 'string' ? r.error : null,
+          error: typeof r.detalleProveedor === 'string' ? r.detalleProveedor : (typeof r.error === 'string' ? r.error : null),
           codigoError: typeof r.codigoError === 'string' ? r.codigoError : null,
           httpStatus: null,
           retryAfter: null,
@@ -123,13 +123,13 @@ let proveedorInstalado = false;
 /* ---------- entorno simulado (sin red, sin credenciales reales) ---------- */
 
 const ENTORNO = {
-  SEARCHAPI_API_KEY: 'clave-de-prueba-no-real',
+  APIFY_API_TOKEN: 'token-apify-de-prueba-no-real',
   UPSTASH_REDIS_REST_URL: 'https://redis-de-prueba.invalid',
   UPSTASH_REDIS_REST_TOKEN: 'token-de-prueba-no-real',
 };
-const VARIABLES_A_QUITAR = ['HOTELES_PROVEEDOR'];
+const VARIABLES_A_QUITAR: string[] = [];
 
-interface Llamada { motor: string; q: string }
+interface Llamada { consulta: string }
 
 async function prepararEntorno(opciones: { barrera?: number } = {}) {
   const previo: Record<string, string | undefined> = {};
@@ -147,18 +147,33 @@ async function prepararEntorno(opciones: { barrera?: number } = {}) {
   const temporizador = opciones.barrera ? setTimeout(liberar, 5000) : undefined;
   globalThis.fetch = (async (entrada: any) => {
     const url = new URL(typeof entrada === 'string' ? entrada : (entrada?.url ?? String(entrada)));
-    if (url.hostname !== 'www.searchapi.io') {
-      rechazadas.push(url.toString());
-      throw new Error(`Red bloqueada en la prueba: ${url.hostname}`);
-    }
-    llamadas.push({ motor: url.searchParams.get('engine') ?? '', q: url.searchParams.get('q') ?? '' });
-    if (opciones.barrera && llegadas < opciones.barrera) {
-      llegadas += 1;
-      if (llegadas === opciones.barrera) liberar();
-      await puerta;
-    }
-    return new Response(JSON.stringify({ suggestions: [] }), { status: 200, headers: { 'content-type': 'application/json' } });
+    rechazadas.push(url.toString());
+    throw new Error(`Red bloqueada en la prueba: ${url.hostname}`);
   }) as typeof fetch;
+  // Cliente de Apify simulado: registra la consulta (con la que viaja el destino) y falla con ella en el detalle.
+  const { fijarDependenciasHoteles } = await import('../src/services/hoteles.js');
+  fijarDependenciasHoteles({
+    apify: {
+      token: 't',
+      env: {},
+      registrar: () => {},
+      crearCliente: () => ({
+        actor: () => ({
+          call: async (entradaActor: any) => {
+            const consulta = String(entradaActor?.searchQueries?.[0] ?? '');
+            llamadas.push({ consulta });
+            if (opciones.barrera && llegadas < opciones.barrera) {
+              llegadas += 1;
+              if (llegadas === opciones.barrera) liberar();
+              await puerta;
+            }
+            throw Object.assign(new Error(`consulta=${consulta}`), { statusCode: 500 });
+          },
+        }),
+        dataset: () => ({ listItems: async () => ({ items: [] }) }),
+      }) as any,
+    },
+  });
 
   sdk.setTracingDisabled(true);
   // El Runner por defecto del SDK memoriza el primer proveedor que usa (LazyDefaultModelProvider en run.ts): el modelo y su proveedor
@@ -177,6 +192,7 @@ async function prepararEntorno(opciones: { barrera?: number } = {}) {
     rechazadas,
     restaurar() {
       if (temporizador) clearTimeout(temporizador);
+      fijarDependenciasHoteles(undefined);
       globalThis.fetch = fetchOriginal;
       for (const [k, v] of Object.entries(previo)) {
         if (v === undefined) delete process.env[k];
@@ -199,18 +215,17 @@ test('SDK real: sin destino fijado el modelo manda (control), con Apulia elegido
   const e = await prepararEntorno();
   try {
     const control = await ejecutar(e.travelAgent, 'Hoteles en Salento', undefined);
-    assert.match(control.error, /para "Salento"/, 'control: sin destino fijado, el proveedor recibe lo que escribió el modelo');
+    assert.match(control.error, /consulta=hotels in Salento$/, 'control: sin destino fijado, el proveedor recibe lo que escribió el modelo');
     assert.doesNotMatch(control.error, /Apulia|Italia/);
 
     const fijado = await ejecutar(e.travelAgent, 'Hoteles en Salento', APULIA);
-    assert.match(fijado.error, /para "Salento, Apulia, Italia"/);
-    assert.match(fijado.error, /país "it"/i);
+    assert.match(fijado.error, /consulta=hotels in Salento, Apulia, Italia$/);
 
     // La corrida pasó realmente por el agente anidado: 2 llamadas del manager y 2 del Hotel Agent por ejecución.
     assert.equal(e.registro.filter((r) => r.agente === 'manager').length, 4);
     assert.equal(e.registro.filter((r) => r.agente === 'hotel').length, 4);
-    assert.deepEqual(e.rechazadas, [], 'ninguna petición fuera de SearchAPI simulado');
-    assert.ok(e.llamadas.length > 0 && e.llamadas.every((l) => l.motor === 'booking_autocomplete'));
+    assert.deepEqual(e.rechazadas, [], 'ninguna petición de red directa');
+    assert.ok(e.llamadas.length > 0);
   } finally {
     e.restaurar();
   }
@@ -220,11 +235,9 @@ test('SDK real: el modelo escribe «Salento, Colombia» pero el usuario eligió 
   const e = await prepararEntorno();
   try {
     const a = await ejecutar(e.travelAgent, 'Hoteles en Salento, Colombia', APULIA);
-    assert.match(a.error, /para "Salento, Apulia, Italia"/);
-    assert.match(a.error, /país "it"/i);
+    assert.match(a.error, /consulta=hotels in Salento, Apulia, Italia$/);
     const q = await ejecutar(e.travelAgent, 'Hoteles en Salento, Italia', QUINDIO);
-    assert.match(q.error, /para "Salento, Quindío, Colombia"/);
-    assert.match(q.error, /país "co"/i);
+    assert.match(q.error, /consulta=hotels in Salento, Quindío, Colombia$/);
     assert.ok(e.registro.some((r) => r.destinoEscritoPorElModelo === 'Salento, Colombia'), 'el modelo escribió realmente otro destino');
   } finally {
     e.restaurar();
@@ -239,11 +252,9 @@ test('SDK real: dos corridas concurrentes con destinos distintos no mezclan su c
       ejecutar(e.travelAgent, 'Hoteles en Salento', APULIA),
       ejecutar(e.travelAgent, 'Hoteles en Salento', QUINDIO),
     ]);
-    assert.match(a.error, /para "Salento, Apulia, Italia"/);
-    assert.match(a.error, /país "it"/i);
+    assert.match(a.error, /consulta=hotels in Salento, Apulia, Italia$/);
     assert.doesNotMatch(a.error, /Quindío|Colombia/);
-    assert.match(b.error, /para "Salento, Quindío, Colombia"/);
-    assert.match(b.error, /país "co"/i);
+    assert.match(b.error, /consulta=hotels in Salento, Quindío, Colombia$/);
     assert.doesNotMatch(b.error, /Apulia|Italia/);
     assert.deepEqual(e.rechazadas, []);
   } finally {
@@ -255,9 +266,9 @@ test('SDK real: muchas corridas concurrentes alternando Apulia, Quindío y sin d
   const e = await prepararEntorno({ barrera: 6 });
   try {
     const casos: Array<[unknown, RegExp, RegExp]> = [
-      [APULIA, /para "Salento, Apulia, Italia"/, /país "it"/i],
-      [QUINDIO, /para "Salento, Quindío, Colombia"/, /país "co"/i],
-      [undefined, /para "Salento"/, /^(?![\s\S]*Apulia)(?![\s\S]*Quindío)/],
+      [APULIA, /consulta=hotels in Salento, Apulia, Italia$/, /Italia/],
+      [QUINDIO, /consulta=hotels in Salento, Quindío, Colombia$/, /Colombia/],
+      [undefined, /consulta=hotels in Salento$/, /^(?![\s\S]*Apulia)(?![\s\S]*Quindío)/],
     ];
     const lote = [...casos, ...casos];
     const resultados = await Promise.all(lote.map(([sel]) => ejecutar(e.travelAgent, 'Hoteles en Salento', sel)));

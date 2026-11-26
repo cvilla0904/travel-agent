@@ -14,7 +14,7 @@
  *    marca como "sin impuestos"; nunca se estiman impuestos.
  *  - Sin valoración/estrellas: se devuelve null, no 0.
  */
-import { aNumero } from './searchapi.js';
+import { aNumero } from './hoteles-comun.js';
 import { monedaIso } from './moneda.js';
 
 export const UMBRAL_MEDIANA_POR_DEFECTO = 1.5;

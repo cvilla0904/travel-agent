@@ -3,8 +3,7 @@
  * `eiv/google-hotels-scraper`. Sigue el patrón de apify-flights.ts: ejecutar el
  * actor, comprobar el estado, leer el dataset y validar antes de entregar al agente.
  *
- * No se activa por sí solo: lo elige el selector (hoteles.ts) con
- * HOTELES_PROVEEDOR=apify. SearchAPI (searchapi.ts) no se toca.
+ * Es el proveedor único de hoteles (hoteles.ts); no hay otro ni conmutación.
  *
  * Coste: una ejecución por ciudad (las fechas pueden diferir entre ciudades).
  * Con 10 hoteles y precios de webs de reserva el coste medido fue ≈ 0,038 USD.
@@ -17,7 +16,7 @@ import {
   type DiagnosticoHoteles,
   type ParametrosHoteles,
   type ResultadoHotelesConEstado,
-} from './searchapi.js';
+} from './hoteles-comun.js';
 import { codigoPaisDesdeDestino, datosCiudad, variantesCiudad } from './ciudades.js';
 import { MAX_HOTELES, normalizarFilasApify, type DiagnosticoApify, type HotelApify } from './hoteles-apify-normalizar.js';
 

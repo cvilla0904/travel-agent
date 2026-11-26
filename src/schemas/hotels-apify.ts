@@ -1,9 +1,19 @@
 import { z } from 'zod';
-import { diagnosticoHotelesSchema, estadoHotelesSchema } from './hotels.js';
+
+export const diagnosticoHotelesSchema = z.object({
+  destinoResuelto: z.string(),
+  propiedadesProveedor: z.number(),
+  devueltos: z.number(),
+  conPrecio: z.number(),
+  sinPrecio: z.number(),
+  conEnlace: z.number(),
+});
+
+export const estadoHotelesSchema = z.enum(['ok', 'sin_resultados', 'error_proveedor', 'error_interno']);
 
 /**
  * Esquema de salida del agente de alojamiento cuando el proveedor es
- * Apify / Google Hotels. Es independiente de hotels.ts (SearchAPI), que no se toca.
+ * Apify / Google Hotels.
  *
  * Los datos que el proveedor no da (estrellas, valoración, reseñas) son null,
  * no 0: así no se confunden con una puntuación real.

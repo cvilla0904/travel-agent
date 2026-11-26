@@ -17,9 +17,8 @@ import {
   construirConsulta,
   construirEntradaActor,
 } from '../src/services/apify-hoteles.js';
-import { buscarHotelesConEstado, proveedorHoteles } from '../src/services/hoteles.js';
+import { buscarHotelesConEstado } from '../src/services/hoteles.js';
 import { hotelApifyOutputSchema } from '../src/schemas/hotels-apify.js';
-import { hotelOutputSchema } from '../src/schemas/hotels.js';
 
 /* Datos REALES de dos ejecuciones del actor (Budapest y Colombia, 4–8 enero 2027, 2 adultos),
    recortados (sin imágenes ni parámetros de seguimiento). No se hace ninguna llamada real. */
@@ -69,65 +68,18 @@ test.after(() => { globalThis.fetch = fetchOriginal; });
 
 /* ============================ SELECTOR ============================ */
 
-test('selector: sin variable, vacía o "searchapi" → SearchAPI (comportamiento anterior)', () => {
-  assert.equal(proveedorHoteles({}), 'searchapi');
-  assert.equal(proveedorHoteles({ HOTELES_PROVEEDOR: '' }), 'searchapi');
-  assert.equal(proveedorHoteles({ HOTELES_PROVEEDOR: 'searchapi' }), 'searchapi');
-});
-
-test('selector: "apify" (sin importar mayúsculas ni espacios) → Apify', () => {
-  assert.equal(proveedorHoteles({ HOTELES_PROVEEDOR: 'apify' }), 'apify');
-  assert.equal(proveedorHoteles({ HOTELES_PROVEEDOR: '  APIFY ' }), 'apify');
-});
-
-test('selector: un valor desconocido vuelve a SearchAPI y lo avisa', () => {
-  const avisos: string[] = [];
-  assert.equal(proveedorHoteles({ HOTELES_PROVEEDOR: 'booking' }, (m) => avisos.push(m)), 'searchapi');
-  assert.equal(avisos.length, 1);
-  assert.match(avisos[0]!, /no es válido/);
-});
-
-test('selector: con proveedor apify solo se llama a Apify; SearchAPI no recibe ninguna petición', async () => {
+test('hoteles: solo se llama a Apify y no hay ninguna otra petición de red (fetch bloqueado)', async () => {
   const c = clienteFalso({ filas: BUDAPEST });
-  let peticionesSearchApi = 0;
-  const fetchSearchApi = (async () => { peticionesSearchApi++; return new Response('{}'); }) as unknown as typeof fetch;
-  const r = await buscarHotelesConEstado(
-    { destino: 'Budapest, Hungría', ...base },
-    { proveedor: 'apify', apify: dep(c), searchapi: { apiKey: 'x', fetch: fetchSearchApi, registrar: sinLog } },
-  );
+  const r = await buscarHotelesConEstado({ destino: 'Budapest, Hungría', ...base }, { apify: dep(c) });
   assert.equal(r.proveedor, 'Apify / Google Hotels');
   assert.equal(c.llamadas.length, 1);
-  assert.equal(peticionesSearchApi, 0);
 });
 
-test('selector: con proveedor searchapi no se crea ningún cliente de Apify', async () => {
-  const c = clienteFalso({ filas: BUDAPEST });
-  const fetchSearchApi = (async (u: URL) => {
-    const motor = new URL(String(u)).searchParams.get('engine');
-    const cuerpo = motor === 'booking_autocomplete'
-      ? { suggestions: [{ title: 'Budapest', label: 'Budapest, Hungary', dest_id: '1', dest_type: 'city', country_code: 'hu' }] }
-      : { properties: [{ title: 'Hotel X', extracted_price: 300, link: 'https://www.booking.com/hotel/x.html' }] };
-    return new Response(JSON.stringify(cuerpo), { status: 200, headers: { 'content-type': 'application/json' } });
-  }) as unknown as typeof fetch;
-  const r = await buscarHotelesConEstado(
-    { destino: 'Budapest', ...base },
-    { proveedor: 'searchapi', apify: dep(c), searchapi: { apiKey: 'x', fetch: fetchSearchApi, registrar: sinLog } },
-  );
-  assert.equal(r.proveedor, 'SearchAPI / Booking.com');
-  assert.equal(r.estado, 'ok');
-  assert.equal(c.llamadas.length, 0);
-});
-
-test('selector: si Apify falla NO se cae automáticamente a SearchAPI', async () => {
+test('hoteles: si Apify falla se devuelve su error, sin ningún otro servicio ni resultados inventados', async () => {
   const c = clienteFalso({ fallo: Object.assign(new Error('boom'), { statusCode: 500 }) });
-  let peticionesSearchApi = 0;
-  const fetchSearchApi = (async () => { peticionesSearchApi++; return new Response('{}'); }) as unknown as typeof fetch;
-  const r = await buscarHotelesConEstado(
-    { destino: 'Budapest, Hungría', ...base },
-    { proveedor: 'apify', apify: dep(c), searchapi: { apiKey: 'x', fetch: fetchSearchApi, registrar: sinLog } },
-  );
+  const r = await buscarHotelesConEstado({ destino: 'Budapest, Hungría', ...base }, { apify: dep(c) });
   assert.equal(r.estado, 'error_proveedor');
-  assert.equal(peticionesSearchApi, 0);
+  assert.equal(r.hoteles.length, 0);
 });
 
 /* ======================= CLASIFICACIÓN ======================= */
@@ -526,16 +478,10 @@ test('si el país devuelto no es el esperado se rechaza (homónimo de otro país
   assert.equal(r.codigoError, 'destino_no_verificado');
 });
 
-test('la salida cumple el esquema del agente (hotelApifyOutputSchema) y el esquema original de SearchAPI no cambia', async () => {
+test('la salida cumple el esquema del agente (hotelApifyOutputSchema)', async () => {
   const c = clienteFalso({ filas: COLOMBIA.filter((f) => f.searchLocation === 'Medellín') });
   const r = await buscarHotelesApifyConEstado({ destino: 'Medellín, Colombia', ...base }, dep(c));
   assert.doesNotThrow(() => hotelApifyOutputSchema.parse(r));
-  const campos = Object.keys((hotelOutputSchema.shape.hoteles.element as any).shape);
-  assert.deepEqual(campos, [
-    'nombre', 'estrellas', 'valoracion', 'valoracionEscala', 'numeroResenas', 'precioTotal', 'precioPorNoche',
-    'precioDisponible', 'precioCalculado', 'fuentePrecio', 'moneda', 'habitacion', 'disponibilidad',
-    'habitacionesDisponibles', 'cancelacionGratuita', 'cancelacionHasta', 'url', 'imagen', 'zona', 'distanciaCentro',
-  ]);
 });
 
 test('el esquema del agente es compatible con salida estructurada estricta: ningún campo opcional (los datos ausentes son null)', () => {

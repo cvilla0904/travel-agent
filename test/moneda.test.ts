@@ -3,7 +3,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { formatearImporte, monedaComun, monedaDesdeTexto, monedaIso, SIN_MONEDA, SIN_PRECIO } from '../src/services/moneda.ts';
 import { normalizarVueloIdaVuelta, combinarItinerarioAbierto, crearEnlaceBusquedaGoogleFlights } from '../src/services/vuelos.ts';
-import { normalizarPropiedades } from '../src/services/searchapi.ts';
 import { normalizarFilasApify } from '../src/services/hoteles-apify-normalizar.ts';
 import { extraerMoneda, extraerPrecio } from '../src/services/precios-actividades.ts';
 import { actividadParaMultidestino } from '../src/services/actividades-ciudad.ts';
@@ -50,17 +49,6 @@ test('vuelos: la moneda es la del proveedor; sin moneda queda vacía (no EUR); e
   const ok = { ...ctx, destinoRegreso: 'BRU', fechaVuelta: '2027-03-17' };
   assert.equal(combinarItinerarioAbierto(vueloCrudo({ currency: 'EUR' }), vueloCrudo({ currency: 'EUR' }), ok).moneda, 'EUR');
   assert.equal(combinarItinerarioAbierto(vueloCrudo({ currency: 'EUR' }), vueloCrudo({ currency: 'USD' }), ok).moneda, '', 'monedas distintas: no se suman');
-});
-
-test('hoteles SearchAPI: moneda declarada (campo o texto) o vacía; nunca EUR por defecto', () => {
-  const props = [
-    { title: 'A', link: 'https://www.booking.com/hotel/a.html', extracted_price: 100, currency: 'GBP' },
-    { title: 'B', link: 'https://www.booking.com/hotel/b.html', price: '€ 90' },
-    { title: 'C', link: 'https://www.booking.com/hotel/c.html', extracted_price: 80 },
-  ];
-  const r = normalizarPropiedades(props, 2, 'EUR', 10);
-  const por = Object.fromEntries(r.map((h) => [h.nombre, h.moneda]));
-  assert.deepEqual(por, { A: 'GBP', B: 'EUR', C: '' });
 });
 
 test('hoteles Apify: moneda de la fila; sin ella, vacía', () => {

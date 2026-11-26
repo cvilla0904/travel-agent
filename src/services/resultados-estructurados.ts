@@ -252,10 +252,10 @@ export function bloqueVuelos(r: any): BloqueVuelos {
 }
 
 /* =========================================================
-   HOTELES (SearchAPI y Apify con el mismo formato)
+   HOTELES (Apify / Google Hotels)
    ========================================================= */
 
-export function bloqueHoteles(r: any, proveedorId: 'searchapi' | 'apify'): BloqueHoteles {
+export function bloqueHoteles(r: any): BloqueHoteles {
   const estadoCrudo = String(r?.estado ?? '');
   const estado: EstadoBloque = estadoCrudo === 'ok' || estadoCrudo === 'sin_resultados' || estadoCrudo === 'error_proveedor' || estadoCrudo === 'error_interno'
     ? estadoCrudo : 'error_interno';
@@ -304,7 +304,7 @@ export function bloqueHoteles(r: any, proveedorId: 'searchapi' | 'apify'): Bloqu
   const fallo = estado === 'error_proveedor' || estado === 'error_interno';
   return {
     tipo: 'hoteles',
-    proveedor: proveedorId === 'apify' ? { id: 'apify-google-hotels', nombre: 'Google Hotels (Apify)' } : { id: 'searchapi-booking', nombre: 'Booking.com (SearchAPI)' },
+    proveedor: { id: 'apify-google-hotels', nombre: 'Google Hotels (Apify)' },
     estado,
     error: fallo ? texto(r?.error) : null,
     avisos,

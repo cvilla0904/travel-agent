@@ -140,7 +140,7 @@ test('estados: error del proveedor ≠ sin resultados ≠ parcial; ninguno inven
   try {
     const datos = agruparBloques([
       bloqueVuelos(vuelosRaw([], 'error_proveedor', { error: 'Apify no responde' })),
-      bloqueHoteles(hotelesRaw([], 'sin_resultados'), 'searchapi'),
+      bloqueHoteles(hotelesRaw([], 'sin_resultados')),
       bloqueActividades(actividadesRaw([actRaw('Atomium')], 'parcial', { mensaje: 'La ejecución sigue en marcha.' })),
     ]);
     const r = await pinta(p, datos);
@@ -244,7 +244,7 @@ test('página: «Añadir a mi viaje» usa la moneda real del dato y respeta la b
 });
 
 test('página: un seguimiento sin búsquedas no borra los resultados y uno de hoteles solo sustituye los hoteles; los contadores siguen los datos', { skip: omitir }, async () => {
-  const nuevosHoteles = agruparBloques([bloqueHoteles(hotelesRaw([hotelRaw('Hotel Nuevo')]), 'searchapi')]);
+  const nuevosHoteles = agruparBloques([bloqueHoteles(hotelesRaw([hotelRaw('Hotel Nuevo')]))]);
   const t = await pagina([
     { response: 'Primera.', resultados: DATOS },
     { response: 'Solo conversación.', resultados: { version: 1, vuelos: [], hoteles: [], actividades: [] } },
