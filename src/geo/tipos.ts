@@ -17,8 +17,10 @@ export interface Ciudad {
   poblacion: number; lat: number; lon: number;
   /** Nombres alternativos ya normalizados (sin acentos, minúsculas). */
   nombres: string[];
-  /** IATA de los aeropuertos comerciales asociados a esta ciudad. */
+  /** IATA de los aeropuertos comerciales asociados a esta ciudad (máximo 3; el primero es el principal). */
   aeropuertos: string[];
+  /** Código IATA de ciudad (metropolitano: PAR, LON, ROM…), solo cuando IATA define uno. Distinto de los de aeropuerto. */
+  codigoCiudad?: string;
 }
 
 /** Ficha mínima de una ciudad para mostrar y resolver destinos (sin lista de nombres alternativos). */

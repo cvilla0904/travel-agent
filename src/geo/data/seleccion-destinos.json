@@ -1,0 +1,455 @@
+{
+  "descripcion": "Criterios editoriales de la selección de destinos (scripts/seleccionar-catalogo-geo.ts). Las ciudades se indican como «nombre|ISO» y se resuelven a la de mayor población con ese nombre en el país. Los códigos IATA de ciudad (metropolitanos) y los aeropuertos son los habituales del sector; NO se han contrastado todavía con el directorio oficial de IATA (ver docs/CATALOGO-DESTINOS.md).",
+  "maxAeropuertosPorCiudad": 3,
+  "poblacionMinima": 500000,
+  "codigosCiudad": {
+    "Paris|FR": "PAR",
+    "London|GB": "LON",
+    "Rome|IT": "ROM",
+    "Milan|IT": "MIL",
+    "New York City|US": "NYC",
+    "Washington|US": "WAS",
+    "Chicago|US": "CHI",
+    "Moscow|RU": "MOW",
+    "Stockholm|SE": "STO",
+    "Tokyo|JP": "TYO",
+    "Osaka|JP": "OSA",
+    "Seoul|KR": "SEL",
+    "Buenos Aires|AR": "BUE",
+    "Rio de Janeiro|BR": "RIO",
+    "Sao Paulo|BR": "SAO",
+    "Jakarta|ID": "JKT",
+    "Beijing|CN": "BJS",
+    "Montreal|CA": "YMQ",
+    "Toronto|CA": "YTO"
+  },
+  "aeropuertosPrincipales": {
+    "Paris|FR": [
+      "CDG",
+      "ORY",
+      "BVA"
+    ],
+    "London|GB": [
+      "LHR",
+      "LGW",
+      "STN"
+    ],
+    "Rome|IT": [
+      "FCO",
+      "CIA"
+    ],
+    "Milan|IT": [
+      "MXP",
+      "LIN",
+      "BGY"
+    ],
+    "New York City|US": [
+      "JFK",
+      "EWR",
+      "LGA"
+    ],
+    "Washington|US": [
+      "IAD",
+      "DCA",
+      "BWI"
+    ],
+    "Chicago|US": [
+      "ORD",
+      "MDW"
+    ],
+    "Moscow|RU": [
+      "SVO",
+      "DME",
+      "VKO"
+    ],
+    "Stockholm|SE": [
+      "ARN",
+      "BMA"
+    ],
+    "Tokyo|JP": [
+      "HND",
+      "NRT"
+    ],
+    "Osaka|JP": [
+      "KIX",
+      "ITM"
+    ],
+    "Seoul|KR": [
+      "ICN",
+      "GMP"
+    ],
+    "Buenos Aires|AR": [
+      "EZE",
+      "AEP"
+    ],
+    "Rio de Janeiro|BR": [
+      "GIG",
+      "SDU"
+    ],
+    "Sao Paulo|BR": [
+      "GRU",
+      "CGH",
+      "VCP"
+    ],
+    "Istanbul|TR": [
+      "IST",
+      "SAW"
+    ],
+    "Brussels|BE": [
+      "BRU",
+      "CRL"
+    ],
+    "Venice|IT": [
+      "VCE",
+      "TSF"
+    ],
+    "Barcelona|ES": [
+      "BCN"
+    ],
+    "Madrid|ES": [
+      "MAD"
+    ],
+    "Berlin|DE": [
+      "BER"
+    ],
+    "Lisbon|PT": [
+      "LIS"
+    ],
+    "Porto|PT": [
+      "OPO"
+    ],
+    "Amsterdam|NL": [
+      "AMS"
+    ],
+    "Oslo|NO": [
+      "OSL"
+    ],
+    "Sarajevo|BA": [
+      "SJJ"
+    ],
+    "Dubrovnik|HR": [
+      "DBV"
+    ],
+    "Budapest|HU": [
+      "BUD"
+    ],
+    "Bangkok|TH": [
+      "BKK",
+      "DMK"
+    ],
+    "Shanghai|CN": [
+      "PVG",
+      "SHA"
+    ],
+    "Beijing|CN": [
+      "PEK",
+      "PKX"
+    ],
+    "Los Angeles|US": [
+      "LAX"
+    ],
+    "Miami|US": [
+      "MIA"
+    ],
+    "Dubai|AE": [
+      "DXB"
+    ],
+    "Singapore|SG": [
+      "SIN"
+    ],
+    "Marrakesh|MA": [
+      "RAK"
+    ],
+    "Cairo|EG": [
+      "CAI"
+    ],
+    "Mexico City|MX": [
+      "MEX"
+    ],
+    "Panama City|PA": [
+      "PTY",
+      "PAC"
+    ],
+    "Bucharest|RO": [
+      "OTP",
+      "BBU"
+    ],
+    "Kuwait City|KW": [
+      "KWI"
+    ]
+  },
+  "imprescindibles": [
+    "Madrid|ES",
+    "Barcelona|ES",
+    "Paris|FR",
+    "London|GB",
+    "Brussels|BE",
+    "Amsterdam|NL",
+    "Berlin|DE",
+    "Rome|IT",
+    "Milan|IT",
+    "Lisbon|PT",
+    "Porto|PT",
+    "Prague|CZ",
+    "Vienna|AT",
+    "Budapest|HU",
+    "Warsaw|PL",
+    "Krakow|PL",
+    "Athens|GR",
+    "Istanbul|TR",
+    "Copenhagen|DK",
+    "Stockholm|SE",
+    "Oslo|NO",
+    "Helsinki|FI",
+    "Dublin|IE",
+    "Edinburgh|GB",
+    "Dubrovnik|HR",
+    "Split|HR",
+    "Zagreb|HR",
+    "Sarajevo|BA",
+    "Belgrade|RS",
+    "Sofia|BG",
+    "Bucharest|RO",
+    "Tirana|AL",
+    "Reykjavik|IS",
+    "New York City|US",
+    "Miami|US",
+    "Los Angeles|US",
+    "Tokyo|JP",
+    "Bangkok|TH",
+    "Singapore|SG",
+    "Dubai|AE",
+    "Marrakesh|MA",
+    "Cairo|EG",
+    "Buenos Aires|AR",
+    "Rio de Janeiro|BR",
+    "Mexico City|MX"
+  ],
+  "nombresEs": {
+    "Brussels|BE": [
+      "bruselas"
+    ],
+    "Paris|FR": [
+      "paris"
+    ],
+    "London|GB": [
+      "londres"
+    ],
+    "Rome|IT": [
+      "roma"
+    ],
+    "Milan|IT": [
+      "milan"
+    ],
+    "New York City|US": [
+      "nueva york"
+    ],
+    "Moscow|RU": [
+      "moscu"
+    ],
+    "Tokyo|JP": [
+      "tokio"
+    ],
+    "Singapore|SG": [
+      "singapur"
+    ],
+    "Dubai|AE": [
+      "dubai"
+    ],
+    "Marrakesh|MA": [
+      "marrakech"
+    ],
+    "Cairo|EG": [
+      "el cairo",
+      "cairo"
+    ],
+    "Mexico City|MX": [
+      "ciudad de mexico"
+    ],
+    "Rio de Janeiro|BR": [
+      "rio de janeiro",
+      "rio"
+    ],
+    "Sydney|AU": [
+      "sidney",
+      "sydney"
+    ],
+    "Athens|GR": [
+      "atenas"
+    ],
+    "Istanbul|TR": [
+      "estambul"
+    ],
+    "Prague|CZ": [
+      "praga"
+    ],
+    "Vienna|AT": [
+      "viena"
+    ],
+    "Warsaw|PL": [
+      "varsovia"
+    ],
+    "Krakow|PL": [
+      "cracovia"
+    ],
+    "Copenhagen|DK": [
+      "copenhague"
+    ],
+    "Lisbon|PT": [
+      "lisboa"
+    ],
+    "Seville|ES": [
+      "sevilla"
+    ],
+    "Luxembourg|LU": [
+      "luxemburgo"
+    ],
+    "Male|MV": [
+      "maldivas",
+      "male"
+    ],
+    "Kuwait City|KW": [
+      "kuwait"
+    ],
+    "Panama City|PA": [
+      "panama"
+    ],
+    "Manama|BH": [
+      "bahrein",
+      "bahrain",
+      "manama"
+    ],
+    "Algiers|DZ": [
+      "argel"
+    ],
+    "Port Louis|MU": [
+      "mauricio",
+      "isla mauricio"
+    ],
+    "Nicosia|CY": [
+      "chipre"
+    ],
+    "Havana|CU": [
+      "la habana",
+      "habana"
+    ],
+    "Kyoto|JP": [
+      "kioto"
+    ],
+    "Reykjavik|IS": [
+      "reikiavik"
+    ],
+    "Bucharest|RO": [
+      "bucarest"
+    ],
+    "Belgrade|RS": [
+      "belgrado"
+    ],
+    "Sofia|BG": [
+      "sofia"
+    ],
+    "Edinburgh|GB": [
+      "edimburgo"
+    ],
+    "Dublin|IE": [
+      "dublin"
+    ],
+    "Stockholm|SE": [
+      "estocolmo"
+    ],
+    "Geneva|CH": [
+      "ginebra"
+    ],
+    "Zurich|CH": [
+      "zurich"
+    ],
+    "Munich|DE": [
+      "munich"
+    ],
+    "Cologne|DE": [
+      "colonia"
+    ],
+    "Naples|IT": [
+      "napoles"
+    ],
+    "Florence|IT": [
+      "florencia"
+    ],
+    "Venice|IT": [
+      "venecia"
+    ],
+    "Genoa|IT": [
+      "genova"
+    ],
+    "Turin|IT": [
+      "turin"
+    ],
+    "Bologna|IT": [
+      "bolonia"
+    ],
+    "Nice|FR": [
+      "niza"
+    ],
+    "Cape Town|ZA": [
+      "ciudad del cabo"
+    ],
+    "Hanoi|VN": [
+      "hanoi"
+    ],
+    "Kathmandu|NP": [
+      "katmandu"
+    ],
+    "Tel Aviv|IL": [
+      "tel aviv"
+    ],
+    "Amman|JO": [
+      "aman"
+    ],
+    "Abu Dhabi|AE": [
+      "abu dabi"
+    ],
+    "Vilnius|LT": [
+      "vilna"
+    ],
+    "Tangier|MA": [
+      "tanger"
+    ],
+    "Tunis|TN": [
+      "tunez"
+    ],
+    "Mumbai|IN": [
+      "bombay"
+    ],
+    "Hamburg|DE": [
+      "hamburgo"
+    ],
+    "Salzburg|AT": [
+      "salzburgo"
+    ],
+    "Ghent|BE": [
+      "gante"
+    ],
+    "Bruges|BE": [
+      "brujas"
+    ],
+    "Santiago|CL": [
+      "santiago de chile"
+    ],
+    "Lima|PE": [
+      "lima"
+    ],
+    "Bogota|CO": [
+      "bogota"
+    ],
+    "San Jose|CR": [
+      "san jose de costa rica"
+    ],
+    "Valletta|MT": [
+      "malta",
+      "la valeta"
+    ],
+    "Oranjestad|AW": [
+      "aruba"
+    ]
+  }
+}

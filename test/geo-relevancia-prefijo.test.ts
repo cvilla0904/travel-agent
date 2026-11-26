@@ -32,6 +32,6 @@ test('no se degrada: los nombres exactos de ciudades grandes siguen primero', ()
 
 test('los pueblos pequeños siguen siendo buscables (solo se ordenan después)', () => {
   const ada = buscarDestinos(cat, 'ada', { limite: 12 }).map((r) => r.nombre);
-  assert.ok(ada.includes('Ada'), 'Ada sigue apareciendo');
+  assert.ok(ada.includes('Adamstown'), 'Adamstown (capital de Pitcairn) sigue apareciendo tras las ciudades grandes');
   assert.ok(nombres('salento', 12).filter((n) => n === 'Salento').length >= 2, 'ambos Salento (Colombia, Italia) siguen apareciendo');
 });

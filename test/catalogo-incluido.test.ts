@@ -16,7 +16,7 @@ test('el catálogo versionado es v3, íntegro y completo', () => {
   assert.deepEqual(verificarIntegridad(DIR_CATALOGO), []);
   const meta = JSON.parse(fs.readFileSync(path.join(DIR_CATALOGO, 'meta.json'), 'utf8'));
   assert.equal(meta.formato, FORMATO_CATALOGO);
-  assert.ok(meta.ciudades > 150_000, `ciudades: ${meta.ciudades}`);
+  assert.ok(meta.ciudades > 3_000 && meta.ciudades < 10_000, `ciudades: ${meta.ciudades} (catálogo de destinos, no mundial)`);
   assert.ok(meta.aeropuertos > 3_000, `aeropuertos: ${meta.aeropuertos}`);
   assert.ok(meta.buckets > 10_000);
   // Todos los archivos del directorio están declarados en meta.json (ni datos sobrantes ni faltantes).

@@ -51,8 +51,8 @@ test('casos ambiguos pedidos: Venecia, Nápoles, Sevilla, Florencia, Colonia, Pa
     const d = datosCiudad(t);
     if (d) assert.ok(km(d, curada) > 100, `${t} no debe resolverse al centro curado (${d.en})`);
   }
-  assert.equal(datosCiudad('Madrid, Colombia')!.en, 'Madrid');
-  assert.ok(km(datosCiudad('Madrid, Colombia')!, datosCiudad('Madrid, España')!) > 1000);
+  // El catálogo de destinos no incluye el municipio de Madrid (Colombia): no se le atribuye el centro de Madrid (España).
+  assert.equal(datosCiudad('Madrid, Colombia'), null);
 });
 
 test('sin país en el texto la tabla manda (Madrid, Venecia, Sevilla)', () => {

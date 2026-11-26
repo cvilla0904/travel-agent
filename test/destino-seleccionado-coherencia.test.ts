@@ -17,6 +17,23 @@ const CANONICO: Record<string, { nombre: string; pais: string; codigoPais: strin
   'gn:3687238': { nombre: 'Cartagena', pais: 'Colombia', codigoPais: 'CO', region: 'Bolívar', etiqueta: 'Cartagena, Bolívar, Colombia' },
   'gn:2520058': { nombre: 'Cartagena', pais: 'España', codigoPais: 'ES', region: 'Región de Murcia', etiqueta: 'Cartagena, Región de Murcia, España' },
   'ed:salento-apulia': { nombre: 'Salento', pais: 'Italia', codigoPais: 'IT', region: 'Apulia', etiqueta: 'Salento, Apulia, Italia' },
+  'ed:algarve': { nombre: 'Algarve', pais: 'Portugal', codigoPais: 'PT', region: 'Algarve', etiqueta: 'Algarve, Portugal' },
+  'ed:azores': { nombre: 'Azores', pais: 'Portugal', codigoPais: 'PT', region: 'Azores', etiqueta: 'Azores, Portugal' },
+  'ed:bali': { nombre: 'Bali', pais: 'Indonesia', codigoPais: 'ID', region: 'Bali', etiqueta: 'Bali, Indonesia' },
+  'ed:cerdena': { nombre: 'Cerdeña', pais: 'Italia', codigoPais: 'IT', region: 'Cerdeña', etiqueta: 'Cerdeña, Italia' },
+  'ed:corcega': { nombre: 'Córcega', pais: 'Francia', codigoPais: 'FR', region: 'Córcega', etiqueta: 'Córcega, Francia' },
+  'ed:creta': { nombre: 'Creta', pais: 'Grecia', codigoPais: 'GR', region: 'Creta', etiqueta: 'Creta, Grecia' },
+  'ed:dolomitas': { nombre: 'Dolomitas', pais: 'Italia', codigoPais: 'IT', region: 'Trentino-Alto Adigio', etiqueta: 'Dolomitas, Trentino-Alto Adigio, Italia' },
+  'ed:fuerteventura': { nombre: 'Fuerteventura', pais: 'España', codigoPais: 'ES', region: 'Canarias', etiqueta: 'Fuerteventura, Canarias, España' },
+  'ed:gran-canaria': { nombre: 'Gran Canaria', pais: 'España', codigoPais: 'ES', region: 'Canarias', etiqueta: 'Gran Canaria, Canarias, España' },
+  'ed:isla-de-pascua': { nombre: 'Isla de Pascua', pais: 'Chile', codigoPais: 'CL', region: 'Valparaíso', etiqueta: 'Isla de Pascua, Valparaíso, Chile' },
+  'ed:lanzarote': { nombre: 'Lanzarote', pais: 'España', codigoPais: 'ES', region: 'Canarias', etiqueta: 'Lanzarote, Canarias, España' },
+  'ed:madeira': { nombre: 'Madeira', pais: 'Portugal', codigoPais: 'PT', region: 'Madeira', etiqueta: 'Madeira, Portugal' },
+  'ed:mallorca': { nombre: 'Mallorca', pais: 'España', codigoPais: 'ES', region: 'Islas Baleares', etiqueta: 'Mallorca, Islas Baleares, España' },
+  'ed:menorca': { nombre: 'Menorca', pais: 'España', codigoPais: 'ES', region: 'Islas Baleares', etiqueta: 'Menorca, Islas Baleares, España' },
+  'ed:positano': { nombre: 'Positano', pais: 'Italia', codigoPais: 'IT', region: 'Campania', etiqueta: 'Positano, Campania, Italia' },
+  'ed:santorini': { nombre: 'Santorini', pais: 'Grecia', codigoPais: 'GR', region: 'Cícladas', etiqueta: 'Santorini, Cícladas, Grecia' },
+  'ed:sicilia': { nombre: 'Sicilia', pais: 'Italia', codigoPais: 'IT', region: 'Sicilia', etiqueta: 'Sicilia, Italia' },
 };
 
 /** Combinaciones contradictorias que un cliente manipulado (o con un fallo) podría enviar con ese identificador. */

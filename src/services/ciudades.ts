@@ -133,6 +133,11 @@ export const CIUDADES_EQUIVALENTES: GrupoCiudadCurada[] = [
   { consulta: 'Salento', nombres: DESTINOS_EDITORIALES[SALENTO_APULIA]!.nombres, pais: 'it', regiones: DESTINOS_EDITORIALES[SALENTO_APULIA]!.claves,
     region: DESTINOS_EDITORIALES[SALENTO_APULIA]!.region, paisNombre: DESTINOS_EDITORIALES[SALENTO_APULIA]!.paisNombre,
     centro: { es: DESTINOS_EDITORIALES[SALENTO_APULIA]!.nombre, lat: DESTINOS_EDITORIALES[SALENTO_APULIA]!.centro.lat, lng: DESTINOS_EDITORIALES[SALENTO_APULIA]!.centro.lon, radioKm: DESTINOS_EDITORIALES[SALENTO_APULIA]!.centro.radioKm } },
+  // Fuente única: el resto de zonas e islas de geo/destinos-editoriales.ts (Menorca, Santorini, Bali…) con su centro y radio.
+  ...Object.values(DESTINOS_EDITORIALES).filter((d) => d.id !== SALENTO_APULIA).map((d): GrupoCiudadCurada => ({
+    consulta: d.nombre, nombres: d.nombres, pais: d.pais.toLowerCase(), regiones: [...new Set([...d.claves, normalizarTexto(d.region)])], region: d.region, paisNombre: d.paisNombre,
+    centro: { es: d.nombre, lat: d.centro.lat, lng: d.centro.lon, radioKm: d.centro.radioKm },
+  })),
 ];
 
 /**

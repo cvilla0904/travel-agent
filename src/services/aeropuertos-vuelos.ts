@@ -1,22 +1,20 @@
 /**
  * Resolución del aeropuerto IATA de un origen o destino de vuelos.
  *
- * Antes: un diccionario fijo de ciudades en español. El destino se traducía al inglés («Bruselas» → «Brussels») ANTES de
- * buscarlo en ese diccionario, así que ciudades presentes solo con su nombre español (o ausentes, como Sarajevo) fallaban con
- * «No he podido identificar el aeropuerto».
+ * Fuente única: el catálogo de destinos (src/geo). No hay diccionarios paralelos: el aeropuerto principal de cada destino es el
+ * primero de su lista (src/geo/data/seleccion-destinos.json → aeropuertosPrincipales).
  *
- * Ahora, por orden:
- *  1. Código IATA escrito («BRU», «Bruselas (BRU)»).
+ * Por orden:
+ *  1. Código IATA escrito («BRU», «Bruselas (BRU)»). Un código de CIUDAD («PAR», «ROM», «LON») se traduce al aeropuerto principal
+ *     de esa ciudad: a los proveedores solo se les envían códigos de aeropuerto.
  *  2. Aeropuerto fijado por el servidor a partir del destino elegido en el autocompletado (destino-fijado.ts).
- *  3. Con país escrito («Cartagena, España»): el catálogo manda sobre el diccionario (que solo conoce la ciudad más famosa).
- *  4. Diccionario de aeropuertos principales (español e inglés).
- *  5. Catálogo geográfico (GeoNames + OurAirports): el nombre ORIGINAL, su nombre base, la traducción habitual y, si lo
- *     escrito nombra un aeropuerto («Brussels Airport»), el aeropuerto por su nombre o la ciudad sin esa palabra.
- *  6. Sin aeropuerto propio: el aeropuerto de acceso más cercano del catálogo, marcado como tal (nunca en silencio).
+ *  3. Con país escrito («Cartagena, España»): el catálogo distingue homónimos.
+ *  4. Catálogo geográfico: el nombre ORIGINAL, su nombre base, la traducción habitual y, si lo escrito nombra un aeropuerto
+ *     («Brussels Airport»), el aeropuerto por su nombre o la ciudad sin esa palabra.
+ *  5. Sin aeropuerto propio: el aeropuerto de acceso más cercano del catálogo, marcado como tal (nunca en silencio).
  * Si nada resuelve, error de parámetros claro (nunca un aeropuerto inventado).
  */
 import { catalogoGeoActual, codigoPaisDesdeDestino, consultaProveedorParaCiudad, nombreBaseCiudad, normalizarTexto } from './ciudades.js';
-import { AEROPUERTOS } from './aeropuertos-diccionario.js';
 import { buscarDestinos } from '../geo/buscar.js';
 import { accesoAereoDeCiudad } from '../geo/aeropuertos.js';
 import { destinoEditorial } from '../geo/destinos-editoriales.js';
@@ -25,7 +23,7 @@ import type { Aeropuerto } from '../geo/tipos.js';
 import type { DestinoSeleccionado } from './destino-seleccionado.js';
 import { ErrorVuelos } from './errores-vuelos.js';
 
-export type ViaAeropuerto = 'iata' | 'fijado' | 'catalogo-pais' | 'diccionario' | 'catalogo-ciudad' | 'catalogo-aeropuerto' | 'catalogo-traduccion' | 'catalogo-acceso';
+export type ViaAeropuerto = 'iata' | 'fijado' | 'catalogo-pais' | 'catalogo-ciudad' | 'catalogo-aeropuerto' | 'catalogo-traduccion' | 'catalogo-acceso';
 
 export interface AeropuertoResuelto {
   iata: string;
@@ -50,16 +48,21 @@ function nombraAeropuerto(texto: string): boolean {
   return /\b(?:airport|aeropuerto|aeroport|aeroporto|flughafen)\b/.test(sinAcentos(texto));
 }
 
-/** De varios aeropuertos de una ciudad: el del diccionario si está entre ellos; si no, un «large»; si no, el primero. */
-function elegirPrincipal(iatas: string[], cat: Catalogo, nombresCiudad: string[]): string | undefined {
-  if (!iatas.length) return undefined;
-  if (iatas.length === 1) return iatas[0];
-  for (const n of nombresCiudad) {
-    const d = AEROPUERTOS[n] ?? AEROPUERTOS[sinAcentos(n)];
-    if (d && iatas.includes(d)) return d;
+/** De varios aeropuertos de una ciudad, el principal es el primero (el catálogo los entrega ordenados). */
+function elegirPrincipal(iatas: string[]): string | undefined {
+  return iatas[0];
+}
+
+/** Aeropuerto principal de la ciudad que tiene ese código IATA de CIUDAD («PAR» → CDG), o undefined si no es un código de ciudad. */
+function aeropuertoDeCodigoCiudad(cat: Catalogo, codigo: string): string | undefined {
+  const c = codigo.toUpperCase();
+  if (cat.aeropuertoPorIata(c)) return undefined; // es un aeropuerto: se usa tal cual
+  for (const e of cat.entradas(c.toLowerCase())) {
+    if (e[0] !== 'c') continue;
+    const ciudad = cat.ciudad(e[1], e[2]);
+    if (ciudad?.codigoCiudad === c && ciudad.aeropuertos.length) return elegirPrincipal(ciudad.aeropuertos);
   }
-  const grandes = iatas.filter((i) => cat.aeropuertoPorIata(i)?.tipo === 'large');
-  return grandes[0] ?? iatas[0];
+  return undefined;
 }
 
 function datosAeropuerto(cat: Catalogo, iata: string): { nombre?: string } {
@@ -92,7 +95,7 @@ function desdeCatalogo(cat: Catalogo, consulta: string, pais?: string): Aeropuer
     const nombres = [r.nombre, ...(r.alias ? [r.alias] : [])].map(sinAcentos);
     if (r.coincidencia !== 'exacta' && !nombres.includes(claveConsulta)) continue;
     if (r.aeropuertos?.length) {
-      const iata = elegirPrincipal(r.aeropuertos, cat, [claveConsulta, sinAcentos(r.nombre)])!;
+      const iata = elegirPrincipal(r.aeropuertos)!;
       return { iata, ...datosAeropuerto(cat, iata), via: 'catalogo-ciudad', entrada: consulta };
     }
     if (r.codigoPais) {
@@ -126,7 +129,7 @@ export function aeropuertoDeDestinoSeleccionado(d: DestinoSeleccionado, cat: Cat
     const ciudad = cat.ciudad(d.id, d.codigoPais.toUpperCase());
     if (!ciudad) return undefined;
     if (ciudad.aeropuertos.length) {
-      const iata = elegirPrincipal(ciudad.aeropuertos, cat, [sinAcentos(ciudad.nombre), sinAcentos(d.nombre)])!;
+      const iata = elegirPrincipal(ciudad.aeropuertos)!;
       return { iata, ...datosAeropuerto(cat, iata), via: 'fijado', entrada };
     }
     const acceso = accesoAereoDeCiudad(cat, ciudad).acceso[0];
@@ -143,17 +146,20 @@ export function resolverAeropuertoVuelo(valor: string, campo: string, cat?: Cata
     `No he podido identificar el aeropuerto IATA de ${campo} ("${entrada}"). Prueba con un código IATA de tres letras, por ejemplo BIO, MAD o FCO.`);
   if (!entrada) throw fallo();
 
-  // 1. Código IATA, solo o entre paréntesis.
-  if (/^[A-Za-z]{3}$/.test(entrada)) return { iata: entrada.toUpperCase(), via: 'iata', entrada };
-  const entreParentesis = entrada.match(/\(([A-Za-z]{3})\)\s*$/);
-  if (entreParentesis) return { iata: entreParentesis[1]!.toUpperCase(), via: 'iata', entrada };
+  let catalogo: Catalogo | undefined = cat;
+  try { catalogo ??= catalogoGeoActual(); } catch { catalogo = undefined; }
+
+  // 1. Código IATA, solo o entre paréntesis. Un código de ciudad se traduce a su aeropuerto principal.
+  const codigoEscrito = /^[A-Za-z]{3}$/.test(entrada) ? entrada : entrada.match(/\(([A-Za-z]{3})\)\s*$/)?.[1];
+  if (codigoEscrito) {
+    let principal: string | undefined;
+    try { principal = catalogo ? aeropuertoDeCodigoCiudad(catalogo, codigoEscrito) : undefined; } catch { principal = undefined; }
+    if (principal) return { iata: principal, ...(catalogo ? datosAeropuerto(catalogo, principal) : {}), via: 'iata', entrada, aviso: `${codigoEscrito.toUpperCase()} es un código de ciudad: se usa su aeropuerto principal ${principal}.` };
+    return { iata: codigoEscrito.toUpperCase(), via: 'iata', entrada };
+  }
 
   const base = nombreBaseCiudad(entrada);
   const tienePais = entrada.includes(',');
-  const delDiccionario = (t: string) => AEROPUERTOS[t.toLocaleLowerCase('es')] ?? AEROPUERTOS[sinAcentos(t)];
-
-  let catalogo: Catalogo | undefined = cat;
-  try { catalogo ??= catalogoGeoActual(); } catch { catalogo = undefined; }
 
   // 3. Con país escrito: el catálogo, que sí distingue homónimos («Cartagena, España» no es CTG de Colombia).
   if (tienePais && catalogo) {
@@ -161,14 +167,10 @@ export function resolverAeropuertoVuelo(valor: string, campo: string, cat?: Cata
       const codigo = codigoPaisDesdeDestino(entrada)?.toUpperCase();
       const r = codigo ? desdeCatalogo(catalogo, base, codigo) : undefined;
       if (r) return { ...r, via: 'catalogo-pais', entrada };
-    } catch { /* catálogo no disponible: se sigue con el diccionario */ }
+    } catch { /* catálogo no disponible */ }
   }
 
-  // 4. Diccionario de aeropuertos principales.
-  const dic = delDiccionario(entrada) ?? delDiccionario(base);
-  if (dic) return { iata: dic, ...(catalogo ? datosAeropuerto(catalogo, dic) : {}), via: 'diccionario', entrada };
-
-  // 5. Catálogo: nombre original, base, traducción habitual, aeropuerto por nombre o ciudad sin la palabra «aeropuerto».
+  // 4. Catálogo: nombre original, base, traducción habitual, aeropuerto por nombre o ciudad sin la palabra «aeropuerto».
   if (catalogo) {
     try {
       if (nombraAeropuerto(entrada)) {
@@ -178,8 +180,6 @@ export function resolverAeropuertoVuelo(valor: string, campo: string, cat?: Cata
       const sinPalabra = quitarPalabrasAeropuerto(entrada);
       const candidatas = [...new Set([entrada, base, sinPalabra, quitarPalabrasAeropuerto(base), consultaProveedorParaCiudad(entrada)].filter((c) => c && c.length >= 3))];
       for (const c of candidatas) {
-        const d = delDiccionario(c);
-        if (d) return { iata: d, ...datosAeropuerto(catalogo, d), via: 'diccionario', entrada };
         const r = desdeCatalogo(catalogo, c);
         if (r) return { ...r, via: c === consultaProveedorParaCiudad(entrada) && c !== entrada && c !== base ? 'catalogo-traduccion' : r.via, entrada };
       }
