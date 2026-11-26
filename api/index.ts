@@ -4,7 +4,7 @@ import { Redis } from '@upstash/redis';
 import { agenteParaModo } from '../src/index.js';
 import { mensajeConDestinoSeleccionado } from '../src/services/destino-seleccionado.js';
 import { turnoChat } from '../src/services/chat-contrato.js';
-import { claveModoSesion, resolverModo, validarModo } from '../src/services/modo-busqueda.js';
+import { claveModoSesion, resolverModo, validarModo, mensajeConFechasHotel, validarFechasHotel } from '../src/services/modo-busqueda.js';
 
 const app = express();
 
@@ -34,8 +34,10 @@ app.post('/api/chat', async (req, res) => {
     const validacion = validarModo(req.body?.modo);
     if (!validacion.ok) return res.status(validacion.status).json({ error: validacion.error });
     const modo = resolverModo(validacion.modo, await redis.get<string>(claveModoSesion(sessionId)));
+    const fechasHotel = validarFechasHotel(modo, req.body?.fechas);
+    if (!fechasHotel.ok) return res.status(fechasHotel.status).json({ error: fechasHotel.error });
 
-    const mensajeAgente = mensajeConDestinoSeleccionado(userMessage, req.body?.destinoSeleccionado);
+    const mensajeAgente = mensajeConFechasHotel(mensajeConDestinoSeleccionado(userMessage, req.body?.destinoSeleccionado), fechasHotel.fechas);
 
     const history = await redis.get<AgentInputItem[]>(`chat:session:${sessionId}`);
     const session = new MemorySession({

@@ -341,17 +341,24 @@
     return message;
   }
 
+  /** Fechas de entrada/salida del formulario de «Solo hoteles», solo para la primera búsqueda (en los seguimientos el usuario puede cambiarlas en texto libre). */
+  function fechasDeEstado(estado) {
+    var f = estado && estado.formulario;
+    return f && f.ida && f.vuelta ? { entrada: f.ida, salida: f.vuelta } : null;
+  }
+
   var MODOS = { complete: 1, flights: 1, hotels: 1, activities: 1 };
 
   /** El modo elegido en la portada (complete | flights | hotels | activities) viaja en CADA petición, también en los seguimientos. */
-  async function consultarAgente(message, sessionId, destinoSeleccionado, modo) {
+  async function consultarAgente(message, sessionId, destinoSeleccionado, modo, fechas) {
     var response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(Object.assign(
         { message: conContextoDeSeleccion(message), sessionId: sessionId },
         MODOS[modo] ? { modo: modo } : {},
-        destinoSeleccionado ? { destinoSeleccionado: destinoSeleccionado } : {}
+        destinoSeleccionado ? { destinoSeleccionado: destinoSeleccionado } : {},
+        modo === 'hotels' && fechas && fechas.entrada && fechas.salida ? { fechas: { entrada: fechas.entrada, salida: fechas.salida } } : {}
       ))
     });
     var data = await response.json();
@@ -382,7 +389,7 @@
     global.MogavelEstado.marcarEnCurso();
     try {
       // Primera petición: viaja también el destino elegido en el autocompletado (si lo hubo). Los seguimientos no lo repiten.
-      var turno = await consultarAgente(estado.mensaje, estado.sessionId, estado.formulario && estado.formulario.destinoSeleccionado, estado.modo);
+      var turno = await consultarAgente(estado.mensaje, estado.sessionId, estado.formulario && estado.formulario.destinoSeleccionado, estado.modo, fechasDeEstado(estado));
       global.MogavelEstado.agregarRespuesta(turno.texto, turno.resultados);
       pintarAgente(turno.texto, aplicarRespuesta(turno.texto, turno.resultados));
       ajustarPestanaVacia();

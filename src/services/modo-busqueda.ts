@@ -58,7 +58,7 @@ const BLOQUES: Record<Exclude<ModoBusqueda, 'complete'>, string> = {
     MODO DE BÚSQUEDA: SOLO HOTELES (elegido por el usuario en la web).
     Estas reglas prevalecen sobre cualquier otra instrucción de este agente.
     - Tu única herramienta es hotel_agent. Úsala con el destino seleccionado.
-    - NO pidas ciudad de origen ni datos de vuelos. Pide únicamente lo imprescindible para buscar alojamiento que aún no conozcas: fecha de entrada, fecha de salida y número de adultos.
+    - NO pidas ciudad de origen ni datos de vuelos. Pide únicamente lo imprescindible para buscar alojamiento que aún no conozcas: fecha de entrada, fecha de salida y número de adultos. Si el mensaje indica «Fechas de alojamiento elegidas en el formulario», ya las tienes y son definitivas: no las pidas otra vez.
     - NO busques vuelos ni actividades, aunque el usuario los mencione: dile que esta búsqueda es solo de alojamiento y que puede cambiar de pestaña para buscarlos.
     - Presenta lo que devuelva la herramienta sin inventar hoteles, precios ni valoraciones.`,
   flights: `
@@ -73,4 +73,40 @@ const BLOQUES: Record<Exclude<ModoBusqueda, 'complete'>, string> = {
 /** Bloque de instrucciones del modo; cadena vacía para «complete» (el Travel Manager conserva sus instrucciones). */
 export function instruccionesDeModo(modo: ModoBusqueda): string {
   return modo === 'complete' ? '' : BLOQUES[modo];
+}
+
+/* ---- Fechas de «Solo hoteles» ---- */
+
+export interface FechasHotel { entrada: string; salida: string }
+export type ValidacionFechasHotel =
+  | { ok: true; fechas: FechasHotel | null }
+  | { ok: false; status: 400; error: string };
+
+function fechaIsoReal(valor: unknown): valor is string {
+  if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return false;
+  const [a, m, d] = valor.split('-').map(Number);
+  const f = new Date(Date.UTC(a, m - 1, d));
+  return f.getUTCFullYear() === a && f.getUTCMonth() === m - 1 && f.getUTCDate() === d;
+}
+
+/**
+ * Valida el campo `fechas` ({entrada, salida}, «YYYY-MM-DD») que la web envía en «Solo hoteles». Ausente es válido (null);
+ * si viene, las dos deben ser fechas reales y la salida posterior a la entrada. En los demás modos se ignora.
+ */
+export function validarFechasHotel(modo: ModoBusqueda, bruto: unknown): ValidacionFechasHotel {
+  if (modo !== 'hotels' || bruto === undefined || bruto === null) return { ok: true, fechas: null };
+  const f = bruto as { entrada?: unknown; salida?: unknown };
+  if (typeof bruto !== 'object' || !fechaIsoReal(f.entrada) || !fechaIsoReal(f.salida)) {
+    return { ok: false, status: 400, error: 'Fechas de alojamiento no válidas. Usa fecha de entrada y de salida con formato AAAA-MM-DD.' };
+  }
+  if (f.salida <= f.entrada) {
+    return { ok: false, status: 400, error: 'La fecha de salida debe ser posterior a la fecha de entrada.' };
+  }
+  return { ok: true, fechas: { entrada: f.entrada, salida: f.salida } };
+}
+
+/** Añade al mensaje del agente las fechas ya validadas, para que no las vuelva a pedir. */
+export function mensajeConFechasHotel(mensaje: string, fechas: FechasHotel | null): string {
+  if (!fechas) return mensaje;
+  return `${mensaje}\n\n[Fechas de alojamiento elegidas en el formulario: entrada ${fechas.entrada}, salida ${fechas.salida}. Úsalas tal cual como fechaEntrada y fechaSalida; no las vuelvas a pedir.]`;
 }

@@ -439,6 +439,36 @@
     }
 
     let modoBusqueda = 'complete';
+
+    /* Campos del formulario que corresponden a cada modo. Un campo oculto no se envía aunque conserve un valor escrito antes. */
+    const CAMPOS_VISIBLES = {
+      complete: { origen: true, ida: true, vuelta: true },
+      flights: { origen: true, ida: true, vuelta: true },
+      hotels: { origen: false, ida: true, vuelta: true },
+      activities: { origen: false, ida: false, vuelta: false }
+    };
+    const ETIQUETAS_FECHAS = {
+      hotels: { ida: 'Fecha de entrada', vuelta: 'Fecha de salida' },
+      otros: { ida: 'Fecha de ida', vuelta: 'Fecha de vuelta' }
+    };
+    function aplicarCamposDelModo(modo) {
+      const visibles = CAMPOS_VISIBLES[modo] || CAMPOS_VISIBLES.complete;
+      const etiquetas = ETIQUETAS_FECHAS[modo] || ETIQUETAS_FECHAS.otros;
+      ['origen', 'ida', 'vuelta'].forEach(id => {
+        const etiqueta = document.querySelector('label:has(#' + id + ')');
+        if (!etiqueta) return;
+        etiqueta.style.display = visibles[id] ? '' : 'none';
+        // Solo cambia el texto de la etiqueta (primer nodo de texto), no su estructura ni su estilo.
+        if (id !== 'origen' && etiqueta.firstChild && etiqueta.firstChild.nodeType === 3) etiqueta.firstChild.nodeValue = etiquetas[id];
+      });
+      document.querySelectorAll('#ida, #vuelta').forEach(el => el.removeAttribute('aria-invalid'));
+    }
+    /* Valor de un campo del formulario solo si el modo elegido lo muestra. */
+    function valorDeCampo(id) {
+      const visibles = CAMPOS_VISIBLES[modoBusqueda] || CAMPOS_VISIBLES.complete;
+      if (visibles[id] === false) return '';
+      return document.getElementById(id)?.value || '';
+    }
     document.querySelectorAll('.search-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         modoBusqueda = tab.dataset.mode || 'complete';
@@ -447,12 +477,7 @@
           item.classList.toggle('is-active', activo);
           item.setAttribute('aria-selected', activo ? 'true' : 'false');
         });
-        const origenLabel = document.querySelector('label:has(#origen)');
-        const fechasIda = document.querySelector('label:has(#ida)');
-        const fechasVuelta = document.querySelector('label:has(#vuelta)');
-        if (origenLabel) origenLabel.style.display = modoBusqueda === 'hotels' || modoBusqueda === 'activities' ? 'none' : '';
-        if (fechasIda) fechasIda.style.display = modoBusqueda === 'hotels' ? 'none' : '';
-        if (fechasVuelta) fechasVuelta.style.display = modoBusqueda === 'activities' ? 'none' : '';
+        aplicarCamposDelModo(modoBusqueda);
         document.querySelector('.planner-bottom .primary').innerHTML = (modoBusqueda === 'complete' ? 'Crear mi viaje' : modoBusqueda === 'flights' ? 'Buscar vuelos' : modoBusqueda === 'hotels' ? 'Buscar hoteles' : 'Descubrir actividades') + ' <span aria-hidden="true">→</span>';
       });
     });
@@ -482,6 +507,7 @@
     }
 
     async function consultarAgenteDatos(message, destinoSeleccionado) {
+      const fIda = valorDeCampo('ida'), fVuelta = valorDeCampo('vuelta');
       const response =
         await fetch('/api/chat', {
           method: 'POST',
@@ -497,7 +523,8 @@
             })(),
             sessionId,
             modo: modoBusqueda,
-            ...(destinoSeleccionado ? { destinoSeleccionado } : {})
+            ...(destinoSeleccionado ? { destinoSeleccionado } : {}),
+            ...(modoBusqueda === 'hotels' && fIda && fVuelta ? { fechas: { entrada: fIda, salida: fVuelta } } : {})
           })
         });
 
@@ -835,8 +862,38 @@
       return partes.join(', ');
     }
 
+    /* Fecha «YYYY-MM-DD» real del calendario (rechaza 2027-02-30, 2027-13-01, texto, etc.). */
+    function ptFechaIsoValida(valor) {
+      if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return false;
+      const [a, m, d] = valor.split('-').map(Number);
+      const f = new Date(Date.UTC(a, m - 1, d));
+      return f.getUTCFullYear() === a && f.getUTCMonth() === m - 1 && f.getUTCDate() === d;
+    }
+
+    /* Fechas de «Solo hoteles». Sin ninguna fecha es válido (las puede dar el texto libre o pedirlas el agente); con alguna,
+       hacen falta las dos, reales, la entrada no puede ser anterior a hoy y la salida debe ser posterior a la entrada. `hoy` = «YYYY-MM-DD». */
+    function validarFechasHotel(entrada, salida, hoy) {
+      const e = String(entrada || '').trim(), s = String(salida || '').trim();
+      if (!e && !s) return {ok: true, vacio: true, entrada: '', salida: ''};
+      if (!e || !s) return {ok: false, campo: e ? 'vuelta' : 'ida', error: 'Indica la fecha de entrada y la de salida.'};
+      if (!ptFechaIsoValida(e)) return {ok: false, campo: 'ida', error: 'La fecha de entrada no es válida.'};
+      if (!ptFechaIsoValida(s)) return {ok: false, campo: 'vuelta', error: 'La fecha de salida no es válida.'};
+      if (hoy && e < hoy) return {ok: false, campo: 'ida', error: 'La fecha de entrada no puede ser anterior a hoy.'};
+      if (s <= e) return {ok: false, campo: 'vuelta', error: 'La fecha de salida debe ser posterior a la fecha de entrada.'};
+      return {ok: true, vacio: false, entrada: e, salida: s};
+    }
+
     function ptFraseFormulario(f, incluirViajeros) {
       const partes = [];
+      if (f.modo === 'hotels') {
+        if (f.destino) partes.push('Quiero alojarme en ' + (f.destinoEtiqueta || f.destino));
+        if (f.ida && f.vuelta) partes.push('con entrada el ' + f.ida + ' y salida el ' + f.vuelta);
+        else if (f.ida) partes.push('con entrada el ' + f.ida);
+        else if (f.vuelta) partes.push('con salida el ' + f.vuelta);
+        if (f.viajeros && incluirViajeros) partes.push('para ' + f.viajeros + ' personas');
+        if (f.presupuesto) partes.push('con un presupuesto total de ' + f.presupuesto + ' euros');
+        return partes.join(' ');
+      }
       if (f.origen || f.destino) partes.push('Quiero viajar' + (f.origen ? ' de ' + f.origen : '') + (f.destino ? ' a ' + (f.destinoEtiqueta || f.destino) : ''));
       if (f.ida && f.vuelta) partes.push('del ' + f.ida + ' al ' + f.vuelta);
       else if (f.ida) partes.push('con fecha de ida ' + f.ida);
@@ -853,7 +910,7 @@
       const f = {
         idea: limpio(entrada.idea), origen: limpio(entrada.origen), destino: limpio(entrada.destino),
         ida: limpio(entrada.ida), vuelta: limpio(entrada.vuelta), viajeros: limpio(entrada.viajeros),
-        presupuesto: limpio(entrada.presupuesto),
+        presupuesto: limpio(entrada.presupuesto), modo: limpio(entrada.modo),
         destinoSeleccionado: ptDestinoSeleccionadoVigente(entrada.destinoSeleccionado, limpio(entrada.destino)),
         preferencias: Array.isArray(entrada.preferencias) ? entrada.preferencias.map(limpio).filter(Boolean) : [],
         viajerosTocado: !!entrada.viajerosTocado
@@ -898,13 +955,32 @@
       // Evita lanzar dos búsquedas a la vez (doble clic): cada una consume créditos.
       if (busquedaEnCurso) return;
 
+      // «Solo hoteles»: fechas de entrada y salida válidas antes de buscar (cada búsqueda consume créditos).
+      if (modoBusqueda === 'hotels') {
+        const d = new Date();
+        const hoy = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        const v = validarFechasHotel(valorDeCampo('ida'), valorDeCampo('vuelta'), hoy);
+        document.querySelectorAll('#ida, #vuelta').forEach(el => el.removeAttribute('aria-invalid'));
+        if (!v.ok) {
+          const r = document.getElementById('results');
+          r.style.display = 'block'; r.style.whiteSpace = '';
+          r.textContent = v.error;
+          r.setAttribute('role', 'alert');
+          document.getElementById(v.campo)?.setAttribute('aria-invalid', 'true');
+          document.getElementById(v.campo)?.focus();
+          return;
+        }
+        document.getElementById('results').removeAttribute('role');
+      }
+
       const peticion = componerPeticionViaje({
+        modo: modoBusqueda,
         idea: document.getElementById('ideaViaje').value,
-        origen: document.getElementById('origen')?.value,
+        origen: valorDeCampo('origen'),
         destino: document.getElementById('destino')?.value,
         destinoSeleccionado: leerDestinoSeleccionado(),
-        ida: document.getElementById('ida')?.value,
-        vuelta: document.getElementById('vuelta')?.value,
+        ida: valorDeCampo('ida'),
+        vuelta: valorDeCampo('vuelta'),
         viajeros: document.getElementById('viajeros')?.value,
         presupuesto: document.getElementById('presupuesto')?.value,
         preferencias: Array.from(document.querySelectorAll('.preferences input:checked')).map(input => input.value),
@@ -938,11 +1014,11 @@
         modo: typeof modoBusqueda === 'string' ? modoBusqueda : 'complete',
         formulario: {
           idea: document.getElementById('ideaViaje').value,
-          origen: document.getElementById('origen')?.value || '',
+          origen: valorDeCampo('origen'),
           destino: document.getElementById('destino')?.value || '',
           destinoSeleccionado: destinoSeleccionado,
-          ida: document.getElementById('ida')?.value || '',
-          vuelta: document.getElementById('vuelta')?.value || '',
+          ida: valorDeCampo('ida'),
+          vuelta: valorDeCampo('vuelta'),
           viajeros: document.getElementById('viajeros')?.value || '',
           presupuesto: document.getElementById('presupuesto')?.value || ''
         }
