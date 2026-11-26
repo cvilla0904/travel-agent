@@ -84,7 +84,7 @@ export type ValidacionFechasHotel =
 
 function fechaIsoReal(valor: unknown): valor is string {
   if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return false;
-  const [a, m, d] = valor.split('-').map(Number);
+  const a = Number(valor.slice(0, 4)), m = Number(valor.slice(5, 7)), d = Number(valor.slice(8, 10));
   const f = new Date(Date.UTC(a, m - 1, d));
   return f.getUTCFullYear() === a && f.getUTCMonth() === m - 1 && f.getUTCDate() === d;
 }

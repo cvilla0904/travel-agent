@@ -84,7 +84,7 @@ test('campos visibles y etiquetas de cada modo (y al volver de uno a otro)', { s
     await t.p.goto(t.base + '/');
     for (const modo of ['hotels', 'activities', 'flights', 'complete', 'hotels', 'complete'] as const) {
       await t.p.click(`.search-tab[data-mode="${modo}"]`);
-      const e = ESPERADO[modo];
+      const e = ESPERADO[modo]!;
       assert.equal(await visible(t.p, 'origen'), e.origen, `${modo}: origen`);
       assert.equal(await visible(t.p, 'destino'), true, `${modo}: destino siempre`);
       assert.equal(await visible(t.p, 'ida'), e.ida, `${modo}: ida`);
@@ -173,7 +173,7 @@ test('sin regresiones: vuelos y completo envían origen y fechas como antes; act
       assert.equal(b.modo, modo);
       assert.equal('fechas' in b, false, `${modo}: sin campo fechas`);
       if (modo === 'activities') assert.doesNotMatch(b.message, /Madrid|2027-03/);
-      else assert.match(b.message, /Madrid/) && assert.match(b.message, /2027-03-10/);
+      else { assert.match(b.message, /Madrid/); assert.match(b.message, /2027-03-10/); }
     } finally { await t.cerrar(); }
   }
 });
