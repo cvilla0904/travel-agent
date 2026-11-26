@@ -41,7 +41,7 @@ const opciones = (p: any, id: string) => p.evaluate((i: string) => [...document.
   nombre: b.querySelector('strong')!.textContent, pais: b.querySelector('small')!.textContent, etiqueta: b.querySelector('.city-suggestion-code')!.textContent,
 })), id);
 
-test('autocompletado: endpoint real, aeropuertos, selección, sin resultados, errores y respaldo', { skip: omitir }, async () => {
+test('autocompletado: endpoint real, aeropuertos, selección, sin resultados, errores sin respaldo local', { skip: omitir }, async () => {
   const { cat, limpiar } = catalogoEnDiscoDePrueba();
   const root = path.resolve(import.meta.dirname, '..');
   let modo: 'real' | '503' | 'caido' | 'lento' = 'real';
@@ -114,17 +114,13 @@ test('autocompletado: endpoint real, aeropuertos, selección, sin resultados, er
     assert.deepEqual(consola, [], 'sin errores de consola con el catálogo disponible');
     assert.deepEqual(errores, []);
 
-    // 8) Catálogo no generado (503): se usa el diccionario local, sin romper la página.
-    modo = '503';
-    await escribir(p, 'destino', 'madr');
-    await p.waitForSelector('#destino-suggestions .city-suggestion');
-    o = await opciones(p, 'destino');
-    assert.ok(o.some((x: any) => x.nombre === 'Madrid'), 'respaldo local con 503');
-
-    // 9) Servidor caído (conexión cortada): mismo respaldo.
-    modo = 'caido';
-    await escribir(p, 'destino', 'barc');
-    await p.waitForFunction(() => [...document.querySelectorAll('#destino-suggestions strong')].some((e) => e.textContent === 'Barcelona'));
+    // 8) Catálogo no disponible (503) o servidor caído: NO se inventan sugerencias (fuente única: /api/geo) y la página no se rompe.
+    for (const m of ['503', 'caido'] as const) {
+      modo = m;
+      await escribir(p, 'destino', m === '503' ? 'madr' : 'barc');
+      await p.waitForTimeout(600);
+      assert.equal(await p.locator('#destino-suggestions .city-suggestion:not(.city-suggestion-empty)').count(), 0, `sin sugerencias inventadas (${m})`);
+    }
     assert.deepEqual(errores, [], 'ninguna excepción de página en los errores de red');
   } finally { await b.close(); cerrar(); limpiar(); }
 });

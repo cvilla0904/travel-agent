@@ -539,7 +539,8 @@
       renderResultados(texto);
     }
 
-    /* Autocompletado visual de ciudades. Catálogo inicial local; no modifica las APIs de búsqueda. */
+    /* Autocompletado visual de ciudades: las sugerencias salen SOLO de /api/geo (catálogo de destinos). La lista siguiente
+       NO es un catálogo: solo ayuda a detectar contradicciones entre el formulario y el texto libre (componerPeticionViaje). */
     const ciudadesMogavel = [
       {ciudad:'Madrid',pais:'España',codigo:'MAD',aliases:['madrid','mad']},
       {ciudad:'Barcelona',pais:'España',codigo:'BCN',aliases:['barcelona','bcn']},
@@ -630,12 +631,8 @@
             throw new Error('Catálogo todavía no disponible');
           }
         } catch (_) {
-          opciones = ciudadesMogavel
-            .map(ciudad => ({...ciudad,puntuacion: ciudad.aliases.some(alias => normalizarCiudad(alias).startsWith(consulta)) ? 0 : normalizarCiudad(ciudad.ciudad + ' ' + ciudad.pais).includes(consulta) ? 1 : 2}))
-            .filter(ciudad => ciudad.puntuacion < 2)
-            .sort((a,b)=>a.puntuacion-b.puntuacion || a.ciudad.localeCompare(b.ciudad,'es'))
-            .slice(0,7)
-            .map(ciudad => ({...ciudad,tipo:'ciudad'}));
+          // Sin catálogo no se inventan sugerencias: la única fuente de destinos es /api/geo.
+          opciones = [];
         }
         if (token === secuencia) mostrar();
       }

@@ -10,9 +10,9 @@ Fuente única de identidad geográfica para vuelos, hoteles y actividades. **Est
 | `data/destacados.json` | Editorial (ciudades por país, preferencias de nombres repetidos, accesos) | Sí |
 | `data/paises-curados.json` | Editorial (nombres de país en español/inglés) | Sí |
 
-`data/catalogo/` **no está en el repositorio** (se genera y está en `.gitignore`). Sin él, `fuenteEnDisco()` lanza
-`CatalogoNoDisponible`: nunca devuelve un catálogo vacío como si fuera válido. `/api/geo` responde 503 y el frontend
-usa su diccionario local.
+`data/catalogo/` **sí está en el repositorio** (~5 MB, ~3.500 destinos): es un catálogo de destinos, no un catálogo mundial. Se genera con
+`scripts/seleccionar-catalogo-geo.ts` a partir del catálogo completo (criterios en `data/seleccion-destinos.json` y `docs/CATALOGO-DESTINOS.md`).
+Si falta, `fuenteEnDisco()` lanza `CatalogoNoDisponible` y `/api/geo` responde 503: el frontend no inventa sugerencias.
 
 Generar: `npm run geo:preparar` (descarga + construcción). Si ya tienes el catálogo antiguo (`data/indice.json`,
 `data/paises/*.json`), `npm run geo:reempaquetar` lo convierte al formato v2 sin descargar nada y sin borrar los
@@ -53,9 +53,9 @@ GeoNames: CC BY 4.0 (atribución obligatoria; Mogavel debe mostrar atribución a
 - Endpoint: `GET /api/geo?q=mad`.
 - Parámetros: `q` (3–100 caracteres tras normalizar; 2 si son solo caracteres chinos, japoneses o coreanos), `pais` (ISO-2 opcional) y `limite` (1–12, por defecto 8).
 - Devuelve países, ciudades, regiones y aeropuertos por nombre exacto o prefijo, con país, coordenadas y códigos IATA cuando existen.
-- No llama a Geoapify, SearchAPI ni Apify: consulta localmente el catálogo generado (un bucket por petición).
+- No llama a Geoapify ni Apify: consulta localmente el catálogo generado (un bucket por petición).
 - Si el catálogo no existe, responde HTTP 503 con `CATALOGO_NO_GENERADO`; no finge que no hay destinos.
-- `vercel.json` incluye `src/geo/data/{catalogo/**,regiones.json,destacados.json}` en `api/geo.ts` y `api/chat.ts`. **El catálogo no está en Git, así que un despliegue desde Git no lo tendrá** hasta decidir cómo llegar a Vercel (ver «Despliegue» más abajo). Mientras tanto la API responde 503 y el frontend usa su respaldo. Añadir en la web una atribución visible a GeoNames antes de producción, conforme a CC BY 4.0.
+- `vercel.json` incluye `src/geo/data/{catalogo/**,regiones.json,destacados.json}` en `api/geo.ts` y `api/chat.ts`. El catálogo viaja en Git. Añadir en la web una atribución visible a GeoNames y OurAirports antes de producción, conforme a CC BY 4.0.
 
 ## Alcance y límites conocidos
 

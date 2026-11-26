@@ -37,9 +37,9 @@ function conClienteFalso<T>(llamadas: Llamada[], fn: () => Promise<T>): Promise<
   });
 }
 
-test('por defecto solo Civitatis está activa; Tiqets sigue disponible para reactivarse', () => {
+test('solo Civitatis está disponible: Tiqets no existe en el proyecto', () => {
   assert.deepEqual([...PLATAFORMAS_ACTIVAS], ['civitatis']);
-  assert.ok((PLATAFORMAS_DISPONIBLES as readonly string[]).includes('tiqets'), 'la integración de Tiqets se conserva');
+  assert.deepEqual([...PLATAFORMAS_DISPONIBLES], ['civitatis']);
   assert.ok(PLATAFORMAS_ACTIVAS.every((p) => (PLATAFORMAS_DISPONIBLES as readonly string[]).includes(p)));
 });
 
@@ -57,9 +57,9 @@ test('inputActor envía solo Civitatis por defecto y no cambia el resto del inpu
   });
 });
 
-test('reactivación: con ambas plataformas inputActor vuelve a enviar Civitatis y Tiqets', () => {
-  assert.deepEqual(inputActor(['Roma'], ['civitatis', 'tiqets']).platforms, ['civitatis', 'tiqets']);
-  assert.deepEqual(inputActor(['Roma'], ['tiqets']).platforms, ['tiqets']);
+test('Tiqets se rechaza: nunca llega al actor', () => {
+  assert.throws(() => inputActor(['Roma'], ['tiqets']), /no válidas: tiqets/);
+  assert.throws(() => inputActor(['Roma'], ['civitatis', 'tiqets']), /tiqets/);
 });
 
 test('protección: lista vacía o plataforma desconocida lanzan error y nunca llegan al actor', () => {
@@ -73,8 +73,6 @@ test('protección: lista vacía o plataforma desconocida lanzan error y nunca ll
 
 test('la etiqueta de los textos refleja las plataformas activas', () => {
   assert.equal(etiquetaPlataformas(), 'Civitatis');
-  assert.equal(etiquetaPlataformas(['civitatis', 'tiqets']), 'Civitatis y Tiqets');
-  assert.equal(etiquetaPlataformas(['tiqets']), 'Tiqets');
   assert.throws(() => etiquetaPlataformas([]));
 });
 

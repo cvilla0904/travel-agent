@@ -3,19 +3,15 @@
  * Proveedor ACTIVO de actividades: solo Civitatis, a través del actor de Apify (apify.ts).
  */
 /** Plataformas que el actor sabe consultar y que Mogavel tiene integradas (el resto de la integración es neutra respecto a la plataforma). */
-export const PLATAFORMAS_DISPONIBLES = ['civitatis', 'tiqets'] as const;
+export const PLATAFORMAS_DISPONIBLES = ['civitatis'] as const;
 export type PlataformaActividades = (typeof PLATAFORMAS_DISPONIBLES)[number];
 
-/**
- * Plataformas que se envían AHORA al actor (única fuente de verdad para destino único, multidestino y script de diagnóstico).
- * Tiqets está DESACTIVADO desde el 2026-11-23: en la prueba real de Bruselas devolvió 15 resultados y 10 eran de Viena.
- * Su integración sigue intacta: para reactivarlo basta con dejar esta lista en ['civitatis', 'tiqets'].
- */
+/** Plataformas que se envían al actor (única fuente de verdad). Solo Civitatis: Tiqets está eliminado del proyecto. */
 export const PLATAFORMAS_ACTIVAS: readonly PlataformaActividades[] = ['civitatis'];
 
-const NOMBRE_PLATAFORMA: Record<PlataformaActividades, string> = { civitatis: 'Civitatis', tiqets: 'Tiqets' };
+const NOMBRE_PLATAFORMA: Record<PlataformaActividades, string> = { civitatis: 'Civitatis' };
 
-/** Texto legible de las plataformas activas para herramientas y prompts («Civitatis» o «Civitatis y Tiqets»). */
+/** Texto legible de las plataformas activas para herramientas y prompts («Civitatis»). */
 export function etiquetaPlataformas(plataformas: readonly string[] = PLATAFORMAS_ACTIVAS): string {
   const nombres = validarPlataformas(plataformas).map((p) => NOMBRE_PLATAFORMA[p]);
   return nombres.length <= 1 ? (nombres[0] ?? '') : `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1]}`;

@@ -5,18 +5,16 @@ en *Preview* debe pedirse/confirmarse antes de cambiarla.
 
 | Funcionalidad | Proveedor principal | Alternativa | Variables |
 |---|---|---|---|
-| Autocompletado de destinos | Catálogo local GeoNames v3 (`src/geo/data`, sin llamadas externas) | — | — |
+| Autocompletado de destinos | Catálogo de destinos versionado (`src/geo/data/catalogo`, ~3.500 ciudades; ver `docs/CATALOGO-DESTINOS.md`), sin llamadas externas | — | — |
 | Lugares de interés (herramienta de lugares del agente) | Geoapify | — | `GEOAPIFY_API_KEY` |
 | Vuelos | Apify · `johnvc/google-flights-data-scraper-flight-and-price-search` | — | `APIFY_API_TOKEN` (obligatoria), `APIFY_FLIGHTS_BUILD` (opcional, por defecto 0.0.450) |
-| Hoteles | `HOTELES_PROVEEDOR=searchapi` (por defecto): Booking.com vía SearchAPI | `HOTELES_PROVEEDOR=apify`: Google Hotels vía Apify | `HOTELES_PROVEEDOR`; SearchAPI: `SEARCHAPI_API_KEY`; Apify: `APIFY_API_TOKEN`, `APIFY_HOTELS_WAIT_SECS`, `APIFY_HOTELS_MAX_CHARGE_USD` (tope por búsqueda, máx. 0,25 USD), `APIFY_HOTELS_ITINERARY_BUDGET_USD` (presupuesto por itinerario), `APIFY_HOTELS_BUILD` |
-| Actividades | Apify · `scrapesage/tours-activities-scraper` con **solo Civitatis** (Tiqets desactivado y sin llamadas) | — | `APIFY_API_TOKEN`, `APIFY_ACTIVIDADES_WAIT_SECS` (opcional: 45 s por defecto, máx. 120) |
+| Hoteles | Apify · Google Hotels (`eiv/google-hotels-scraper`) | — (sin alternativa ni respaldo en otro proveedor) | `APIFY_API_TOKEN`, `APIFY_HOTELS_WAIT_SECS`, `APIFY_HOTELS_MAX_CHARGE_USD` (tope por búsqueda, máx. 0,25 USD), `APIFY_HOTELS_ITINERARY_BUDGET_USD`, `APIFY_HOTELS_BUILD` |
+| Actividades | Apify · `scrapesage/tours-activities-scraper` con **solo Civitatis** (Tiqets eliminado) | — | `APIFY_API_TOKEN`, `APIFY_ACTIVIDADES_WAIT_SECS` (opcional: 45 s por defecto, máx. 120) |
 | Agentes (Travel Manager y subagentes) | OpenAI (Agents SDK) | — | `OPENAI_API_KEY` |
 | Sesiones y rutas multidestino | Upstash Redis (`Redis.fromEnv()`) | — | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` (o los equivalentes `KV_REST_API_*` de la integración) |
 
-## Hoteles: ambos proveedores, mismo formato
-`HOTELES_PROVEEDOR` solo cambia el origen de los datos. En `/api/chat` los dos entregan el mismo bloque estructurado
-(`resultados.hoteles[]`), con importe y moneda ISO por precio. SearchAPI reintenta **una** vez ante HTTP 429 respetando `Retry-After`
-(si pide esperar más de 8 s, o el error es de cuota/autenticación, no reintenta); los fallos se registran con proveedor, fase, HTTP y motivo y se muestran como error del proveedor, no como «sin resultados».
+## Hoteles
+Un único proveedor (Apify). Si falla, el bloque `resultados.hoteles` lleva `estado: error_proveedor` con el motivo (proveedor, fase, HTTP) y no se rellena con datos de otro origen; los demás servicios no se ven afectados.
 
 ## Duración de la función (`vercel.json`)
 `api/chat.ts` declara `maxDuration: 300`. Presupuesto de espera de los proveedores (se ejecutan en paralelo con el tiempo de los
