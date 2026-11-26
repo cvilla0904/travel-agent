@@ -121,9 +121,9 @@ test('ciudad, aeropuerto y código de ciudad son cosas distintas: máximo 3 aero
       assert.ok(c.aeropuertos.length <= 3, `${c.nombre}: ${c.aeropuertos.join(',')}`);
       assert.equal(new Set(c.aeropuertos).size, c.aeropuertos.length, `${c.nombre}: aeropuertos repetidos`);
       for (const i of c.aeropuertos) {
-        const a = s.aeropuertos[i];
-        assert.ok(a, `${c.nombre}: ${i} no existe en el país ${p.iso}`);
-        assert.equal(a!.ciudadId, c.id, `${i} debe pertenecer a ${c.nombre}`);
+        const ap = s.aeropuertos[i];
+        assert.ok(ap, `${c.nombre}: ${i} no existe en el país ${p.iso}`);
+        assert.equal(ap!.ciudadId, c.id, `${i} debe pertenecer a ${c.nombre}`);
       }
       if (c.codigoCiudad) codigosCiudad.add(c.codigoCiudad);
     }

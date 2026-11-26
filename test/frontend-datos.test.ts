@@ -53,7 +53,7 @@ const DATOS = agruparBloques([
     hotelRaw('Hotel Sin Valoración', { valoracion: null, numeroResenas: null, estrellas: null }),
     hotelRaw('Hotel Sin Precio', { precioDisponible: false, precioTotal: 0, precioPorNoche: 0, valoracion: 7, numeroResenas: 10 }),
     hotelRaw('Hotel Bosnio', { moneda: 'BAM', precioPorNoche: 200 }),
-  ]), 'apify'),
+  ])),
   bloqueActividades(actividadesRaw([
     actRaw('Atomium'), actRaw('Tour USD', { precio: 30, moneda: 'USD' }), actRaw('Sin precio', { precio: null, moneda: '' }), actRaw('Tour gratis', { precio: null, esGratis: true }),
   ])),
