@@ -341,11 +341,18 @@
     return message;
   }
 
-  async function consultarAgente(message, sessionId, destinoSeleccionado) {
+  var MODOS = { complete: 1, flights: 1, hotels: 1, activities: 1 };
+
+  /** El modo elegido en la portada (complete | flights | hotels | activities) viaja en CADA petición, también en los seguimientos. */
+  async function consultarAgente(message, sessionId, destinoSeleccionado, modo) {
     var response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(Object.assign({ message: conContextoDeSeleccion(message), sessionId: sessionId }, destinoSeleccionado ? { destinoSeleccionado: destinoSeleccionado } : {}))
+      body: JSON.stringify(Object.assign(
+        { message: conContextoDeSeleccion(message), sessionId: sessionId },
+        MODOS[modo] ? { modo: modo } : {},
+        destinoSeleccionado ? { destinoSeleccionado: destinoSeleccionado } : {}
+      ))
     });
     var data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Error en la búsqueda');
@@ -375,7 +382,7 @@
     global.MogavelEstado.marcarEnCurso();
     try {
       // Primera petición: viaja también el destino elegido en el autocompletado (si lo hubo). Los seguimientos no lo repiten.
-      var turno = await consultarAgente(estado.mensaje, estado.sessionId, estado.formulario && estado.formulario.destinoSeleccionado);
+      var turno = await consultarAgente(estado.mensaje, estado.sessionId, estado.formulario && estado.formulario.destinoSeleccionado, estado.modo);
       global.MogavelEstado.agregarRespuesta(turno.texto, turno.resultados);
       pintarAgente(turno.texto, aplicarRespuesta(turno.texto, turno.resultados));
       ajustarPestanaVacia();
@@ -411,7 +418,7 @@
     var burbuja = pintarUsuario(mensaje);
     burbuja.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     try {
-      var turno = await consultarAgente(mensaje, estado.sessionId);
+      var turno = await consultarAgente(mensaje, estado.sessionId, undefined, estado.modo);
       global.MogavelEstado.agregarRespuesta(turno.texto, turno.resultados);
       var respuestaNodo = pintarAgente(turno.texto, aplicarRespuesta(turno.texto, turno.resultados));
       if (respuestaNodo && respuestaNodo.scrollIntoView) respuestaNodo.scrollIntoView({ behavior: 'smooth', block: 'start' });

@@ -496,6 +496,7 @@
               return message + '\n\n[Selección actual del viaje en la web; úsala como contexto. Si pido cambiar o quitar un elemento, actualiza la propuesta y confirma claramente el cambio. No inventes precios ni des por reservados los elementos.]\n' + selection;
             })(),
             sessionId,
+            modo: modoBusqueda,
             ...(destinoSeleccionado ? { destinoSeleccionado } : {})
           })
         });

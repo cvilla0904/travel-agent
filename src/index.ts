@@ -10,6 +10,7 @@ import { buscarActividadesApifyMultidestinoDetallado, etiquetaPlataformas } from
 import { plataformaPermitida } from './services/plataformas-actividades.js';
 import { bloqueActividadesMultidestino, registrarBloque } from './services/resultados-estructurados.js';
 import { buscarActividadesDestino } from './services/actividades-busqueda.js';
+import { HERRAMIENTAS_POR_MODO, instruccionesDeModo, type ModoBusqueda } from './services/modo-busqueda.js';
 import { buscarVuelosConEstado } from './services/vuelos.js';
 import { filtrarActividadesDeCiudad, actividadParaMultidestino } from './services/actividades-ciudad.js';
 import { parsearPrecio, extraerPrecio, esGratisVerificado } from './services/precios-actividades.js';
@@ -1509,6 +1510,29 @@ export const travelAgent = new Agent({
     crearItinerario,
   ],
 });
+
+/**
+ * Travel Manager para el modo de búsqueda elegido en la web (ver src/services/modo-busqueda.ts).
+ * - «complete»: el Travel Manager de siempre, sin cambios.
+ * - Modos exclusivos: una copia que SOLO dispone de la herramienta de esa categoría (no puede buscar otra por accidente)
+ *   y cuyas instrucciones empiezan por el bloque del modo, que prevalece sobre el resto.
+ */
+const agentesPorModo = new Map<ModoBusqueda, typeof travelAgent>();
+
+export function agenteParaModo(modo: ModoBusqueda = 'complete'): typeof travelAgent {
+  if (modo === 'complete') return travelAgent;
+  let agente = agentesPorModo.get(modo);
+  if (!agente) {
+    const permitidas = HERRAMIENTAS_POR_MODO[modo] ?? [];
+    const base = typeof travelAgent.instructions === 'string' ? travelAgent.instructions : '';
+    agente = travelAgent.clone({
+      tools: travelAgent.tools.filter((t) => permitidas.includes(t.name)),
+      instructions: `${instruccionesDeModo(modo)}\n${base}`,
+    });
+    agentesPorModo.set(modo, agente);
+  }
+  return agente;
+}
 
 /* =========================================================
    10. EJECUCIÓN
