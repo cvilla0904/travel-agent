@@ -4,6 +4,7 @@
 import { resolverAeropuertoVuelo } from './aeropuertos-vuelos.js';
 import { ErrorVuelos } from './errores-vuelos.js';
 import { monedaDesdeTexto, monedaIso } from './moneda.js';
+import { TOPE_COSTE_VUELOS_USD_POR_DEFECTO, opcionesLimite, topeCoste } from './apify-limites.js';
 const ACTOR_ID = 'johnvc/google-flights-data-scraper-flight-and-price-search';
 const MAX_RESULTS = 10;
 const WAIT_SECS = 60;
@@ -15,6 +16,8 @@ export { ErrorVuelos, type CodigoErrorVuelos } from './errores-vuelos.js';
 export type ClienteApifyMinimo = {
   actor(id: string): { call(input: any, opts?: any): Promise<any> };
   dataset(id: string): { listItems(opts?: any): Promise<{ items: unknown[] }> };
+  /** Para cancelar una ejecución que sigue activa tras la espera. */
+  run?(id: string): { abort(opts?: any): Promise<any> };
 };
 
 export type DependenciasApifyFlights = {
@@ -171,13 +174,15 @@ export async function buscarVuelosApify(
     max_pages: 1,
   };
 
+  // Límite económico (por ejecución, solo actores de pago por evento) y tiempo máximo de ejecución en Apify.
+  const limites = opcionesLimite(WAIT_SECS, topeCoste(process.env.APIFY_FLIGHTS_MAX_CHARGE_USD, TOPE_COSTE_VUELOS_USD_POR_DEFECTO));
   console.info('[APIFY_FLIGHTS] Starting actor', JSON.stringify({
-    actor: ACTOR_ID, build: ACTOR_BUILD, waitSecs: WAIT_SECS, input: actorInput,
+    actor: ACTOR_ID, build: ACTOR_BUILD, waitSecs: WAIT_SECS, ...limites, input: actorInput,
   }));
 
   let run: any;
   try {
-    run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: WAIT_SECS, build: ACTOR_BUILD });
+    run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: WAIT_SECS, build: ACTOR_BUILD, ...limites });
   } catch (error) {
     // Si la build fijada ya no existe, se reintenta una sola vez con la build por defecto del actor.
     const mensaje = error instanceof Error ? error.message : String(error);
@@ -185,11 +190,21 @@ export async function buscarVuelosApify(
       throw new ErrorVuelos('proveedor', `Apify no pudo ejecutar la búsqueda de vuelos: ${mensaje}`);
     }
     console.warn('[APIFY_FLIGHTS] Build fijada no disponible, reintentando con la build por defecto');
-    run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: WAIT_SECS });
+    run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: WAIT_SECS, ...limites });
   }
   console.info('[APIFY_FLIGHTS] Actor returned', JSON.stringify({
     runId: run.id, status: run.status, datasetId: run.defaultDatasetId ?? null,
   }));
+
+  // call() solo espera waitSecs: una ejecución todavía activa seguiría cobrando. Se cancela (lo ya guardado se aprovecha).
+  if (run.status === 'RUNNING' || run.status === 'READY') {
+    try {
+      if (run.id && client.run) await client.run(run.id).abort();
+      console.warn('[APIFY_FLIGHTS] Ejecución cancelada tras agotar la espera', JSON.stringify({ runId: run.id ?? null, status: run.status }));
+    } catch (error) {
+      console.warn('[APIFY_FLIGHTS] No se pudo cancelar la ejecución', JSON.stringify({ runId: run.id ?? null, error: error instanceof Error ? error.message : String(error) }));
+    }
+  }
 
   if (!run.defaultDatasetId) {
     throw new ErrorVuelos('proveedor', `Apify no devolvió un dataset para vuelos (estado: ${String(run.status ?? 'UNKNOWN')}).`);

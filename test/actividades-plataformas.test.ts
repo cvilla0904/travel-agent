@@ -87,7 +87,7 @@ test('los tres caminos de ejecución hacia Apify usan solo Civitatis por defecto
   for (const l of llamadas) {
     assert.equal(l.actor, ACTOR_ID);
     assert.deepEqual(l.input.platforms, ['civitatis']);
-    assert.deepEqual(l.opciones, { waitSecs: WAIT_SECS });
+    assert.deepEqual(l.opciones, { waitSecs: WAIT_SECS, maxTotalChargeUsd: 0.1, timeout: 45 + 30 }); // espera, tope económico por ejecución y tiempo máximo en Apify
     assert.equal(l.input.language, 'es');
   }
   assert.deepEqual(llamadas[0]!.input.searchQueries, ['Bruselas', 'Brussels']);

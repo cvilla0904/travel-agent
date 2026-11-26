@@ -7,9 +7,9 @@ en *Preview* debe pedirse/confirmarse antes de cambiarla.
 |---|---|---|---|
 | Autocompletado de destinos | Catálogo de destinos versionado (`src/geo/data/catalogo`, ~3.500 ciudades; ver `docs/CATALOGO-DESTINOS.md`), sin llamadas externas | — | — |
 | Lugares de interés (herramienta de lugares del agente) | Geoapify | — | `GEOAPIFY_API_KEY` |
-| Vuelos | Apify · `johnvc/google-flights-data-scraper-flight-and-price-search` | — | `APIFY_API_TOKEN` (obligatoria), `APIFY_FLIGHTS_BUILD` (opcional, por defecto 0.0.450) |
+| Vuelos | Apify · `johnvc/google-flights-data-scraper-flight-and-price-search` | — | `APIFY_API_TOKEN` (obligatoria), `APIFY_FLIGHTS_BUILD` (opcional, por defecto 0.0.450), `APIFY_FLIGHTS_MAX_CHARGE_USD` (tope económico por ejecución, 0,10 por defecto, acotado a 0,01–0,25) |
 | Hoteles | Apify · Google Hotels (`eiv/google-hotels-scraper`) | — (sin alternativa ni respaldo en otro proveedor) | `APIFY_API_TOKEN`, `APIFY_HOTELS_WAIT_SECS`, `APIFY_HOTELS_MAX_CHARGE_USD` (tope por búsqueda, máx. 0,25 USD), `APIFY_HOTELS_ITINERARY_BUDGET_USD`, `APIFY_HOTELS_BUILD` |
-| Actividades | Apify · `scrapesage/tours-activities-scraper` con **solo Civitatis** (Tiqets eliminado) | — | `APIFY_API_TOKEN`, `APIFY_ACTIVIDADES_WAIT_SECS` (opcional: 45 s por defecto, máx. 120) |
+| Actividades | Apify · `scrapesage/tours-activities-scraper` con **solo Civitatis** (Tiqets eliminado) | — | `APIFY_API_TOKEN`, `APIFY_ACTIVIDADES_WAIT_SECS` (opcional: 45 s por defecto, máx. 120), `APIFY_ACTIVIDADES_MAX_CHARGE_USD` (tope económico por ejecución, 0,10 por defecto, acotado a 0,01–0,25) |
 | Agentes (Travel Manager y subagentes) | OpenAI (Agents SDK) | — | `OPENAI_API_KEY` |
 | Sesiones y rutas multidestino | Upstash Redis (`Redis.fromEnv()`) | — | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` (o los equivalentes `KV_REST_API_*` de la integración) |
 
@@ -27,3 +27,15 @@ Si el actor de actividades no termina en su presupuesto se devuelve lo ya guarda
 completo, total, consulta, opciones[], diagnostico`. Un dato que el proveedor no da es `null` (nunca 0), cada importe lleva su
 moneda (`null` = «Moneda no confirmada»; no hay moneda por defecto ni conversión). La web construye las tarjetas con estos datos;
 `response` es solo la explicación del Travel Manager.
+
+## Límites de gasto de Apify (por ejecución)
+Cuatro cosas distintas (`src/services/apify-limites.ts`): **waitSecs** (cuánto espera nuestro código; no detiene el actor), **timeout**
+(tiempo máximo de la ejecución en Apify: espera + 30 s), **maxTotalChargeUsd** (límite económico por ejecución; Apify solo lo aplica a
+actores de *pago por evento*: la plataforma deja de cobrar y aborta la ejecución, que puede seguir un instante usando recursos) y
+**abort()** (cancelación explícita; se usa cuando la ejecución sigue activa tras la espera). Los límites de resultados (`max_pages`,
+`maxResults`, `maxItems`) acotan lo que se pide, no lo que cuesta. Una ejecución cortada por el tope devuelve lo ya guardado marcado como incompleto.
+| Actor | Tope por ejecución | Espera | Timeout en Apify |
+|---|---|---|---|
+| Vuelos | 0,10 USD (`APIFY_FLIGHTS_MAX_CHARGE_USD`) | 60 s | 90 s |
+| Hoteles | 0,10 USD (`APIFY_HOTELS_MAX_CHARGE_USD`, máx. 0,25) + 1 USD por itinerario | 90 s | el del actor |
+| Actividades | 0,10 USD (`APIFY_ACTIVIDADES_MAX_CHARGE_USD`) | 45 s | 75 s |

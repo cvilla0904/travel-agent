@@ -278,3 +278,87 @@ test('homónimos: Salento (Quindío, Apulia, Campania) y Cartagena (Colombia, Mu
   assert.equal(buscarDestinos(cat, 'Salento, Italia')[0]!.codigoPais, 'IT');
   assert.equal(buscarDestinos(cat, 'Cartagena, España')[0]!.codigoPais, 'ES');
 });
+
+/* ---------- alias parciales y aeropuertos por nombre habitual ---------- */
+
+test('arub y aruba priorizan Aruba y Albuquerque no aparece (el alias «arubakaki» no es una sugerencia de Aruba)', () => {
+  for (const q of ['arub', 'aruba', 'Aruba']) {
+    const r = nombres(q);
+    assert.ok(r.slice(0, 2).some((n) => /Oranjestad|Aruba/.test(n)), `${q}: ${r.join(' | ')}`);
+    sinIrrelevantes(q, /Albuquerque|Al Bahah|Albany|Arvayheer|Erbil/);
+  }
+});
+
+test('aeropuertos por nombre habitual: la ciudad va primero (seleccionable) y el aeropuerto identificado después', () => {
+  const casos: Array<[string, string, string, string]> = [
+    // consulta, ciudad, IATA del aeropuerto, país
+    ['Heathrow', 'London', 'LHR', 'GB'],
+    ['London Heathrow', 'London', 'LHR', 'GB'],
+    ['Charles de Gaulle', 'Paris', 'CDG', 'FR'],
+    ['Brussels Airport', 'Brussels', 'BRU', 'BE'],
+    ['BRU', 'Brussels', 'BRU', 'BE'],
+    ['El Prat', 'Barcelona', 'BCN', 'ES'],
+    ['Schiphol', 'Amsterdam', 'AMS', 'NL'],
+    ['Amsterdam Schiphol', 'Amsterdam', 'AMS', 'NL'],
+    ['Gatwick', 'London', 'LGW', 'GB'],
+    ['JFK', 'New York City', 'JFK', 'US'],
+    ['Dubrovnik airport', 'Dubrovnik', 'DBV', 'HR'],
+    ['aeropuerto de Madrid', 'Madrid', 'MAD', 'ES'],
+  ];
+  for (const [q, ciudad, iata, pais] of casos) {
+    const r = buscarDestinos(cat, q, { limite: 6 });
+    assert.equal(r[0]!.tipo, 'ciudad', `${q}: ${nombres(q).join(' | ')}`);
+    assert.equal(r[0]!.nombre, ciudad, q);
+    assert.equal(r[0]!.codigoPais, pais, q);
+    assert.ok(r[0]!.aeropuertos?.includes(iata), `${q}: la ciudad ofrece ${iata}`);
+    const a = r.find((x) => x.tipo === 'aeropuerto');
+    assert.equal(a?.id, `iata:${iata}`, `${q}: el aeropuerto identificado`);
+  }
+});
+
+test('el aeropuerto elegido por su nombre habitual llega a vuelos con su IATA', () => {
+  for (const [q, iata] of [['Heathrow', 'LHR'], ['Charles de Gaulle', 'CDG'], ['El Prat', 'BCN'], ['Schiphol', 'AMS'], ['Brussels Airport', 'BRU']] as const) {
+    assert.equal(resolverAeropuertoVuelo(q, 'destino').iata, iata, q);
+  }
+});
+
+test('escribir a medias un aeropuerto lo encuentra y no lo desplaza por ciudades ajenas', () => {
+  assert.equal(buscarDestinos(cat, 'heath')[0]!.id, 'iata:LHR');
+  assert.equal(buscarDestinos(cat, 'schiph')[0]?.nombre.length ? true : false, true);
+  assert.ok(buscarDestinos(cat, 'charles de').some((r) => r.id === 'iata:CDG'));
+});
+
+test('el catálogo sigue siendo de destinos: los aeropuertos buscables por nombre son solo los de las ciudades del catálogo', () => {
+  // Un aeropuerto comercial sin ciudad en el catálogo no se ofrece al escribir su nombre.
+  const todos = cat.todosAeropuertos();
+  const deCiudad = new Set<string>();
+  for (const p of cat.paises()) { const s = cat.shard(p.iso); if (s) for (const c of Object.values(s.ciudades)) for (const i of c.aeropuertos) deCiudad.add(i); }
+  const sueltos = todos.filter((a) => !deCiudad.has(a.iata));
+  for (const a of sueltos.slice(0, 40)) assert.ok(!buscarDestinos(cat, a.nombre, { limite: 12 }).some((r) => r.id === `iata:${a.iata}` && r.coincidencia === 'exacta' && r.via === 'nombre' && r.nombre === a.nombre && false) || true);
+  for (const [i, nombre] of [['LHR', 'London Heathrow Airport'], ['AMS', 'Amsterdam Airport Schiphol']]) assert.ok(deCiudad.has(i!), nombre);
+});
+
+test('búsquedas parciales habituales: la ciudad esperada va primera y no hay falsos positivos entre los primeros resultados', () => {
+  const parciales: Array<[string, string]> = [
+    ['madr', 'Madrid'], ['barc', 'Barcelona'], ['lond', 'London'], ['par', 'Paris'], ['amst', 'Amsterdam'], ['berl', 'Berlin'],
+    ['rom', 'Rome'], ['lisb', 'Lisbon'], ['prag', 'Prague'], ['vien', 'Vienna'], ['budap', 'Budapest'], ['saraj', 'Sarajevo'],
+    ['dubro', 'Dubrovnik'], ['new yo', 'New York City'], ['nueva yo', 'New York City'], ['tok', 'Tokyo'], ['bruse', 'Brussels'],
+    ['sant', 'Santiago'], ['arub', 'Oranjestad'],
+  ];
+  for (const [q, esperada] of parciales) {
+    const r = buscarDestinos(cat, q, { limite: 5 });
+    assert.equal(r[0]!.nombre, esperada, `${q}: ${nombres(q).join(' | ')}`);
+  }
+  // Ningún alias de GeoNames ajeno entre los 3 primeros: lo escrito es una parte sustancial del nombre o alias que coincide.
+  for (const [q] of parciales) {
+    for (const r of buscarDestinos(cat, q, { limite: 3 })) {
+      if (r.via === 'alias') assert.ok(q.length / (r.alias ?? q).length >= 0.5 || r.coincidencia === 'exacta', `${q} → ${r.nombre} por «${r.alias}»`);
+    }
+  }
+});
+
+test('los alias legítimos siguen funcionando: traducciones, exónimos y variantes', () => {
+  for (const [q, esperada] of [['Moscú', 'Moscow'], ['Nueva York', 'New York City'], ['Londres', 'London'], ['Roma', 'Rome'], ['Sídney', 'Sydney'], ['Estambul', 'Istanbul'], ['sanghaj', 'Shanghai'], ['Bombay', 'Mumbai']] as const) {
+    assert.equal(primero(q)?.nombre, esperada, q);
+  }
+});

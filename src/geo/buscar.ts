@@ -44,6 +44,8 @@ export const POBLACION_CIUDAD_PEQUENA = 30_000;
 export const POBLACION_CIUDAD_GRANDE = 300_000;
 /** Solo para consultas cortas: una palabra más larga ya suele ser el nombre completo que la persona quería escribir. */
 export const LONGITUD_MAX_CONSULTA_AMBIGUA = 6;
+/** Fracción mínima del alias que debe estar escrita para sugerirlo cuando ya hay un nombre propio que encaja. */
+const COBERTURA_MINIMA_ALIAS = 0.6;
 
 interface Candidato { entrada: EntradaIndice; clave: string; exacta: boolean; propio: boolean; editorial?: DestinoEditorial }
 /** 0 nombre propio exacto · 1 nombre propio por prefijo · 2 alias exacto · 3 alias por prefijo. */
@@ -82,24 +84,19 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
     }
   }
 
-  // Un aeropuerto escrito por su nombre completo («Brussels Airport») o por su código («BRU») identifica también a su ciudad:
-  // la ciudad se ofrece con la misma calidad de coincidencia y va antes (PRIORIDAD_TIPO); el aeropuerto sigue disponible.
-  for (const c of [...mejores.values()]) {
-    if (c.entrada[0] !== 'a' || !c.exacta) continue;
-    const ciudadId = cat.aeropuertoPorIata(`${c.entrada[1]}`)?.ciudadId;
-    const ficha = ciudadId ? cat.ficha(ciudadId) : undefined;
-    if (!ficha || mejores.has(`c:${ficha.id}`) || (pais && ficha.pais !== pais)) continue;
-    mejores.set(`c:${ficha.id}`, { entrada: ['c', ficha.id, ficha.pais, ficha.poblacion, 1], clave: c.clave, exacta: true, propio: true });
-  }
-
   // Los alias de GeoNames incluyen apodos y transliteraciones («paris of the north», «new york van java», «arubakaki»).
   // Un alias por PREFIJO es una sugerencia válida mientras se escribe, pero no cuando lo escrito ya es un nombre completo:
   // Si lo escrito (≥ 4 letras: los códigos IATA de 3 letras aún pueden estar a medias) coincide exactamente con algún nombre o alias,
   // los alias por prefijo se descartan: ya no se está completando nada.
   const completa = Array.from(clave).length >= 4 && [...mejores.values()].some((c) => c.exacta && c.entrada[0] !== 'a');
+  // Mientras se escribe, si ya hay un nombre propio que encaja, un alias (de GeoNames) solo cuenta si lo escrito es una parte
+  // sustancial de él: «arub» es el 44 % de «arubakaki» (transliteración ajena) y no lo sugiere; «madr» sí sugiere «madras» (67 %).
+  // Con menos de 4 letras todavía no hay palabra que contrastar (los IATA de 3 letras y los prefijos mínimos admiten todos los alias).
+  const hayPropio = Array.from(clave).length >= 4 && [...mejores.values()].some((c) => c.propio && c.entrada[0] !== 'a');
+  const cobertura = (c: Candidato) => Array.from(clave).length / Math.max(1, Array.from(c.clave).length);
   for (const [id, c] of mejores) {
     if (c.propio || c.exacta) continue;
-    if (completa) mejores.delete(id);
+    if (completa || (hayPropio && cobertura(c) < COBERTURA_MINIMA_ALIAS)) mejores.delete(id);
   }
 
   // Un aeropuerto escrito a medias («paris», «new york») no compite con las ciudades que ya encajan: solo se ofrece si su nombre
@@ -117,6 +114,18 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
     const nombre = d.nombres.filter((n) => n.startsWith(clave)).sort((a, b) => a.length - b.length)[0];
     if (nombre === undefined) continue;
     mejores.set(d.id, { entrada: ['c', d.id, d.pais, 0, 1], clave: nombre, exacta: nombre === clave, propio: true, editorial: d });
+  }
+
+  // Un aeropuerto escrito por su nombre completo («Brussels Airport») o por su código («BRU») identifica también a su ciudad:
+  // la ciudad se ofrece con la misma calidad de coincidencia y va antes (PRIORIDAD_TIPO); el aeropuerto sigue disponible.
+  // Solo si lo escrito no es ya el nombre de una ciudad, país o región («Santorini» es el destino, no la ciudad de su aeropuerto).
+  const hayDestinoExacto = [...mejores.values()].some((c) => c.entrada[0] !== 'a' && c.exacta && c.propio);
+  for (const c of hayDestinoExacto ? [] : [...mejores.values()]) {
+    if (c.entrada[0] !== 'a' || !c.exacta) continue;
+    const ciudadId = cat.aeropuertoPorIata(`${c.entrada[1]}`)?.ciudadId;
+    const ficha = ciudadId ? cat.ficha(ciudadId) : undefined;
+    if (!ficha || mejores.has(`c:${ficha.id}`) || (pais && ficha.pais !== pais)) continue;
+    mejores.set(`c:${ficha.id}`, { entrada: ['c', ficha.id, ficha.pais, ficha.poblacion, 1], clave: c.clave, exacta: true, propio: true });
   }
 
   const poblacion = (c: Candidato) => c.entrada[3] ?? 0;

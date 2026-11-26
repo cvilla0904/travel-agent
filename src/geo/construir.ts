@@ -289,7 +289,7 @@ export function construirCatalogo(e: EntradaConstruccion): CatalogoConstruido {
     const c = a.ciudadId ? shard.ciudades[a.ciudadId] : undefined;
     if (c && !c.aeropuertos.includes(a.iata)) c.aeropuertos.push(a.iata);
     poner(a.iata, ['a', a.iata, a.pais], true);
-    for (const n of nombresDeAeropuerto(a.nombre)) poner(n, ['a', a.iata, a.pais], true);
+    for (const n of nombresDeAeropuerto(a.nombre, c?.nombre, c?.aeropuertos[0] === a.iata)) poner(n, ['a', a.iata, a.pais], true);
   }
 
   // El código IATA de un aeropuerto también identifica a su ciudad («mad» → Madrid, «san» → San Diego). Solo se reclasifica como
@@ -305,8 +305,35 @@ export function construirCatalogo(e: EntradaConstruccion): CatalogoConstruido {
   return { indice: { v: 1, nombres }, paises: paisesOut, shards, sinCiudad, preferidos, curadasSinCiudad };
 }
 
-/** Claves de búsqueda de un aeropuerto por su nombre: completo y sin la parte tras « - » («Ezeiza International Airport - Ministro Pistarini»). */
-export function nombresDeAeropuerto(nombre: string): string[] {
-  const partes = [nombre, nombre.split(' - ')[0] ?? nombre].map((n) => normalizar(n)).filter((n) => n.length >= 5);
-  return [...new Set(partes)];
+const PALABRAS_AEROPUERTO_NOMBRE = /\b(?:international|intl|airport|airfield|aeropuerto|aeroporto|aeroport|flughafen|aeropuerto internacional|domestic|regional|civil)\b/gi;
+
+/**
+ * Claves de búsqueda de un aeropuerto por su nombre (normalizadas). Parte del nombre oficial («London Heathrow Airport»,
+ * «Josep Tarradellas Barcelona-El Prat Airport», «Amsterdam Airport Schiphol») y añade las formas habituales:
+ *  - el nombre completo y el nombre sin «Airport/International…» («london heathrow», «charles de gaulle»);
+ *  - cada tramo separado por guion («el prat») y su forma con «airport»;
+ *  - el nombre sin la ciudad que lo precede («heathrow», «schiphol») y con «airport» («heathrow airport»).
+ * Nunca se indexa el nombre de la propia ciudad como clave del aeropuerto (no compite con la ciudad).
+ */
+export function nombresDeAeropuerto(nombre: string, ciudad?: string, principal = false): string[] {
+  const completo = normalizar(nombre);
+  const nombreCiudad = ciudad ? normalizar(ciudad) : '';
+  const limpiar = (t: string) => normalizar(t.replace(PALABRAS_AEROPUERTO_NOMBRE, ' ')).replace(/\s+/g, ' ').trim();
+  const bases = new Set<string>([completo, limpiar(nombre)]);
+  for (const tramo of nombre.split(/\s+[-–]\s+|-/)) { if (tramo.trim()) { bases.add(normalizar(tramo)); bases.add(limpiar(tramo)); } }
+  for (const b of [...bases]) {
+    if (nombreCiudad && b.startsWith(`${nombreCiudad} `)) {
+      const resto = b.slice(nombreCiudad.length + 1).trim();
+      if (resto) bases.add(resto);
+    }
+  }
+  const claves = new Set<string>();
+  for (const b of bases) {
+    if (b.length < 5 || b === nombreCiudad) continue;
+    claves.add(b);
+    if (!/\bairport\b/.test(b) && b !== completo) claves.add(`${b} airport`);
+  }
+  // «Dubrovnik airport» / «aeropuerto de Madrid»: la ciudad con la palabra aeropuerto identifica a su aeropuerto principal.
+  if (principal && nombreCiudad) { claves.add(`${nombreCiudad} airport`); claves.add(`aeropuerto ${nombreCiudad}`); claves.add(`aeropuerto de ${nombreCiudad}`); }
+  return [...claves];
 }

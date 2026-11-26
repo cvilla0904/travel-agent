@@ -250,8 +250,12 @@ for (const [ref, alias] of Object.entries(sel.nombresEs)) {
 // Los aeropuertos también se localizan por su nombre («Brussels Airport»), no solo por su código IATA.
 // Solo los de una ciudad del catálogo (alternativas útiles): los aeropuertos sueltos no se ofrecen al escribir.
 for (const s of Object.values(nuevosShards)) {
-  const deCiudad = new Set(Object.values(s.ciudades).flatMap((c) => c.aeropuertos));
-  for (const a of Object.values(s.aeropuertos)) if (deCiudad.has(a.iata)) for (const n of nombresDeAeropuerto(a.nombre)) poner(n, ['a', a.iata, a.pais, 0, 1]);
+  const ciudadPorIata = new Map<string, Ciudad>();
+  for (const c of Object.values(s.ciudades)) for (const i of c.aeropuertos) if (!ciudadPorIata.has(i)) ciudadPorIata.set(i, c);
+  for (const a of Object.values(s.aeropuertos)) {
+    const c = ciudadPorIata.get(a.iata);
+    if (c) for (const n of nombresDeAeropuerto(a.nombre, c.nombre, c.aeropuertos[0] === a.iata)) poner(n, ['a', a.iata, a.pais, 0, 1]);
+  }
 }
 const preferidos: Record<string, PreferidoCatalogo> = {};
 for (const [k, p] of Object.entries(preferidosOrigen)) { const id = resolver(p.id); if (todasNuevas.has(id)) preferidos[k] = { ...p, id }; }

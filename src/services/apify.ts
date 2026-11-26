@@ -28,6 +28,7 @@ export function esperaTotalSecs(env: Record<string, string | undefined> = proces
 
 export { PLATAFORMAS_DISPONIBLES, PLATAFORMAS_ACTIVAS, etiquetaPlataformas, validarPlataformas, type PlataformaActividades } from './plataformas-actividades.js';
 import { PLATAFORMAS_ACTIVAS, validarPlataformas } from './plataformas-actividades.js';
+import { TOPE_COSTE_ACTIVIDADES_USD_POR_DEFECTO, opcionesLimite, topeCoste } from './apify-limites.js';
 /** Input exacto que recibe el actor (compartido con el script de diagnóstico para que no se desvíen). */
 export function inputActor(consultas: string[], plataformas: readonly string[] = PLATAFORMAS_ACTIVAS) {
   return {
@@ -73,7 +74,8 @@ async function ejecutarActorDetallado(searchQueries: string[]): Promise<Ejecucio
   console.info('[APIFY_DIAG] Starting actor', JSON.stringify({ actor: ACTOR_ID, input: actorInput }));
   const inicio = Date.now();
   const presupuestoMs = esperaTotalSecs() * 1000;
-  let run = await actor.call(actorInput, { waitSecs: Math.min(WAIT_SECS, esperaTotalSecs()) });
+  const limites = opcionesLimite(esperaTotalSecs(), topeCoste(process.env.APIFY_ACTIVIDADES_MAX_CHARGE_USD, TOPE_COSTE_ACTIVIDADES_USD_POR_DEFECTO));
+  let run = await actor.call(actorInput, { waitSecs: Math.min(WAIT_SECS, esperaTotalSecs()), ...limites });
   console.info('[APIFY_DIAG] Actor returned', JSON.stringify({
     status: run.status,
     runId: run.id,

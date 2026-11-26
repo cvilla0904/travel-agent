@@ -1,13 +1,13 @@
 {
  "formato": 3,
- "generado": "2026-11-26T11:25:15.628Z",
+ "generado": "2026-11-26T11:41:52.733Z",
  "ciudades": 3534,
  "aeropuertos": 3043,
  "paises": 252,
- "buckets": 24392,
+ "buckets": 24436,
  "sha256": {
-  "indice.dat": "b95a390c35eb104385126f63d53bae759628ec458fde20f0b0e9f23c95978215",
-  "indice-dir.json": "5c5fabd26b305af9df4ea85eb3030becc78e785faac090c6b57c1cdb2d7b9386",
+  "indice.dat": "d0f944057d97c742644bdb51064f5f56db005759ed025363e61809d484e25dd6",
+  "indice-dir.json": "4156be37850732860ddd499c1b0f1b5fd0eecaede78fd716b7d6bdfbce6e90ff",
   "fichas.idx": "e7f30dfa5a6b6da895ee47f3dadbafa95e2af41edbdf8a7714696ca1c98f02cd",
   "fichas.dat": "30d073631d788e45a39260e32894150c81e8670e4083d18eb460b01ec3b67e35",
   "aeropuertos.json": "6afe268722ba243776203a6223a50d1bf22f63ac50f8d84db2d7082bc66716a1",
