@@ -289,6 +289,7 @@ export function construirCatalogo(e: EntradaConstruccion): CatalogoConstruido {
     const c = a.ciudadId ? shard.ciudades[a.ciudadId] : undefined;
     if (c && !c.aeropuertos.includes(a.iata)) c.aeropuertos.push(a.iata);
     poner(a.iata, ['a', a.iata, a.pais], true);
+    for (const n of nombresDeAeropuerto(a.nombre)) poner(n, ['a', a.iata, a.pais], true);
   }
 
   // El código IATA de un aeropuerto también identifica a su ciudad («mad» → Madrid, «san» → San Diego). Solo se reclasifica como
@@ -302,4 +303,10 @@ export function construirCatalogo(e: EntradaConstruccion): CatalogoConstruido {
 
   for (const r of e.regiones) { [r.nombre, ...r.nombres].forEach((n) => poner(n, ['r', r.id, r.pais], true)); }
   return { indice: { v: 1, nombres }, paises: paisesOut, shards, sinCiudad, preferidos, curadasSinCiudad };
+}
+
+/** Claves de búsqueda de un aeropuerto por su nombre: completo y sin la parte tras « - » («Ezeiza International Airport - Ministro Pistarini»). */
+export function nombresDeAeropuerto(nombre: string): string[] {
+  const partes = [nombre, nombre.split(' - ')[0] ?? nombre].map((n) => normalizar(n)).filter((n) => n.length >= 5);
+  return [...new Set(partes)];
 }

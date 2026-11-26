@@ -204,3 +204,77 @@ test('tamaño: el catálogo es pequeño (no mundial) y no cambia el formato', ()
     .map((f) => path.join(DIR_CATALOGO, f)).filter((f) => fs.statSync(f).isFile()).reduce((s, f) => s + fs.statSync(f).size, 0);
   assert.ok(bytes < 8 * 1024 * 1024, `${(bytes / 1048576).toFixed(1)} MB`);
 });
+
+/* ---------- relevancia del autocompletado: sin ciudades que solo comparten letras ---------- */
+
+const nombres = (q: string, limite = 8) => buscarDestinos(cat, q, { limite }).map((r) => `${r.nombre}/${r.tipo}/${r.codigoPais}`);
+const sinIrrelevantes = (q: string, prohibidos: RegExp) => assert.ok(!nombres(q).some((n) => prohibidos.test(n)), `${q}: ${nombres(q).join(' | ')}`);
+
+test('París y Paris devuelven solo París (no Warsaw, cuyo apodo en GeoNames es «Paris of the North»)', () => {
+  for (const q of ['París', 'Paris', 'paris']) {
+    assert.deepEqual(nombres(q), ['Paris/ciudad/FR'], q);
+    assert.deepEqual(buscarDestinos(cat, q)[0]!.aeropuertos, ['CDG', 'ORY', 'BVA']);
+  }
+});
+
+test('New York y Nueva York devuelven Nueva York y nunca Jakarta («New York van Java»)', () => {
+  for (const q of ['New York', 'Nueva York', 'new york']) {
+    assert.equal(primero(q)!.nombre, 'New York City', q);
+    sinIrrelevantes(q, /Jakarta/);
+  }
+  assert.deepEqual(primero('New York')!.aeropuertos, ['JFK', 'EWR', 'LGA']);
+});
+
+test('Aruba devuelve Aruba y su capital, nunca Albuquerque ni otros que comparten letras', () => {
+  const r = nombres('Aruba');
+  assert.deepEqual(r, ['Oranjestad/ciudad/AW', 'Aruba/pais/AW']);
+  sinIrrelevantes('Aruba', /Albuquerque|Al Bahah|Albany|Arvayheer/);
+});
+
+test('Brussels Airport, BRU y Bruselas resuelven a Bruselas (el aeropuerto se ofrece después, nunca antes)', () => {
+  for (const q of ['Brussels Airport', 'brussels airport', 'BRU', 'Bruselas', 'Brussels']) {
+    const r = buscarDestinos(cat, q, { limite: 4 });
+    assert.equal(r[0]!.tipo, 'ciudad', q);
+    assert.equal(r[0]!.nombre, 'Brussels', q);
+    assert.deepEqual(r[0]!.aeropuertos, ['BRU', 'CRL'], q);
+  }
+  assert.ok(buscarDestinos(cat, 'Brussels Airport').some((r) => r.id === 'iata:BRU'), 'el aeropuerto sigue disponible');
+});
+
+test('los aeropuertos se localizan por nombre además de por código; escritos a medias no desplazan a las ciudades', () => {
+  const r = buscarDestinos(cat, 'brussels air');
+  assert.equal(r[0]!.id, 'iata:BRU');
+  const ezeiza = buscarDestinos(cat, 'Ezeiza');
+  assert.ok(ezeiza.some((r) => r.id === 'iata:EZE' || (r.nombre === 'Buenos Aires' && r.aeropuertos?.includes('EZE'))), 'Ezeiza lleva a Buenos Aires/EZE');
+  assert.ok(buscarDestinos(cat, 'EZE').some((r) => r.id === 'iata:EZE'));
+  // «paris» no ofrece Orly ni «new york» Stewart: son secundarios y la ciudad ya encaja.
+  assert.ok(!nombres('paris').some((n) => /Airport/.test(n)));
+  assert.ok(!nombres('new york').some((n) => /Stewart/.test(n)));
+});
+
+test('los alias por prefijo siguen funcionando mientras se escribe (no se rompe la búsqueda por alias)', () => {
+  assert.equal(primero('nueva yo')!.nombre, 'New York City');
+  assert.equal(primero('sanghaj')!.nombre, 'Shanghai');
+  assert.equal(primero('londr')!.nombre, 'London');
+  assert.equal(primero('Moscú')!.nombre, 'Moscow');
+});
+
+test('destinos obligatorios: aparecen entre los 3 primeros resultados y sin ruido evidente por delante', () => {
+  const lista: Array<[string, string]> = [
+    ['Sarajevo', 'Sarajevo'], ['Dubrovnik', 'Dubrovnik'], ['Oslo', 'Oslo'], ['Bruselas', 'Brussels'], ['París', 'Paris'], ['Londres', 'London'],
+    ['Nueva York', 'New York City'], ['Santorini', 'Santorini'], ['Menorca', 'Menorca'], ['Mallorca', 'Mallorca'], ['Bali', 'Bali'],
+    ['Malta', 'Valletta'], ['Aruba', 'Oranjestad'], ['Dolomitas', 'Dolomitas'],
+  ];
+  for (const [q, nombre] of lista) {
+    const r = buscarDestinos(cat, q, { limite: 3 });
+    assert.ok(r.some((x) => x.nombre === nombre), `${q}: ${r.map((x) => x.nombre).join(', ')}`);
+    assert.equal(r[0]!.nombre, nombre, `${q} debe ser el primero`);
+  }
+});
+
+test('homónimos: Salento (Quindío, Apulia, Campania) y Cartagena (Colombia, Murcia) siguen resolviéndose, con y sin calificador', () => {
+  assert.deepEqual(buscarDestinos(cat, 'Salento').map((r) => `${r.codigoPais}/${r.region}`), ['CO/Quindío', 'IT/Apulia', 'IT/Campania']);
+  assert.deepEqual(buscarDestinos(cat, 'Cartagena').map((r) => `${r.codigoPais}/${r.region}`).sort(), ['CO/Bolívar', 'ES/Región de Murcia']);
+  assert.equal(buscarDestinos(cat, 'Salento, Italia')[0]!.codigoPais, 'IT');
+  assert.equal(buscarDestinos(cat, 'Cartagena, España')[0]!.codigoPais, 'ES');
+});

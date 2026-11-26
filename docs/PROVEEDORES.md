@@ -27,5 +27,3 @@ Si el actor de actividades no termina en su presupuesto se devuelve lo ya guarda
 completo, total, consulta, opciones[], diagnostico`. Un dato que el proveedor no da es `null` (nunca 0), cada importe lleva su
 moneda (`null` = «Moneda no confirmada»; no hay moneda por defecto ni conversión). La web construye las tarjetas con estos datos;
 `response` es solo la explicación del Travel Manager.
-
-`src/services/stayingapi.ts` (`STAYINGAPI_API_KEY`) existe en el repositorio pero **no está conectado** a ninguna herramienta: no es un proveedor activo.

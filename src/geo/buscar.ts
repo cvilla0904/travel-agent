@@ -82,6 +82,32 @@ export function buscarDestinos(cat: Catalogo, texto: string, opciones: { pais?: 
     }
   }
 
+  // Un aeropuerto escrito por su nombre completo («Brussels Airport») o por su código («BRU») identifica también a su ciudad:
+  // la ciudad se ofrece con la misma calidad de coincidencia y va antes (PRIORIDAD_TIPO); el aeropuerto sigue disponible.
+  for (const c of [...mejores.values()]) {
+    if (c.entrada[0] !== 'a' || !c.exacta) continue;
+    const ciudadId = cat.aeropuertoPorIata(`${c.entrada[1]}`)?.ciudadId;
+    const ficha = ciudadId ? cat.ficha(ciudadId) : undefined;
+    if (!ficha || mejores.has(`c:${ficha.id}`) || (pais && ficha.pais !== pais)) continue;
+    mejores.set(`c:${ficha.id}`, { entrada: ['c', ficha.id, ficha.pais, ficha.poblacion, 1], clave: c.clave, exacta: true, propio: true });
+  }
+
+  // Los alias de GeoNames incluyen apodos y transliteraciones («paris of the north», «new york van java», «arubakaki»).
+  // Un alias por PREFIJO es una sugerencia válida mientras se escribe, pero no cuando lo escrito ya es un nombre completo:
+  // Si lo escrito (≥ 4 letras: los códigos IATA de 3 letras aún pueden estar a medias) coincide exactamente con algún nombre o alias,
+  // los alias por prefijo se descartan: ya no se está completando nada.
+  const completa = Array.from(clave).length >= 4 && [...mejores.values()].some((c) => c.exacta && c.entrada[0] !== 'a');
+  for (const [id, c] of mejores) {
+    if (c.propio || c.exacta) continue;
+    if (completa) mejores.delete(id);
+  }
+
+  // Un aeropuerto escrito a medias («paris», «new york») no compite con las ciudades que ya encajan: solo se ofrece si su nombre
+  // o su código se ha escrito completo, o si no hay ninguna ciudad, país o región que encaje.
+  if ([...mejores.values()].some((c) => c.entrada[0] !== 'a' && c.propio)) {
+    for (const [id, c] of mejores) if (c.entrada[0] === 'a' && !c.exacta) mejores.delete(id);
+  }
+
   // Destinos editoriales complementarios (p. ej. «Salento, Apulia»): compiten con los del catálogo por nombre, país y región.
   // Solo se ofrecen si el catálogo conoce su país (con un catálogo ajeno, como el de pruebas, no aparecen).
   for (const d of Object.values(DESTINOS_EDITORIALES)) {

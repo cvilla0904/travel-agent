@@ -14,7 +14,7 @@ import path from 'node:path';
 import { Catalogo, fuenteEnDisco } from '../src/geo/catalogo.ts';
 import { escribirCatalogo, leerIndiceCompleto, verificarIntegridad } from '../src/geo/empaquetar.ts';
 import { distanciaKm, normalizar } from '../src/geo/normalizar.ts';
-import { asociarCuradas } from '../src/geo/construir.ts';
+import { asociarCuradas, nombresDeAeropuerto } from '../src/geo/construir.ts';
 import { CIUDADES_EQUIVALENTES } from '../src/services/ciudades.ts';
 import { ORDEN_HOMONIMOS, DESTINOS_EDITORIALES } from '../src/geo/destinos-editoriales.ts';
 import type { Aeropuerto, Ciudad, EntradaIndice, Indice, PreferidoCatalogo, ShardPais } from '../src/geo/tipos.ts';
@@ -246,6 +246,12 @@ for (const [ref, alias] of Object.entries(sel.nombresEs)) {
   const id = c && resolver(c.id);
   const nueva = id ? todasNuevas.get(id) : undefined;
   if (nueva) for (const a of alias) poner(normalizar(a), ['c', nueva.id, nueva.pais, nueva.poblacion, 1]);
+}
+// Los aeropuertos también se localizan por su nombre («Brussels Airport»), no solo por su código IATA.
+// Solo los de una ciudad del catálogo (alternativas útiles): los aeropuertos sueltos no se ofrecen al escribir.
+for (const s of Object.values(nuevosShards)) {
+  const deCiudad = new Set(Object.values(s.ciudades).flatMap((c) => c.aeropuertos));
+  for (const a of Object.values(s.aeropuertos)) if (deCiudad.has(a.iata)) for (const n of nombresDeAeropuerto(a.nombre)) poner(n, ['a', a.iata, a.pais, 0, 1]);
 }
 const preferidos: Record<string, PreferidoCatalogo> = {};
 for (const [k, p] of Object.entries(preferidosOrigen)) { const id = resolver(p.id); if (todasNuevas.has(id)) preferidos[k] = { ...p, id }; }
