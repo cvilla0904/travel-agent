@@ -73,7 +73,7 @@ const pinta = (p: any, datos: unknown) => p.evaluate((d: any) => {
   const txt = (e: Element | null) => (e?.textContent || '').replace(/\s+/g, ' ').trim();
   return {
     vuelos: [...t.querySelectorAll('.flight-card')].map((c: any) => ({ aerolinea: txt(c.querySelector('.flight-airline')), precio: txt(c.querySelector('.flight-price')), texto: txt(c), url: c.dataset.url || null, moneda: c.dataset.moneda || null, importe: c.dataset.importe || null, sinEnlace: !!c.querySelector('.flight-no-link') })),
-    hoteles: [...t.querySelectorAll('.hotel-card')].map((c: any) => ({ nombre: txt(c.querySelector('.hotel-name')), detalle: txt(c.querySelector('.hotel-detail')), grupo: txt(c.closest('.hotel-category')?.querySelector('.hotel-category-title') ?? null), moneda: c.dataset.moneda || null, sinEnlace: !!c.querySelector('.hotel-no-link') })),
+    hoteles: [...t.querySelectorAll('.hotel-card')].map((c: any) => ({ nombre: txt(c.querySelector('.hotel-name')), detalle: txt(c.querySelector('.hotel-top')), grupo: txt(c.closest('.hotel-category')?.querySelector('.hotel-category-title') ?? null), moneda: c.dataset.moneda || null, sinEnlace: !!c.querySelector('.hotel-no-link') })),
     actividades: [...t.querySelectorAll('.activity-card')].map((c: any) => ({ nombre: txt(c.querySelector('.activity-name')), badge: txt(c.querySelector('.activity-price-badge')), moneda: c.dataset.moneda || null, enlace: !!c.querySelector('a') })),
     notas: [...t.querySelectorAll('.estado-bloque')].map((n: any) => ({ estado: n.dataset.estado, texto: txt(n) })),
     html: t.innerHTML,

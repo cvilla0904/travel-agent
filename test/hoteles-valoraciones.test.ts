@@ -135,7 +135,7 @@ test('tarjetas: rating real con reseñas; sin rating «Sin valoración del prove
     const detalle: Record<string, string> = await p.evaluate((d: any) => {
       (globalThis as any).MogavelDatos.renderizar(d, document.getElementById('res'));
       const o: Record<string, string> = {};
-      document.querySelectorAll('.hotel-card').forEach((c: any) => { o[c.querySelector('.hotel-name').textContent.trim()] = c.querySelector('.hotel-detail').textContent.replace(/\s+/g, ' ').trim(); });
+      document.querySelectorAll('.hotel-card').forEach((c: any) => { o[c.querySelector('.hotel-name').textContent.trim()] = c.querySelector('.hotel-top').textContent.replace(/\s+/g, ' ').trim(); });
       return o;
     }, DATOS);
     assert.match(detalle['Hotel Con Valoración']!, /8,6\/10 \(1\.?200 reseñas\)/);

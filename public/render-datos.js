@@ -196,46 +196,106 @@
       .filter(function (g) { return g.hoteles.length; });
   }
 
+  /** Ofertas de un hotel ordenadas por precio (las sin precio, al final); a igual precio, por proveedor. No se elige ninguna por el usuario. */
+  function ofertasOrdenadas(h) {
+    return (h.ofertas || []).slice().sort(function (a, b) {
+      var pa = num(a.porNocheMostrado) !== null ? a.porNocheMostrado : num(a.totalMostrado), pb = num(b.porNocheMostrado) !== null ? b.porNocheMostrado : num(b.totalMostrado);
+      if (pa === null && pb === null) return String(a.proveedor).localeCompare(String(b.proveedor), 'es');
+      if (pa === null) return 1; if (pb === null) return -1;
+      return pa - pb || String(a.proveedor).localeCompare(String(b.proveedor), 'es');
+    });
+  }
+  function textoImpuestos(inc) { return inc === true ? 'impuestos incluidos' : inc === false ? 'sin impuestos' : null; }
+
+  /** Fila de una oferta de proveedor: proveedor, importes y enlace. El botón de elegirla lo añade trip-builder.js (solo si tiene precio). */
+  function filaOferta(h, o, bloque) {
+    var li = el('li', 'hotel-offer');
+    var moneda = o.moneda || (h.precio && h.precio.moneda) || null;
+    var noche = num(o.porNocheMostrado), total = num(o.totalMostrado);
+    li.dataset.ofertaId = o.id || '';
+    li.dataset.hotelId = h.id;
+    li.dataset.proveedor = o.proveedor || '';
+    if (noche !== null || total !== null) {
+      li.dataset.importe = String(noche !== null ? noche : total);
+      li.dataset.base = noche !== null ? 'noche' : 'total';
+    }
+    if (moneda) li.dataset.moneda = moneda;
+    if (total !== null) li.dataset.total = String(total);
+    if (noche !== null) li.dataset.porNoche = String(noche);
+    if (o.impuestosIncluidos === true || o.impuestosIncluidos === false) li.dataset.impuestos = o.impuestosIncluidos ? 'si' : 'no';
+    var href = urlSegura(o.enlace);
+    if (href) li.dataset.url = href;
+
+    li.appendChild(el('span', 'hotel-offer-provider', o.proveedor || 'Proveedor'));
+    var precio = el('span', 'hotel-offer-price');
+    var pn = noche !== null ? formatearImporte(noche, moneda) : null, pt = total !== null ? formatearImporte(total, moneda) : null;
+    if (pn || pt) {
+      if (pn) precio.appendChild(el('strong', null, pn + ' / noche'));
+      if (pt) precio.appendChild(el('small', null, pt + ' total' + (textoImpuestos(o.impuestosIncluidos) ? ' · ' + textoImpuestos(o.impuestosIncluidos) : '')));
+    } else precio.appendChild(el('small', null, 'Precio no disponible'));
+    li.appendChild(precio);
+    li.appendChild(href ? enlace('hotel-offer-link', href, 'Ver oferta ↗') : el('span', 'hotel-no-link', 'Enlace no disponible'));
+    return li;
+  }
+
   function tarjetaHotel(h, bloque) {
     var card = el('article', 'hotel-card');
     marcar(card, 'hotel', h.id, h.nombre);
+    var consulta = bloque.consulta || {};
+    card.dataset.entrada = consulta.fechaEntrada || ''; card.dataset.salida = consulta.fechaSalida || '';
+
+    var top = el('div', 'hotel-top');
     var main = el('div', 'hotel-main');
     main.appendChild(el('div', 'hotel-name', h.nombre));
-    var det = [h.tipoAlojamiento, num(h.estrellas) !== null ? '★'.repeat(Math.max(1, Math.min(5, Math.round(h.estrellas)))) : null];
-    // Valoración de usuarios del proveedor. Sin ella se dice «Sin valoración del proveedor» (nunca se inventa ni se sustituye por
-    // las estrellas de categoría) y el número de reseñas se conserva si el proveedor lo da.
+    // Categoría, estrellas y valoración de usuarios. Sin valoración del proveedor se dice así (nunca se inventa ni se sustituye por estrellas).
     var resenas = num(h.numeroResenas) ? h.numeroResenas.toLocaleString('es-ES') + ' reseñas' : null;
-    if (num(h.valoracion) !== null) det.push(decimal(h.valoracion) + (num(h.valoracionEscala) ? '/' + decimal(h.valoracionEscala) : '') + (resenas ? ' (' + resenas + ')' : ''));
-    else det.push('Sin valoración del proveedor' + (resenas ? ' (' + resenas + ')' : ''));
-    det.push(h.zona, h.distanciaCentro && 'a ' + h.distanciaCentro + ' del centro', h.habitacion, h.cancelacionGratuita ? 'Cancelación gratuita' + (h.cancelacionHasta ? ' hasta ' + h.cancelacionHasta : '') : null);
+    var meta = [h.tipoAlojamiento, num(h.estrellas) !== null ? '★'.repeat(Math.max(1, Math.min(5, Math.round(h.estrellas)))) : null];
+    if (num(h.valoracion) !== null) meta.push(decimal(h.valoracion) + (num(h.valoracionEscala) ? '/' + decimal(h.valoracionEscala) : '') + (resenas ? ' (' + resenas + ')' : ''));
+    else meta.push('Sin valoración del proveedor' + (resenas ? ' (' + resenas + ')' : ''));
+    main.appendChild(el('div', 'hotel-meta', meta.filter(Boolean).join(' · ')));
+    var ubic = [h.zona, h.distanciaCentro && 'a ' + h.distanciaCentro + ' del centro'].filter(Boolean).join(' · ');
+    if (ubic) main.appendChild(el('div', 'hotel-loc', ubic));
+    var cond = [h.habitacion, h.cancelacionGratuita ? 'Cancelación gratuita' + (h.cancelacionHasta ? ' hasta ' + h.cancelacionHasta : '') : null].filter(Boolean).join(' · ');
+    if (cond) main.appendChild(el('div', 'hotel-cond', cond));
+    top.appendChild(main);
+
+    // Precio del hotel (de su oferta principal). Con varias ofertas se resume como «desde» la más barata de las mostradas.
     var p = h.precio || {};
-    var porNoche = p.disponible ? formatearImporte(p.porNoche, p.moneda) : null;
-    var total = p.disponible ? formatearImporte(p.total, p.moneda) : null;
-    var impuestos = p.impuestosIncluidos === true ? 'impuestos incluidos' : p.impuestosIncluidos === false ? 'sin impuestos' : null;
-    var precioTxt = porNoche || total
-      ? [porNoche && porNoche + ' por noche', total && total + ' total' + (impuestos ? ' (' + impuestos + ')' : '')].filter(Boolean).join(' · ') + (p.calculado ? ' · importe calculado' : '')
-      : 'Precio no disponible';
-    det.push(precioTxt);
-    main.appendChild(el('div', 'hotel-detail', det.filter(Boolean).join(' — ')));
-    marcarPrecio(card, num(p.porNoche) !== null && p.disponible ? p.porNoche : (p.disponible ? p.total : null), p.moneda, num(p.porNoche) !== null && p.disponible ? 'noche' : 'total');
-    var ofertas = (h.ofertas || []).filter(function (o) { return urlSegura(o.enlace); });
-    if (ofertas.length > 1) {
-      var caja = el('div', 'hotel-offers');
-      ofertas.forEach(function (o) {
-        var etiqueta = 'Ver oferta en ' + (o.proveedor || 'proveedor');
-        var precioOferta = formatearImporte(o.porNoche, p.moneda);
-        caja.appendChild(enlace('hotel-offer-link', o.enlace, etiqueta + (precioOferta ? ' · ' + precioOferta + ' por noche' : '') + ' ↗'));
-      });
-      main.appendChild(caja);
+    var ofertas = ofertasOrdenadas(h);
+    var conPrecio = ofertas.filter(function (o) { return num(o.porNocheMostrado) !== null || num(o.totalMostrado) !== null; });
+    var porNoche = p.disponible ? p.porNoche : null, total = p.disponible ? p.total : null, moneda = p.moneda;
+    var desde = false;
+    if (conPrecio.length) {
+      var o0 = conPrecio[0];
+      porNoche = num(o0.porNocheMostrado); total = num(o0.totalMostrado); moneda = o0.moneda || moneda;
+      desde = conPrecio.length > 1 && conPrecio.some(function (o) { return (o.porNocheMostrado !== o0.porNocheMostrado) || (o.totalMostrado !== o0.totalMostrado); });
     }
-    card.appendChild(main);
-    var href = urlSegura(h.enlace);
-    if (href) {
-      card.dataset.url = href;
-      var etiquetaEnlace = h.enlaceEsAlternativo ? 'Ver en ' + (bloque.proveedor.id === 'apify-google-hotels' ? 'Google Hoteles' : bloque.proveedor.nombre) + ' ↗'
-        : (p.fuente ? 'Ver oferta en ' + p.fuente + ' ↗' : 'Ver alojamiento ↗');
-      card.appendChild(enlace('hotel-link', href, etiquetaEnlace));
-    } else card.appendChild(el('span', 'hotel-no-link', 'Enlace no disponible'));
+    var caja = el('div', 'hotel-price');
+    var pn = formatearImporte(porNoche, moneda), pt = formatearImporte(total, moneda);
+    if (pn || pt) {
+      if (pn) caja.appendChild(el('strong', null, (desde ? 'Desde ' : '') + pn + ' / noche'));
+      if (pt) caja.appendChild(el('small', null, pt + ' total de la estancia' + (conPrecio.length ? '' : (textoImpuestos(p.impuestosIncluidos) ? ' · ' + textoImpuestos(p.impuestosIncluidos) : '')) + (p.calculado && !conPrecio.length ? ' · importe calculado' : '')));
+    } else caja.appendChild(el('small', null, 'Precio no disponible'));
+    top.appendChild(caja);
+    card.appendChild(top);
+    marcarPrecio(card, num(p.porNoche) !== null && p.disponible ? p.porNoche : (p.disponible ? p.total : null), p.moneda, num(p.porNoche) !== null && p.disponible ? 'noche' : 'total');
+
+    if (ofertas.length) {
+      var sec = el('section', 'hotel-compare');
+      sec.setAttribute('aria-label', 'Ofertas de ' + h.nombre);
+      sec.appendChild(el('h5', 'hotel-compare-title', ofertas.length > 1 ? 'Compara ofertas' : 'Oferta disponible'));
+      var lista = el('ul', 'hotel-offers');
+      ofertas.forEach(function (o) { lista.appendChild(filaOferta(h, o, bloque)); });
+      sec.appendChild(lista);
+      card.appendChild(sec);
+    } else {
+      // Sin ofertas por proveedor: solo el enlace de respaldo (ficha del buscador), sin presentarlo como oferta.
+      var href = urlSegura(h.enlace);
+      if (href) {
+        card.dataset.url = href;
+        card.appendChild(enlace('hotel-link', href, h.enlaceEsAlternativo ? 'Ver en ' + (bloque.proveedor.id === 'apify-google-hotels' ? 'Google Hoteles' : bloque.proveedor.nombre) + ' ↗' : 'Ver alojamiento ↗'));
+      } else card.appendChild(el('span', 'hotel-no-link', 'Enlace no disponible'));
+    }
     return card;
   }
 

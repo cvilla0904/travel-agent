@@ -74,7 +74,23 @@ export type BloqueVuelos = BloqueBase<'vuelos', {
 
 /* ---------- Hoteles ---------- */
 
-export interface OfertaHotelDatos { proveedor: string; porNoche: number | null; total: number | null; enlace: string | null }
+export interface OfertaHotelDatos {
+  /** Identificador estable de la oferta (hotel + proveedor + enlace): lo usa el Trip Builder para conservar la oferta elegida. */
+  id: string;
+  proveedor: string;
+  /** Precio por noche SIN impuestos, tal cual lo publica el proveedor. */
+  porNoche: number | null;
+  /** Total de la estancia: con impuestos si el dato está respaldado; si no, sin impuestos (ver impuestosIncluidos). */
+  total: number | null;
+  enlace: string | null;
+  moneda: string | null;
+  /** Total mostrado (= total) y su equivalente por noche (total / noches); null si no se puede calcular con certeza. */
+  totalMostrado: number | null;
+  porNocheMostrado: number | null;
+  /** true: el total incluye impuestos; false: no los incluye; null: no se sabe. */
+  impuestosIncluidos: boolean | null;
+  oficial: boolean;
+}
 export interface HotelOpcion {
   id: string;
   nombre: string;
@@ -255,10 +271,18 @@ export function bloqueVuelos(r: any): BloqueVuelos {
    HOTELES (Apify / Google Hotels)
    ========================================================= */
 
+/** Noches entre dos fechas «YYYY-MM-DD»; 0 si faltan o no son válidas (entonces no se deriva ningún importe por noche). */
+function nochesEntre(entrada: unknown, salida: unknown): number {
+  const f = (v: unknown) => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? Date.parse(`${v}T00:00:00Z`) : NaN);
+  const d = (f(salida) - f(entrada)) / 86_400_000;
+  return Number.isInteger(d) && d > 0 ? d : 0;
+}
+
 export function bloqueHoteles(r: any): BloqueHoteles {
   const estadoCrudo = String(r?.estado ?? '');
   const estado: EstadoBloque = estadoCrudo === 'ok' || estadoCrudo === 'sin_resultados' || estadoCrudo === 'error_proveedor' || estadoCrudo === 'error_interno'
     ? estadoCrudo : 'error_interno';
+  const noches = nochesEntre(r?.fechaEntrada, r?.fechaSalida);
   const opciones: HotelOpcion[] = conIdsUnicos((Array.isArray(r?.hoteles) ? r.hoteles : []).map((h: any): HotelOpcion => {
     const total = h.precioDisponible ? positivo(h.precioTotal) : null;
     const porNoche = h.precioDisponible ? positivo(h.precioPorNoche) : null;
@@ -291,12 +315,24 @@ export function bloqueHoteles(r: any): BloqueHoteles {
       imagen: url(h.imagen),
       enlace,
       enlaceEsAlternativo: !enlaceOferta && enlace !== null,
-      ofertas: (Array.isArray(h.ofertas) ? h.ofertas : []).map((o: any): OfertaHotelDatos => ({
-        proveedor: String(o.proveedor ?? ''),
-        porNoche: positivo(o.precioPorNocheSinImpuestos),
-        total: positivo(o.precioTotalConImpuestos) ?? positivo(o.precioTotalSinImpuestos),
-        enlace: url(o.url),
-      })).filter((o: OfertaHotelDatos) => o.proveedor || o.enlace),
+      ofertas: (Array.isArray(h.ofertas) ? h.ofertas : []).map((o: any): OfertaHotelDatos => {
+        const conImpuestos = positivo(o.precioTotalConImpuestos);
+        const sinImpuestos = positivo(o.precioTotalSinImpuestos);
+        const mostrado = conImpuestos ?? sinImpuestos;
+        const enlaceOferta = url(o.url);
+        return {
+          id: `of-${huella(h.nombre, o.proveedor, enlaceOferta)}`,
+          proveedor: String(o.proveedor ?? ''),
+          porNoche: positivo(o.precioPorNocheSinImpuestos),
+          total: mostrado,
+          enlace: enlaceOferta,
+          moneda: mostrado !== null || positivo(o.precioPorNocheSinImpuestos) !== null ? monedaIso(h.moneda) : null,
+          totalMostrado: mostrado,
+          porNocheMostrado: mostrado !== null && noches > 0 ? Math.round((mostrado / noches) * 100) / 100 : null,
+          impuestosIncluidos: conImpuestos !== null ? true : sinImpuestos !== null ? false : null,
+          oficial: Boolean(o.oficial),
+        };
+      }).filter((o: OfertaHotelDatos) => o.proveedor || o.enlace),
     };
   }));
   const avisos: string[] = [];
