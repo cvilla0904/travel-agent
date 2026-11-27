@@ -43,6 +43,7 @@ async function abrir(viewport: { width: number; height: number }, fotosFallan = 
   const b = await chromium.launch(EXEC ? { executablePath: EXEC } : {});
   const ctx = await b.newContext({ viewport, ...extra });
   const p = await ctx.newPage();
+  await p.addInitScript('window.__name = (f) => f;'); // tsx/esbuild keepNames
   await p.route((u: URL) => !u.href.startsWith(base), (r: any) => (/^https:\/\/images\.(unsplash|pexels)\.com\//.test(r.request().url()) && !fotosFallan
     ? r.fulfill({ status: 200, contentType: 'image/png', body: PNG }) : r.abort()));
   return { p, base, cerrar: async () => { await b.close(); cerrar(); } };

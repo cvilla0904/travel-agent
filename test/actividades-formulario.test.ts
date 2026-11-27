@@ -71,6 +71,7 @@ async function preparar(viewport = { width: 1280, height: 900 }) {
   const b = await chromium.launch(EXEC ? { executablePath: EXEC } : {});
   const ctx = await b.newContext({ viewport });
   const p = await ctx.newPage();
+  await p.addInitScript('window.__name = (f) => f;'); // tsx/esbuild keepNames
   const errores: string[] = [];
   p.on('pageerror', (e: Error) => errores.push(e.message));
   const peticiones: any[] = [];
