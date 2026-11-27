@@ -49,9 +49,10 @@ const BLOQUES: Record<Exclude<ModoBusqueda, 'complete'>, string> = {
     MODO DE BÚSQUEDA: SOLO ACTIVIDADES (elegido por el usuario en la web).
     Estas reglas prevalecen sobre cualquier otra instrucción de este agente.
     - Tu única herramienta es activities_agent. Llámala con el destino EXACTAMENTE como lo recibes (destino seleccionado), sin traducirlo.
-    - NO pidas fechas, ciudad de origen, número de viajeros ni presupuesto: no hacen falta para buscar actividades.
+    - NO pidas ciudad de origen, número de viajeros ni presupuesto: no hacen falta para buscar actividades.
+    - Para buscar actividades hacen falta el destino y las fechas del viaje (la disponibilidad y los días de realización dependen de ellas). Si el usuario todavía no ha indicado las fechas, pregúntaselas antes de buscar; si ya las ha dado, no las vuelvas a pedir.
     - NO busques vuelos ni alojamiento, aunque el usuario los mencione: dile que esta búsqueda es solo de actividades y que puede cambiar de pestaña para buscarlos.
-    - Si el usuario indicó preferencias (cultura, gastronomía, naturaleza, aventura) úsalas; si no indicó ninguna, no preguntes: busca con las cuatro.
+    - Si el usuario indicó categorías (cultura, gastronomía, naturaleza, aventura) pásalas en tipos; si eligió «cualquier tipo» o no indicó ninguna, no preguntes: pasa las cuatro categorías para obtener propuestas variadas.
     - Solo si falta el destino, pregunta únicamente por el destino.
     - Presenta lo que devuelva la herramienta sin inventar actividades, precios ni valoraciones.`,
   hotels: `
@@ -109,4 +110,44 @@ export function validarFechasHotel(modo: ModoBusqueda, bruto: unknown): Validaci
 export function mensajeConFechasHotel(mensaje: string, fechas: FechasHotel | null): string {
   if (!fechas) return mensaje;
   return `${mensaje}\n\n[Fechas de alojamiento elegidas en el formulario: entrada ${fechas.entrada}, salida ${fechas.salida}. Úsalas tal cual como fechaEntrada y fechaSalida; no las vuelvas a pedir.]`;
+}
+
+/* ---- Actividades elegidas en el formulario ---- */
+
+export const CATEGORIAS_ACTIVIDADES = ['cultura', 'gastronomía', 'naturaleza', 'aventura'] as const;
+export interface ActividadesFormulario { solicitadas: boolean; tipos: string[]; cualquiera: boolean }
+export type ValidacionActividades =
+  | { ok: true; actividades: ActividadesFormulario | null }
+  | { ok: false; status: 400; error: string };
+
+/**
+ * Valida el campo `actividades` ({solicitadas, tipos, cualquiera}). Ausente es válido (null: la web no lo envió, p. ej. en vuelos/hoteles
+ * o clientes antiguos). Las categorías deben ser de la lista; «cualquier tipo» no se mezcla con categorías concretas.
+ */
+export function validarActividades(bruto: unknown): ValidacionActividades {
+  if (bruto === undefined || bruto === null) return { ok: true, actividades: null };
+  const malo = (error: string): ValidacionActividades => ({ ok: false, status: 400, error });
+  if (typeof bruto !== 'object' || Array.isArray(bruto)) return malo('Actividades no válidas.');
+  const a = bruto as { solicitadas?: unknown; tipos?: unknown; cualquiera?: unknown };
+  if (typeof a.solicitadas !== 'boolean' || typeof a.cualquiera !== 'boolean' || !Array.isArray(a.tipos)) return malo('Actividades no válidas.');
+  const tipos = a.tipos;
+  if (!tipos.every((t) => typeof t === 'string' && (CATEGORIAS_ACTIVIDADES as readonly string[]).includes(t))) {
+    return malo(`Categoría de actividades no válida. Valores admitidos: ${CATEGORIAS_ACTIVIDADES.join(', ')}.`);
+  }
+  const unicos = [...new Set(tipos as string[])];
+  if (a.cualquiera && unicos.length) return malo('«Cualquier tipo» no se combina con categorías concretas.');
+  if (!a.solicitadas && (a.cualquiera || unicos.length)) return malo('Actividades incoherentes: hay categorías pero no se solicitan.');
+  return { ok: true, actividades: { solicitadas: a.solicitadas, tipos: unicos, cualquiera: a.cualquiera } };
+}
+
+/** Añade al mensaje del agente lo que el usuario pidió (o no) sobre actividades. Sin dato de la web no se añade nada. */
+export function mensajeConActividades(mensaje: string, act: ActividadesFormulario | null): string {
+  if (!act) return mensaje;
+  if (!act.solicitadas) {
+    return `${mensaje}\n\n[Actividades: el usuario NO ha pedido actividades en el formulario. No llames a activities_agent ni propongas actividades, salvo que las pida expresamente en este mensaje.]`;
+  }
+  if (act.cualquiera || !act.tipos.length) {
+    return `${mensaje}\n\n[Actividades solicitadas en el formulario: cualquier tipo. Llama a activities_agent con tipos = ${JSON.stringify([...CATEGORIAS_ACTIVIDADES])} para obtener propuestas variadas; no limites la búsqueda a una sola categoría.]`;
+  }
+  return `${mensaje}\n\n[Actividades solicitadas en el formulario: ${act.tipos.join(', ')}. Llama a activities_agent con tipos = ${JSON.stringify(act.tipos)}.]`;
 }

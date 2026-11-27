@@ -3,7 +3,7 @@ import { run, MemorySession } from '@openai/agents';
 import { agenteParaModo } from './index.js';
 import { mensajeConDestinoSeleccionado } from './services/destino-seleccionado.js';
 import { turnoChat } from './services/chat-contrato.js';
-import { resolverModo, validarModo, type ModoBusqueda, mensajeConFechasHotel, validarFechasHotel } from './services/modo-busqueda.js';
+import { resolverModo, validarModo, type ModoBusqueda, mensajeConActividades, mensajeConFechasHotel, validarActividades, validarFechasHotel } from './services/modo-busqueda.js';
 
 const app = express();
 
@@ -35,6 +35,8 @@ app.post('/api/chat', async (req, res) => {
     const modo = resolverModo(validacion.modo, modos.get(sessionId));
     const fechasHotel = validarFechasHotel(modo, req.body?.fechas);
     if (!fechasHotel.ok) return res.status(fechasHotel.status).json({ error: fechasHotel.error });
+    const actividades = validarActividades(req.body?.actividades);
+    if (!actividades.ok) return res.status(actividades.status).json({ error: actividades.error });
 
     let session = sessions.get(sessionId);
 
@@ -45,7 +47,7 @@ app.post('/api/chat', async (req, res) => {
 
     const turno = await turnoChat(req.body?.destinoSeleccionado, () => run(
       agenteParaModo(modo),
-      mensajeConFechasHotel(mensajeConDestinoSeleccionado(userMessage, req.body?.destinoSeleccionado), fechasHotel.fechas),
+      mensajeConActividades(mensajeConFechasHotel(mensajeConDestinoSeleccionado(userMessage, req.body?.destinoSeleccionado), fechasHotel.fechas), actividades.actividades),
       {
         session,
       },

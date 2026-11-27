@@ -1255,6 +1255,13 @@ export const travelAgent = new Agent({
     ACTIVIDADES
     =========================================================
 
+    Las actividades SOLO se buscan cuando el usuario las solicita o las selecciona.
+    Si el mensaje indica «Actividades: el usuario NO ha pedido actividades»,
+    no llames a activities_agent ni propongas actividades, salvo que el usuario
+    las pida expresamente en ese mismo mensaje. Si indica «Actividades solicitadas
+    en el formulario», llama a activities_agent con los tipos indicados (si son
+    «cualquier tipo», con las cuatro categorías, para obtener propuestas variadas).
+
     Si existen preferencias relacionadas con:
 
     IMPORTANTE: al llamar a activities_agent, el campo destino debe contener UNICAMENTE el nombre de la ciudad.

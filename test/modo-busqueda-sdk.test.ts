@@ -172,7 +172,7 @@ test('SDK real, modo activities: solo se activa el agente de actividades y el ac
     assert.deepEqual(roles(registro), ['actividades', 'manager'], 'ni vuelos ni hoteles se ejecutan, aunque el modelo quería buscarlos');
     const manager = registro.find((x) => x.rol === 'manager')!;
     assert.match(manager.instrucciones, /SOLO ACTIVIDADES/);
-    assert.match(manager.instrucciones, /NO pidas fechas, ciudad de origen/);
+    assert.match(manager.instrucciones, /NO pidas ciudad de origen, número de viajeros ni presupuesto/);
     assert.match(manager.instrucciones, /Eres el Travel Manager/, 'conserva las instrucciones base');
     // El actor real se invoca una sola vez, solo con Civitatis y con el límite de gasto.
     assert.equal(e.llamadasActor.length, 1);

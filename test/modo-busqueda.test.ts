@@ -47,7 +47,7 @@ test('instrucciones: complete no añade nada; los exclusivos prohíben las otras
   assert.equal(instruccionesDeModo('complete'), '');
   const act = instruccionesDeModo('activities');
   assert.match(act, /SOLO ACTIVIDADES/);
-  assert.match(act, /NO pidas fechas, ciudad de origen/);
+  assert.match(act, /NO pidas ciudad de origen, número de viajeros ni presupuesto/);
   assert.match(act, /NO busques vuelos ni alojamiento/);
   const hot = instruccionesDeModo('hotels');
   assert.match(hot, /SOLO HOTELES/);

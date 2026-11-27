@@ -96,6 +96,18 @@
     }
   }
 
+  /** Texto del panel vacío. En actividades distingue «no solicitadas» (el usuario no marcó ninguna) de «aún sin resultados»;
+   *  la búsqueda sin resultados y el error de proveedor los muestra render-datos.js con su propio aviso cuando llega el bloque. */
+  function textoVacio(t) {
+    if (t === 'actividades') {
+      var e = null;
+      try { e = global.MogavelEstado && global.MogavelEstado.leer(); } catch (_) { e = null; }
+      var a = e && e.formulario && e.formulario.actividades;
+      if (a && a.solicitadas === false) return 'No has pedido actividades para este viaje. Si quieres verlas, escríbelo en el chat (por ejemplo «añade actividades de cultura») o márcalas en el formulario de inicio.';
+    }
+    return VACIO[t];
+  }
+
   function actualizarContadores() {
     var sel = [];
     try { sel = (global.MogavelTripBuilder && global.MogavelTripBuilder.snapshot()) || []; } catch (_) { sel = []; }
@@ -108,7 +120,7 @@
       chip.dataset.sel = elegidos ? '1' : '0';
       chip.title = elegidos ? (elegidos + (elegidos === 1 ? ' seleccionado' : ' seleccionados')) : '';
       var vacio = $('panel-' + t);
-      vacio.dataset.vacio = VACIO[t];
+      vacio.dataset.vacio = textoVacio(t);
     });
     vigilarPanel();
   }
@@ -347,10 +359,16 @@
     return f && f.ida && f.vuelta ? { entrada: f.ida, salida: f.vuelta } : null;
   }
 
+  /** Actividades elegidas en el formulario ({solicitadas, tipos, cualquiera}); viajan en la primera búsqueda y en cada seguimiento. */
+  function actividadesDeEstado(estado) {
+    var a = estado && estado.formulario && estado.formulario.actividades;
+    return a && typeof a === 'object' && Array.isArray(a.tipos) ? { solicitadas: !!a.solicitadas, tipos: a.tipos, cualquiera: !!a.cualquiera } : null;
+  }
+
   var MODOS = { complete: 1, flights: 1, hotels: 1, activities: 1 };
 
   /** El modo elegido en la portada (complete | flights | hotels | activities) viaja en CADA petición, también en los seguimientos. */
-  async function consultarAgente(message, sessionId, destinoSeleccionado, modo, fechas) {
+  async function consultarAgente(message, sessionId, destinoSeleccionado, modo, fechas, actividades) {
     var response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -358,7 +376,8 @@
         { message: conContextoDeSeleccion(message), sessionId: sessionId },
         MODOS[modo] ? { modo: modo } : {},
         destinoSeleccionado ? { destinoSeleccionado: destinoSeleccionado } : {},
-        modo === 'hotels' && fechas && fechas.entrada && fechas.salida ? { fechas: { entrada: fechas.entrada, salida: fechas.salida } } : {}
+        modo === 'hotels' && fechas && fechas.entrada && fechas.salida ? { fechas: { entrada: fechas.entrada, salida: fechas.salida } } : {},
+        modo !== 'flights' && modo !== 'hotels' && actividades ? { actividades: actividades } : {}
       ))
     });
     var data = await response.json();
@@ -389,7 +408,7 @@
     global.MogavelEstado.marcarEnCurso();
     try {
       // Primera petición: viaja también el destino elegido en el autocompletado (si lo hubo). Los seguimientos no lo repiten.
-      var turno = await consultarAgente(estado.mensaje, estado.sessionId, estado.formulario && estado.formulario.destinoSeleccionado, estado.modo, fechasDeEstado(estado));
+      var turno = await consultarAgente(estado.mensaje, estado.sessionId, estado.formulario && estado.formulario.destinoSeleccionado, estado.modo, fechasDeEstado(estado), actividadesDeEstado(estado));
       global.MogavelEstado.agregarRespuesta(turno.texto, turno.resultados);
       pintarAgente(turno.texto, aplicarRespuesta(turno.texto, turno.resultados));
       ajustarPestanaVacia();
@@ -425,7 +444,7 @@
     var burbuja = pintarUsuario(mensaje);
     burbuja.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     try {
-      var turno = await consultarAgente(mensaje, estado.sessionId, undefined, estado.modo);
+      var turno = await consultarAgente(mensaje, estado.sessionId, undefined, estado.modo, undefined, actividadesDeEstado(estado));
       global.MogavelEstado.agregarRespuesta(turno.texto, turno.resultados);
       var respuestaNodo = pintarAgente(turno.texto, aplicarRespuesta(turno.texto, turno.resultados));
       if (respuestaNodo && respuestaNodo.scrollIntoView) respuestaNodo.scrollIntoView({ behavior: 'smooth', block: 'start' });
