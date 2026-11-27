@@ -7,6 +7,8 @@ export const DESTINOS = [
     cardTitulo: 'Colombia, de los Andes cafeteros al Caribe colonial',
     resumen: 'Bogotá, el Eje Cafetero, Medellín, Guatapé, el Parque Tayrona y Cartagena en una ruta que baja de la cordillera al mar.',
     alt: 'Ilustración de montañas verdes y palmeras de Colombia',
+    foto: 'photo-1534943441045-1009d7cb0bb9',
+    fotoAlt: 'Calle colonial de Cartagena de Indias con balcones de madera, un farol encendido y una torre amarilla',
     intro: 'Colombia cambia de paisaje cada pocas horas: capitales de altura con museos y cocina de autor, valles de palmas de cera, ciudades que se reinventan y un Caribe de murallas y selva sobre el mar. Esta ruta de 14 días enlaza seis grandes paradas de norte a sur y de altura a costa, con vuelos internos donde la carretera no compensa.',
     chips: ['✈️ 3 vuelos internos', '🏛 Cultura', '🥾 Aventura y naturaleza', '☕ Café y gastronomía'],
     lugares: ['Bogotá', 'Zipaquirá', 'Salento y Valle de Cocora', 'Medellín', 'Guatapé', 'Parque Tayrona', 'Cartagena de Indias', 'Islas del Rosario'],
@@ -48,6 +50,8 @@ export const DESTINOS = [
     cardTitulo: 'Córcega, la isla de la belleza entre mar y montaña',
     resumen: 'Un circuito de 11 días: Cap Corse, Calvi, Scandola, las calanques de Piana, Bonifacio, Bavella y Corte, sin trayectos de más.',
     alt: 'Ilustración de costa corsa con montañas y un velero',
+    foto: 'photo-1545129228-886291dac46f',
+    fotoAlt: 'Costa de Córcega vista desde el aire, con una torre de vigilancia genovesa sobre un cabo rocoso y aguas turquesas',
     intro: 'Córcega es una montaña dentro del mar: acantilados rojos, calas de aguas transparentes, pueblos de piedra colgados de las laderas y una cocina de monte y de costa. Este circuito de 11 días recorre la isla en sentido horario desde Bastia y se queda solo con lo que merece el desvío; hace falta coche, porque el transporte público no llega a la mayoría de los enclaves.',
     chips: ['🚗 Coche de alquiler', '🏖 Calas y playas', '⛰ Montaña y senderismo', '🧀 Gastronomía corsa'],
     lugares: ['Bastia', 'Cap Corse', 'Saint-Florent y desierto de los Agriates', 'Calvi y la Balagne', 'Reserva de Scandola y Porto', 'Calanques de Piana', 'Ajaccio', 'Sartène y Filitosa', 'Bonifacio e islas Lavezzi', 'Porto-Vecchio y Palombaggia', 'Agujas de Bavella', 'Corte y valle de la Restonica'],
@@ -86,6 +90,8 @@ export const DESTINOS = [
     cardTitulo: 'Rajastán, tierra de maharajás, fuertes y bazares',
     resumen: 'Delhi, Agra, Jaipur, Pushkar, Jodhpur y Udaipur en un recorrido de fuertes, palacios, mercados y sabores locales.',
     alt: 'Ilustración de un fuerte de arenisca con cúpulas al atardecer en el desierto',
+    foto: 'photo-1477587458883-47145ed94245',
+    fotoAlt: 'Palacio de los Vientos (Hawa Mahal) de Jaipur, en Rajastán, con dos caballos blancos decorados en primer plano',
     intro: 'Rajastán es la India de las postales: fuertes de arenisca sobre colinas, palacios sobre lagos, ciudades rosas, azules y blancas, y bazares que huelen a especias. Esta ruta de 14 días arranca en Delhi, pasa por el Taj Mahal y recorre las ciudades reales de Jaipur, Pushkar, Jodhpur y Udaipur con jornadas de carretera razonables y tiempo para sentarse a mirar.',
     chips: ['🚗 Chófer o tren', '🏰 Fuertes y palacios', '🛍 Mercados', '🍛 Cocina rajastaní'],
     lugares: ['Delhi', 'Agra y Fatehpur Sikri', 'Jaipur', 'Pushkar', 'Jodhpur', 'Ranakpur', 'Udaipur'],
@@ -127,6 +133,8 @@ export const DESTINOS = [
     cardTitulo: 'Sarajevo, la ciudad donde se cruzan imperios',
     resumen: 'Bazar otomano, arquitectura austrohúngara, historia viva, café bosnio y una excursión a Mostar en cuatro días.',
     alt: 'Ilustración de Sarajevo con un minarete entre colinas y tejados',
+    foto: 'photo-1570831709673-03320e9d734f',
+    fotoAlt: 'Plaza de Baščaršija, el bazar otomano de Sarajevo, con un minarete y las colinas al fondo',
     intro: 'Sarajevo se recorre en pocos pasos y en varios siglos: del bazar otomano de Baščaršija a los bulevares austrohúngaros, con minaretes, campanarios y una sinagoga a pocas calles de distancia. Cuatro días permiten descubrir su historia reciente con respeto, comer muy bien y salir un día a Mostar.',
     chips: ['🚶 A pie', '🕌 Herencia otomana', '🏛 Arquitectura austrohúngara', '☕ Café y cocina bosnia'],
     lugares: ['Baščaršija', 'Puente Latino', 'Calle Ferhadija', 'Vijećnica', 'Túnel de la Esperanza', 'Fortaleza Amarilla', 'Trebević', 'Mostar'],
@@ -153,3 +161,8 @@ export const DESTINOS = [
     paleta: { cielo: ['#a9bfd6', '#f3e2cc'], sol: '#f0b46a', lejos: '#7b8fa6', medio: '#4d6179', cerca: '#2c3b52', motivo: 'minarete' }
   }
 ];
+
+/** URL de la foto del destino (Unsplash, mismo origen de fotos que Toscana, Viena y Jordania). */
+export function urlFoto(id, ancho = 1400) {
+  return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${ancho}&q=80`;
+}
