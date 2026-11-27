@@ -96,6 +96,18 @@
     }
   }
 
+  /** Texto del panel vacío. En actividades distingue «no solicitadas» (el usuario no marcó ninguna) de «aún sin resultados»;
+   *  la búsqueda sin resultados y el error de proveedor los muestra render-datos.js con su propio aviso cuando llega el bloque. */
+  function textoVacio(t) {
+    if (t === 'actividades') {
+      var e = null;
+      try { e = global.MogavelEstado && global.MogavelEstado.leer(); } catch (_) { e = null; }
+      var a = e && e.formulario && e.formulario.actividades;
+      if (a && a.solicitadas === false) return 'No has pedido actividades para este viaje. Si quieres verlas, escríbelo en el chat (por ejemplo «añade actividades de cultura») o márcalas en el formulario de inicio.';
+    }
+    return VACIO[t];
+  }
+
   function actualizarContadores() {
     var sel = [];
     try { sel = (global.MogavelTripBuilder && global.MogavelTripBuilder.snapshot()) || []; } catch (_) { sel = []; }
@@ -108,7 +120,7 @@
       chip.dataset.sel = elegidos ? '1' : '0';
       chip.title = elegidos ? (elegidos + (elegidos === 1 ? ' seleccionado' : ' seleccionados')) : '';
       var vacio = $('panel-' + t);
-      vacio.dataset.vacio = VACIO[t];
+      vacio.dataset.vacio = textoVacio(t);
     });
     vigilarPanel();
   }
@@ -129,8 +141,21 @@
     panel.replaceChildren.apply(panel, nodos);
   }
 
-  /** Pinta las pestañas con una respuesta del agente. Devuelve { notas, hayPestanas } (lo que no es de ninguna pestaña). */
-  function aplicarRespuesta(texto) {
+  /**
+   * Pinta las pestañas con una respuesta del agente.
+   *  - Con `resultados` (datos estructurados de /api/chat) las tarjetas salen DIRECTAMENTE de los datos (render-datos.js); el
+   *    texto del modelo solo es la explicación. Solo se sustituyen las pestañas cuyos tipos traen bloques en esta respuesta.
+   *  - Sin `resultados` (estados guardados por versiones anteriores) se interpreta el markdown como antes.
+   * Devuelve { notas, hayPestanas, datos }.
+   */
+  function aplicarRespuesta(texto, resultados) {
+    if (resultados !== undefined && global.MogavelDatos) {
+      var p = global.MogavelDatos.paneles(resultados);
+      var hay = false;
+      TABS.forEach(function (t) { if (p[t].length) { mostrar(p[t], $('panel-' + t)); hay = true; } });
+      actualizarContadores();
+      return { notas: [], hayPestanas: hay, datos: true };
+    }
     var staging = document.createElement('div');
     global.renderResultados(texto, staging);
     var partes = particionar(staging);
@@ -140,8 +165,31 @@
     // Los nodos recién insertados los decora trip-builder.js (MutationObserver sobre #results).
     return {
       notas: partes.notas,
-      hayPestanas: partes.resumen.length + partes.vuelos.length + partes.hoteles.length + partes.actividades.length > 0
+      hayPestanas: partes.resumen.length + partes.vuelos.length + partes.hoteles.length + partes.actividades.length > 0,
+      datos: false
     };
+  }
+
+  var RE_TITULO_RESULTADOS = /^\s{0,3}#{1,6}\s*(?:\d+[.)]\s*)?(?:\*\*)?\s*(vuelos?|alojamientos?|hoteles?|actividades|experiencias(?!\s+complementarias))\b/i;
+  function esTituloMd(l) { return /^\s{0,3}#{1,6}\s+\S/.test(l); }
+  /**
+   * Con datos estructurados, las listas de vuelos/alojamientos/actividades ya están en las tarjetas: se quitan del texto del
+   * modelo las secciones que las repitan (por si el modelo las escribe pese a las instrucciones). El resto se conserva íntegro.
+   */
+  function limpiarExplicacion(texto) {
+    var salida = [], saltando = false;
+    String(texto || '').replace(/\r\n?/g, '\n').split('\n').forEach(function (l) {
+      if (esTituloMd(l)) { saltando = RE_TITULO_RESULTADOS.test(l); if (saltando) return; }
+      // Dentro de una sección de resultados solo se descartan sus elementos (listas, tablas, sangrías, blancos); un párrafo
+      // de prosa que siga a la lista es explicación y se conserva.
+      if (saltando) {
+        if (!l.trim() || /^\s*([-*•]\s+|\d+[.)]\s+|\|)/.test(l) || /^\s{2,}\S/.test(l)) return;
+        saltando = false;
+      }
+      if (/^\s*Estado de actividades:/i.test(l)) return;
+      salida.push(l);
+    });
+    return salida.join('\n').replace(/\n{3,}/g, '\n\n').trim();
   }
 
   /* ---------- Conversación cronológica: propuesta → petición del usuario → respuesta del agente ---------- */
@@ -191,6 +239,7 @@
     var cuerpo = document.createElement('div');
     cuerpo.className = 'conv-cuerpo';
     var conv = global.MogavelConversacion;
+    if (info && info.datos) return pintarAgenteDatos(d, cuerpo, texto, info, conv);
     var frag = conv ? conv.renderizar(texto, { seleccion: nombresActividadesElegidas(), incluirTextoSuelto: !info.hayPestanas }) : null;
     var reconocidas = frag ? conv.analizar(texto).secciones.filter(function (s) { return s.tipo !== 'otro'; }) : [];
     var titulos = reconocidas.map(function (s) { return normalizar(s.titulo); }).filter(Boolean);
@@ -217,6 +266,38 @@
     }
     if (!hayContenido && !cuerpo.childNodes.length) {
       // Solo se indica la actualización cuando responde a una petición del usuario (no tras la búsqueda inicial).
+      var respondeAPeticion = d.previousElementSibling && d.previousElementSibling.classList.contains('conv-usuario');
+      if (!info.hayPestanas || !respondeAPeticion) { d.remove(); return null; }
+      var n = document.createElement('p'); n.className = 'conv-actualizado';
+      n.textContent = 'He actualizado los resultados de las pestañas.';
+      cuerpo.appendChild(n);
+    }
+    d.appendChild(cuerpo);
+    return d;
+  }
+
+  /** Respuesta con datos estructurados: el texto del modelo es SOLO la explicación y se muestra completo. */
+  function pintarAgenteDatos(d, cuerpo, texto, info, conv) {
+    var limpio = limpiarExplicacion(texto);
+    var frag = conv && limpio ? conv.renderizar(limpio, { seleccion: nombresActividadesElegidas(), incluirTextoSuelto: true }) : null;
+    if (frag) {
+      cuerpo.appendChild(frag);
+      conv.analizar(limpio).secciones.forEach(function (sec) {
+        if (sec.tipo !== 'otro') return;
+        var lineas = [sec.titulo].concat(sec.lineas).map(function (l) { return String(l).replace(/[#*]{1,3}/g, '').trim(); }).filter(Boolean);
+        if (!lineas.length) return;
+        var t = document.createElement('div'); t.className = 'cv-texto cv-resto';
+        lineas.forEach(function (l, i) { if (i) t.appendChild(document.createElement('br')); t.appendChild(document.createTextNode(l)); });
+        cuerpo.appendChild(t);
+      });
+    } else if (limpio) {
+      var t2 = document.createElement('div'); t2.className = 'cv-texto cv-resto';
+      limpio.split('\n').map(function (l) { return l.replace(/[#*]{1,3}/g, '').trim(); }).filter(Boolean).forEach(function (l, i) {
+        if (i) t2.appendChild(document.createElement('br')); t2.appendChild(document.createTextNode(l));
+      });
+      cuerpo.appendChild(t2);
+    }
+    if (!cuerpo.childNodes.length) {
       var respondeAPeticion = d.previousElementSibling && d.previousElementSibling.classList.contains('conv-usuario');
       if (!info.hayPestanas || !respondeAPeticion) { d.remove(); return null; }
       var n = document.createElement('p'); n.className = 'conv-actualizado';
@@ -272,15 +353,36 @@
     return message;
   }
 
-  async function consultarAgente(message, sessionId) {
+  /** Fechas de entrada/salida del formulario de «Solo hoteles», solo para la primera búsqueda (en los seguimientos el usuario puede cambiarlas en texto libre). */
+  function fechasDeEstado(estado) {
+    var f = estado && estado.formulario;
+    return f && f.ida && f.vuelta ? { entrada: f.ida, salida: f.vuelta } : null;
+  }
+
+  /** Actividades elegidas en el formulario ({solicitadas, tipos, cualquiera}); viajan en la primera búsqueda y en cada seguimiento. */
+  function actividadesDeEstado(estado) {
+    var a = estado && estado.formulario && estado.formulario.actividades;
+    return a && typeof a === 'object' && Array.isArray(a.tipos) ? { solicitadas: !!a.solicitadas, tipos: a.tipos, cualquiera: !!a.cualquiera } : null;
+  }
+
+  var MODOS = { complete: 1, flights: 1, hotels: 1, activities: 1 };
+
+  /** El modo elegido en la portada (complete | flights | hotels | activities) viaja en CADA petición, también en los seguimientos. */
+  async function consultarAgente(message, sessionId, destinoSeleccionado, modo, fechas, actividades) {
     var response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: conContextoDeSeleccion(message), sessionId: sessionId })
+      body: JSON.stringify(Object.assign(
+        { message: conContextoDeSeleccion(message), sessionId: sessionId },
+        MODOS[modo] ? { modo: modo } : {},
+        destinoSeleccionado ? { destinoSeleccionado: destinoSeleccionado } : {},
+        modo === 'hotels' && fechas && fechas.entrada && fechas.salida ? { fechas: { entrada: fechas.entrada, salida: fechas.salida } } : {},
+        modo !== 'flights' && modo !== 'hotels' && actividades ? { actividades: actividades } : {}
+      ))
     });
     var data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Error en la búsqueda');
-    return data.response;
+    return { texto: typeof data.response === 'string' ? data.response : '', resultados: data.resultados, aviso: data.aviso || null };
   }
 
   function avisoEstado(html, esError) {
@@ -305,11 +407,12 @@
     // Se marca "en curso" ANTES de llamar: una recarga no repite la búsqueda (cada una consume créditos).
     global.MogavelEstado.marcarEnCurso();
     try {
-      var texto = await consultarAgente(estado.mensaje, estado.sessionId);
-      global.MogavelEstado.agregarRespuesta(texto);
-      pintarAgente(texto, aplicarRespuesta(texto));
+      // Primera petición: viaja también el destino elegido en el autocompletado (si lo hubo). Los seguimientos no lo repiten.
+      var turno = await consultarAgente(estado.mensaje, estado.sessionId, estado.formulario && estado.formulario.destinoSeleccionado, estado.modo, fechasDeEstado(estado), actividadesDeEstado(estado));
+      global.MogavelEstado.agregarRespuesta(turno.texto, turno.resultados);
+      pintarAgente(turno.texto, aplicarRespuesta(turno.texto, turno.resultados));
       ajustarPestanaVacia();
-      avisoEstado('');
+      avisoEstado(turno.aviso ? esc(turno.aviso) : '');
       terminarCarga(estado);
     } catch (error) {
       if (global.MogavelCarga) global.MogavelCarga.fallar(estado.modo);
@@ -341,12 +444,12 @@
     var burbuja = pintarUsuario(mensaje);
     burbuja.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     try {
-      var texto = await consultarAgente(mensaje, estado.sessionId);
-      global.MogavelEstado.agregarRespuesta(texto);
-      var respuestaNodo = pintarAgente(texto, aplicarRespuesta(texto));
+      var turno = await consultarAgente(mensaje, estado.sessionId, undefined, estado.modo, undefined, actividadesDeEstado(estado));
+      global.MogavelEstado.agregarRespuesta(turno.texto, turno.resultados);
+      var respuestaNodo = pintarAgente(turno.texto, aplicarRespuesta(turno.texto, turno.resultados));
       if (respuestaNodo && respuestaNodo.scrollIntoView) respuestaNodo.scrollIntoView({ behavior: 'smooth', block: 'start' });
       ajustarPestanaVacia();
-      avisoEstado('');
+      avisoEstado(turno.aviso ? esc(turno.aviso) : '');
     } catch (error) {
       avisoEstado('Ha ocurrido un error: ' + esc(error.message), true);
     } finally {
@@ -387,13 +490,16 @@
       return;
     }
 
-    // Las pestañas se reconstruyen con las respuestas; la conversación, en el orden en que ocurrió.
-    var infos = estado.respuestas.map(aplicarRespuesta), k = infos.length - estado.mensajes.filter(function (m) { return m.tipo === 'agente'; }).length;
-    var idx = 0;
+    // Las pestañas se reconstruyen con los ÚLTIMOS datos guardados de cada tipo (estado.ultimos) y, para los mensajes de
+    // versiones anteriores sin datos, con el markdown como antes. La conversación, en el orden en que ocurrió.
+    if (estado.ultimos && global.MogavelDatos) aplicarRespuesta('', Object.assign({ version: 1, vuelos: [], hoteles: [], actividades: [] }, estado.ultimos));
     estado.mensajes.forEach(function (m) {
       if (m.tipo === 'usuario') pintarUsuario(m.texto);
       else if (m.tipo === 'propuesta') pintarPropuesta(m.items);
-      else if (m.tipo === 'agente') { var info = infos[k + idx] || { notas: [], hayPestanas: false }; idx++; pintarAgente(m.texto, info); }
+      else if (m.tipo === 'agente') {
+        var info = m.datos ? { notas: [], hayPestanas: !!m.hayDatos, datos: true } : aplicarRespuesta(m.texto);
+        pintarAgente(m.texto, info);
+      }
     });
     var props = $('conversacion').querySelectorAll('.conv-propuesta');
     if (props.length) props[props.length - 1].id = 'mogavel-trip-review';
@@ -406,7 +512,7 @@
     else if (estado.estado === 'error') mostrarReintento('Ha ocurrido un error: ' + esc(estado.error || 'desconocido'), estado, true);
   }
 
-  global.MogavelResultados = { particionar: particionar, aplicarRespuesta: aplicarRespuesta, activarPestana: activarPestana, mostrarPropuesta: mostrarPropuesta };
+  global.MogavelResultados = { particionar: particionar, aplicarRespuesta: aplicarRespuesta, limpiarExplicacion: limpiarExplicacion, activarPestana: activarPestana, mostrarPropuesta: mostrarPropuesta };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
   else iniciar();

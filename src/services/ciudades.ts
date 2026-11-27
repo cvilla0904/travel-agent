@@ -1,3 +1,50 @@
+import { Catalogo, fuenteEnDisco } from '../geo/catalogo.js';
+import { resolverDestino, paisDesdeTexto } from '../geo/resolver.js';
+import type { Ciudad } from '../geo/tipos.js';
+import { DESTINOS_EDITORIALES, SALENTO_APULIA } from '../geo/destinos-editoriales.js';
+
+let catalogoGeo: Catalogo | undefined;
+function obtenerCatalogoGeo(): Catalogo {
+  return (catalogoGeo ??= new Catalogo(fuenteEnDisco()));
+}
+/** Catálogo geográfico en uso (el de disco salvo que una prueba inyecte otro). Lo comparten las resoluciones de aeropuertos. */
+export function catalogoGeoActual(): Catalogo { return obtenerCatalogoGeo(); }
+/** Solo para pruebas: inyecta un catálogo (o undefined para volver al de disco) y vacía la memoria de resultados. */
+export function establecerCatalogoGeo(cat: Catalogo | undefined): void {
+  catalogoGeo = cat;
+  memoriaCatalogo.clear();
+}
+
+// Memoria de resoluciones por texto (incluidas las no concluyentes). Los errores de catálogo no se memorizan:
+// si el catálogo se genera después, se empieza a usar sin reiniciar.
+const memoriaCatalogo = new Map<string, Ciudad | null>();
+const MEMORIA_MAX = 500;
+
+function ciudadCatalogada(texto: string): Ciudad | null {
+  const clave = String(texto ?? '').trim().toLowerCase();
+  if (!clave) return null;
+  if (memoriaCatalogo.has(clave)) return memoriaCatalogo.get(clave) ?? null;
+  try {
+    const cat = obtenerCatalogoGeo();
+    const partes = String(texto ?? '').split(',').map((p) => p.trim()).filter(Boolean);
+    // El país escrito acota; si no hay, la región escrita decide el país a través de la entrada curada que la declara
+    // («Cartagena, Murcia» -> España), de modo que el catálogo no resuelva otro homónimo.
+    const pais = partes.length > 1
+      ? paisDesdeTexto(cat, partes[partes.length - 1]!) ?? grupoCurado(texto)?.pais.toUpperCase()
+      : undefined;
+    const resultado = resolverDestino(cat, nombreBaseCiudad(texto), pais ? { pais } : {});
+    const ciudad = resultado.estado === 'reconocido' && resultado.identidad.tipo === 'ciudad' && resultado.identidad.pais
+      ? cat.ciudad(resultado.identidad.id, resultado.identidad.pais) ?? null
+      : null;
+    if (memoriaCatalogo.size >= MEMORIA_MAX) memoriaCatalogo.delete(memoriaCatalogo.keys().next().value as string);
+    memoriaCatalogo.set(clave, ciudad);
+    return ciudad;
+  } catch {
+    // Catálogo no generado o ilegible: se conserva el diccionario curado como respaldo.
+    return null;
+  }
+}
+
 /**
  * Nombres equivalentes de una misma ciudad (español / inglés / local).
  * Módulo sin dependencias, compartido por las integraciones de proveedores
@@ -15,43 +62,82 @@ export function normalizarTexto(valor: unknown): string {
 /**
  * `consulta` es el nombre habitual en inglés que se envía al proveedor.
  * `nombres` ya van normalizados (sin acentos, en minúsculas).
+ * `pais` (ISO, minúsculas) es el país de la ciudad curada. Los nombres se repiten por el mundo (Cartagena, Venecia, Nápoles,
+ * Sevilla, Florencia, Colonia, París…): si el destino escrito indica OTRO país, la entrada curada no se aplica y se resuelve
+ * por el catálogo. Sin país en el texto, la tabla manda (preferencia editorial: «Cartagena» es Cartagena de Indias).
+ * `regiones` (opcional, normalizadas): si el texto trae una región entre ciudad y país y no es ninguna de estas, tampoco se aplica.
  */
-const CIUDADES_EQUIVALENTES: Array<{ consulta: string; nombres: string[] }> = [
-  { consulta: 'Amsterdam', nombres: ['amsterdam'] },
-  { consulta: 'Florence', nombres: ['florencia', 'florence', 'firenze'] },
-  { consulta: 'Venice', nombres: ['venecia', 'venice', 'venezia'] },
-  { consulta: 'Rome', nombres: ['roma', 'rome'] },
-  { consulta: 'Naples', nombres: ['napoles', 'naples', 'napoli'] },
-  { consulta: 'Milan', nombres: ['milan', 'milano'] },
-  { consulta: 'Turin', nombres: ['turin', 'torino'] },
-  { consulta: 'London', nombres: ['londres', 'london'] },
-  { consulta: 'Munich', nombres: ['munich', 'munchen'] },
-  { consulta: 'Vienna', nombres: ['viena', 'vienna', 'wien'] },
-  { consulta: 'Prague', nombres: ['praga', 'prague', 'praha'] },
-  { consulta: 'Lisbon', nombres: ['lisboa', 'lisbon'] },
-  { consulta: 'Porto', nombres: ['oporto', 'porto'] },
-  { consulta: 'Seville', nombres: ['sevilla', 'seville'] },
-  { consulta: 'Istanbul', nombres: ['estambul', 'istanbul'] },
-  { consulta: 'Brussels', nombres: ['bruselas', 'brussels', 'bruxelles'] },
-  { consulta: 'Athens', nombres: ['atenas', 'athens'] },
-  { consulta: 'Copenhagen', nombres: ['copenhague', 'copenhagen'] },
-  { consulta: 'Edinburgh', nombres: ['edimburgo', 'edinburgh'] },
-  { consulta: 'Cologne', nombres: ['colonia', 'cologne', 'koln'] },
-  { consulta: 'Nuremberg', nombres: ['nuremberg', 'nurnberg'] },
-  { consulta: 'Geneva', nombres: ['ginebra', 'geneva', 'geneve'] },
-  { consulta: 'Zurich', nombres: ['zurich'] },
-  { consulta: 'Krakow', nombres: ['cracovia', 'krakow', 'cracow'] },
-  { consulta: 'Warsaw', nombres: ['varsovia', 'warsaw'] },
-  { consulta: 'Moscow', nombres: ['moscu', 'moscow'] },
-  { consulta: 'Saint Petersburg', nombres: ['san petersburgo', 'saint petersburg', 'st petersburg', 'st. petersburg'] },
-  { consulta: 'New York', nombres: ['nueva york', 'new york', 'new york city'] },
-  { consulta: 'Mexico City', nombres: ['ciudad de mexico', 'mexico city'] },
-  { consulta: 'Cartagena de Indias', nombres: ['cartagena', 'cartagena de indias'] },
-  { consulta: 'Bogota', nombres: ['bogota', 'bogota d.c.'] },
-  { consulta: 'Medellin', nombres: ['medellin'] },
-  { consulta: 'Paris', nombres: ['paris'] },
-  { consulta: 'Barcelona', nombres: ['barcelona'] },
-  { consulta: 'Madrid', nombres: ['madrid'] },
+export interface GrupoCiudadCurada {
+  consulta: string; nombres: string[]; pais: string;
+  /** Regiones aceptadas entre ciudad y país (normalizadas). */
+  regiones?: string[];
+  /** Región tal como se muestra y se envía a los proveedores (p. ej. «Quindío»): se conserva en las consultas. */
+  region?: string;
+  /** Nombre del país (español) para completar el destino cuando no se indica: «Salento» → «Salento, Quindío, Colombia». */
+  paisNombre?: string;
+  /**
+   * Centro propio de la entrada (tiene prioridad sobre CENTROS_CIUDAD, que se indexa por `consulta` y por tanto no distingue
+   * homónimos). `radioKm` es el radio «seguro» de validación de ubicación cuando el destino es una zona y no un núcleo urbano.
+   */
+  centro?: { es: string; lat: number; lng: number; radioKm?: number };
+}
+export const CIUDADES_EQUIVALENTES: GrupoCiudadCurada[] = [
+  { consulta: 'Amsterdam', nombres: ['amsterdam'], pais: 'nl' },
+  { consulta: 'Florence', nombres: ['florencia', 'florence', 'firenze'], pais: 'it' },
+  { consulta: 'Venice', nombres: ['venecia', 'venice', 'venezia'], pais: 'it' },
+  { consulta: 'Seoul', nombres: ['seul', 'seoul'], pais: 'kr' },
+  { consulta: 'Beijing', nombres: ['pekin', 'beijing'], pais: 'cn' },
+  { consulta: 'Cairo', nombres: ['el cairo', 'cairo'], pais: 'eg' },
+  { consulta: 'Brugge', nombres: ['brujas', 'bruges', 'brugge'], pais: 'be' },
+  { consulta: 'Ghent', nombres: ['gante', 'ghent', 'gent'], pais: 'be' },
+  { consulta: 'Rome', nombres: ['roma', 'rome'], pais: 'it' },
+  { consulta: 'Naples', nombres: ['napoles', 'naples', 'napoli'], pais: 'it' },
+  { consulta: 'Milan', nombres: ['milan', 'milano'], pais: 'it' },
+  { consulta: 'Turin', nombres: ['turin', 'torino'], pais: 'it' },
+  { consulta: 'London', nombres: ['londres', 'london'], pais: 'gb' },
+  { consulta: 'Munich', nombres: ['munich', 'munchen'], pais: 'de' },
+  { consulta: 'Vienna', nombres: ['viena', 'vienna', 'wien'], pais: 'at' },
+  { consulta: 'Prague', nombres: ['praga', 'prague', 'praha'], pais: 'cz' },
+  { consulta: 'Lisbon', nombres: ['lisboa', 'lisbon'], pais: 'pt' },
+  { consulta: 'Porto', nombres: ['oporto', 'porto'], pais: 'pt' },
+  { consulta: 'Seville', nombres: ['sevilla', 'seville'], pais: 'es' },
+  { consulta: 'Istanbul', nombres: ['estambul', 'istanbul'], pais: 'tr' },
+  { consulta: 'Brussels', nombres: ['bruselas', 'brussels', 'bruxelles'], pais: 'be' },
+  { consulta: 'Athens', nombres: ['atenas', 'athens'], pais: 'gr' },
+  { consulta: 'Copenhagen', nombres: ['copenhague', 'copenhagen'], pais: 'dk' },
+  { consulta: 'Edinburgh', nombres: ['edimburgo', 'edinburgh'], pais: 'gb' },
+  { consulta: 'Cologne', nombres: ['colonia', 'cologne', 'koln'], pais: 'de' },
+  { consulta: 'Nuremberg', nombres: ['nuremberg', 'nurnberg'], pais: 'de' },
+  { consulta: 'Geneva', nombres: ['ginebra', 'geneva', 'geneve'], pais: 'ch' },
+  { consulta: 'Zurich', nombres: ['zurich'], pais: 'ch' },
+  { consulta: 'Krakow', nombres: ['cracovia', 'krakow', 'cracow'], pais: 'pl' },
+  { consulta: 'Warsaw', nombres: ['varsovia', 'warsaw'], pais: 'pl' },
+  { consulta: 'Moscow', nombres: ['moscu', 'moscow'], pais: 'ru' },
+  { consulta: 'Saint Petersburg', nombres: ['san petersburgo', 'saint petersburg', 'st petersburg', 'st. petersburg'], pais: 'ru' },
+  { consulta: 'New York', nombres: ['nueva york', 'new york', 'new york city'], pais: 'us' },
+  { consulta: 'Mexico City', nombres: ['ciudad de mexico', 'mexico city'], pais: 'mx' },
+  // Homónimos curados: el país y la región escritos eligen la entrada; sin ninguno, la primera de la lista (preferencia editorial).
+  { consulta: 'Cartagena de Indias', nombres: ['cartagena', 'cartagena de indias'], pais: 'co', regiones: ['bolivar', 'departamento de bolivar'], paisNombre: 'Colombia' },
+  { consulta: 'Cartagena', nombres: ['cartagena'], pais: 'es', regiones: ['murcia', 'region de murcia', 'provincia de murcia'], region: 'Región de Murcia', paisNombre: 'España',
+    centro: { es: 'Cartagena', lat: 37.60197, lng: -0.98397 } },
+  { consulta: 'Bogota', nombres: ['bogota', 'bogota d.c.'], pais: 'co', paisNombre: 'Colombia' },
+  { consulta: 'Medellin', nombres: ['medellin'], pais: 'co', paisNombre: 'Colombia' },
+  { consulta: 'Paris', nombres: ['paris'], pais: 'fr' },
+  { consulta: 'Barcelona', nombres: ['barcelona'], pais: 'es' },
+  { consulta: 'Madrid', nombres: ['madrid'], pais: 'es' },
+  { consulta: 'Budapest', nombres: ['budapest'], pais: 'hu' },
+  // Nombre ambiguo con tres destinos distintos. Sin región ni país manda el de Colombia (primero de la lista). En Italia, «Salento»
+  // es la península de Lecce (Apulia), no el municipio de 760 habitantes de Campania (gn:3168676), que se pide con «Salento, Campania».
+  { consulta: 'Salento', nombres: ['salento'], pais: 'co', regiones: ['quindio', 'departamento del quindio'], region: 'Quindío', paisNombre: 'Colombia' },
+  // Fuente única: geo/destinos-editoriales.ts (el mismo destino que ofrece el autocompletado con id «ed:salento-apulia»).
+  { consulta: 'Salento', nombres: DESTINOS_EDITORIALES[SALENTO_APULIA]!.nombres, pais: 'it', regiones: DESTINOS_EDITORIALES[SALENTO_APULIA]!.claves,
+    region: DESTINOS_EDITORIALES[SALENTO_APULIA]!.region, paisNombre: DESTINOS_EDITORIALES[SALENTO_APULIA]!.paisNombre,
+    centro: { es: DESTINOS_EDITORIALES[SALENTO_APULIA]!.nombre, lat: DESTINOS_EDITORIALES[SALENTO_APULIA]!.centro.lat, lng: DESTINOS_EDITORIALES[SALENTO_APULIA]!.centro.lon, radioKm: DESTINOS_EDITORIALES[SALENTO_APULIA]!.centro.radioKm } },
+  // Fuente única: el resto de zonas e islas de geo/destinos-editoriales.ts (Menorca, Santorini, Bali…) con su centro y radio.
+  ...Object.values(DESTINOS_EDITORIALES).filter((d) => d.id !== SALENTO_APULIA).map((d): GrupoCiudadCurada => ({
+    consulta: d.nombre, nombres: d.nombres, pais: d.pais.toLowerCase(), regiones: [...new Set([...d.claves, normalizarTexto(d.region)])], region: d.region, paisNombre: d.paisNombre,
+    centro: { es: d.nombre, lat: d.centro.lat, lng: d.centro.lon, radioKm: d.centro.radioKm },
+  })),
 ];
 
 /**
@@ -96,14 +182,48 @@ const CENTROS_CIUDAD: Record<string, { es: string; lat: number; lng: number }> =
   Paris: { es: 'París', lat: 48.8566, lng: 2.3522 },
   Barcelona: { es: 'Barcelona', lat: 41.3874, lng: 2.1686 },
   Madrid: { es: 'Madrid', lat: 40.4168, lng: -3.7038 },
+  Budapest: { es: 'Budapest', lat: 47.49835, lng: 19.04045 },
+  Salento: { es: 'Salento', lat: 4.63758, lng: -75.56996 },
 };
 
-/** Nombre en español, nombre en inglés y centro de la ciudad, o null si no está en la tabla. */
-export function datosCiudad(ciudad: string): { es: string; en: string; lat: number; lng: number } | null {
+/**
+ * Entrada de la tabla para ese destino, o undefined si el texto indica otro país (o, si la entrada lo exige, otra región).
+ * Mecanismo único para todas las ciudades curadas: ninguna se aplica a un homónimo de otro país.
+ */
+export function grupoCurado(ciudad: string): GrupoCiudadCurada | undefined {
   const clave = normalizarTexto(nombreBaseCiudad(ciudad));
-  const grupo = CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave));
-  const centro = grupo ? CENTROS_CIUDAD[grupo.consulta] : undefined;
-  return grupo && centro ? { es: centro.es, en: grupo.consulta, lat: centro.lat, lng: centro.lng } : null;
+  const homonimos = CIUDADES_EQUIVALENTES.filter((g) => g.nombres.includes(clave));
+  if (!homonimos.length) return undefined;
+  const partes = String(ciudad ?? '').split(',').map((p) => p.trim()).filter(Boolean);
+  const pais = codigoPaisDesdeDestino(ciudad);
+  // Texto intermedio entre la ciudad y el país (si lo hay): «Salento, Quindío, Colombia» -> «quindio».
+  const intermedias = partes.slice(1, pais ? -1 : undefined).map(normalizarTexto).filter(Boolean);
+  const nombraRegion = (g: GrupoCiudadCurada) => !!g.regiones?.some((r) => intermedias.includes(r));
+  // El país escrito acota; después, la región: una entrada que declara regiones solo vale si la escrita es una de ellas.
+  const posibles = homonimos.filter((g) => (!pais || g.pais === pais) && (!intermedias.length || !g.regiones?.length || nombraRegion(g)));
+  // Con región escrita, la entrada que la declara gana a las que no declaran ninguna; sin ella, el orden editorial de la tabla.
+  return posibles.find(nombraRegion) ?? posibles[0];
+}
+
+/**
+ * Región curada (para mostrar y consultar) del destino, solo si la ciudad curada la tiene y el destino pertenece a ella:
+ * regionCurada('Salento, Colombia') -> 'Quindío'; regionCurada('Salento, Italia') -> undefined.
+ */
+export function regionCurada(ciudad: string): string | undefined {
+  return grupoCurado(ciudad)?.region;
+}
+
+/** Nombre en español, nombre en inglés y centro de la ciudad, o null si no está en la tabla. */
+export function datosCiudad(ciudad: string): { es: string; en: string; lat: number; lng: number; radioKm?: number } | null {
+  // La tabla curada manda (nombres en español revisados a mano); el catálogo cubre el resto de ciudades.
+  const grupo = grupoCurado(ciudad);
+  const centro = grupo ? grupo.centro ?? CENTROS_CIUDAD[grupo.consulta] : undefined;
+  if (grupo && centro) {
+    const radioKm = grupo.centro?.radioKm;
+    return { es: centro.es, en: grupo.consulta, lat: centro.lat, lng: centro.lng, ...(radioKm ? { radioKm } : {}) };
+  }
+  const catalogada = ciudadCatalogada(ciudad);
+  return catalogada ? { es: catalogada.nombre, en: catalogada.nombreAscii || catalogada.nombre, lat: catalogada.lat, lng: catalogada.lon } : null;
 }
 
 /** "Florencia, Italia" -> "Florencia". */
@@ -114,17 +234,27 @@ export function nombreBaseCiudad(ciudad: string): string {
 /** Nombre que se envía al proveedor (inglés habitual si se conoce). */
 export function consultaProveedorParaCiudad(ciudad: string): string {
   const base = nombreBaseCiudad(ciudad);
+  const grupo = grupoCurado(ciudad);
+  if (grupo) return grupo.consulta;
+  const catalogada = ciudadCatalogada(ciudad);
+  if (catalogada) return catalogada.nombreAscii || catalogada.nombre;
+  // El texto nombra otro país y el catálogo no resuelve ese homónimo: se conserva el nombre inglés habitual de la tabla
+  // (comportamiento anterior; p. ej. «Florencia, Estados Unidos» → «Florence»). El país lo validan los proveedores.
   const clave = normalizarTexto(base);
-  const grupo = CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave));
-  return grupo ? grupo.consulta : base;
+  return CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave))?.consulta ?? base;
 }
 
 /** Todos los nombres normalizados aceptables para esa ciudad. */
 export function variantesCiudad(ciudad: string): string[] {
   const clave = normalizarTexto(nombreBaseCiudad(ciudad));
   if (!clave) return [];
-  const grupo = CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave));
-  return grupo ? [...grupo.nombres] : [clave];
+  const catalogada = ciudadCatalogada(ciudad);
+  // Con otro país en el texto y sin resolución del catálogo se conservan los nombres de la tabla (comportamiento anterior):
+  // los proveedores validan el país por su cuenta y buscan por esos nombres. Si el catálogo sí lo resuelve, manda el catálogo.
+  const grupo = grupoCurado(ciudad) ?? (catalogada ? undefined : CIUDADES_EQUIVALENTES.find((g) => g.nombres.includes(clave)));
+  // Unión de ambas fuentes: ninguna variante curada se pierde por tener el catálogo disponible.
+  const todas = [...(grupo?.nombres ?? []), ...(catalogada ? [catalogada.nombre, catalogada.nombreAscii, ...catalogada.nombres].map(normalizarTexto) : [])].filter(Boolean);
+  return todas.length ? [...new Set(todas)] : [clave];
 }
 
 /** Países habituales (nombres normalizados, en español e inglés) -> código ISO en minúsculas. */
@@ -155,6 +285,10 @@ const CODIGOS_PAIS: Record<string, string> = {
 
 /** "Italia" / "Italy" / "IT" -> "it". undefined si no se reconoce. */
 export function codigoPaisDesdeNombre(pais: unknown): string | undefined {
+  try {
+    const iso = paisDesdeTexto(obtenerCatalogoGeo(), String(pais ?? ''));
+    if (iso) return iso.toLowerCase();
+  } catch { /* usa el diccionario de respaldo hasta generar el catálogo */ }
   const clave = normalizarTexto(pais);
   if (!clave) return undefined;
   if (/^[a-z]{2}$/.test(clave)) return clave;

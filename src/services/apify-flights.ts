@@ -1,25 +1,23 @@
 // Integración de vuelos basada en el patrón operativo de la integración Apify
 // de actividades: ejecutar actor, comprobar el estado, leer el dataset y validar
 // los registros reales antes de entregarlos al agente.
+import { resolverAeropuertoVuelo } from './aeropuertos-vuelos.js';
+import { ErrorVuelos } from './errores-vuelos.js';
+import { monedaDesdeTexto, monedaIso } from './moneda.js';
+import { TOPE_COSTE_VUELOS_USD_POR_DEFECTO, opcionesLimite, topeCoste } from './apify-limites.js';
 const ACTOR_ID = 'johnvc/google-flights-data-scraper-flight-and-price-search';
 const MAX_RESULTS = 10;
 const WAIT_SECS = 60;
 // Build fijada tras comprobar entregas en dataset; configurable desde Vercel.
 const ACTOR_BUILD = process.env.APIFY_FLIGHTS_BUILD?.trim() || '0.0.450';
 
-export type CodigoErrorVuelos = 'parametros' | 'configuracion' | 'proveedor' | 'formato';
-
-/** Error con categoría, para distinguir "fallo del proveedor" de "parámetros no válidos". */
-export class ErrorVuelos extends Error {
-  constructor(public readonly codigo: CodigoErrorVuelos, mensaje: string) {
-    super(mensaje);
-    this.name = 'ErrorVuelos';
-  }
-}
+export { ErrorVuelos, type CodigoErrorVuelos } from './errores-vuelos.js';
 
 export type ClienteApifyMinimo = {
   actor(id: string): { call(input: any, opts?: any): Promise<any> };
   dataset(id: string): { listItems(opts?: any): Promise<{ items: unknown[] }> };
+  /** Para cancelar una ejecución que sigue activa tras la espera. */
+  run?(id: string): { abort(opts?: any): Promise<any> };
 };
 
 export type DependenciasApifyFlights = {
@@ -34,40 +32,8 @@ export type BuscarVuelosApifyParams = {
   pasajeros: number;
 };
 
-const AEROPUERTOS: Record<string, string> = {
-  bilbao: 'BIO', donostia: 'EAS', 'san sebastian': 'EAS', 'san sebastián': 'EAS',
-  pasaia: 'EAS', pasajes: 'EAS', madrid: 'MAD', barcelona: 'BCN',
-  malaga: 'AGP', málaga: 'AGP', sevilla: 'SVQ', valencia: 'VLC',
-  alicante: 'ALC', ibiza: 'IBZ', palma: 'PMI', 'palma de mallorca': 'PMI',
-  'santiago de compostela': 'SCQ', vigo: 'VGO', 'a coruña': 'LCG',
-  paris: 'CDG', parís: 'CDG', londres: 'LHR', roma: 'FCO', rome: 'FCO',
-  milan: 'MXP', milán: 'MXP', venecia: 'VCE', florencia: 'FLR', florence: 'FLR',
-  amsterdam: 'AMS', berlin: 'BER', berlín: 'BER', munich: 'MUC', múnich: 'MUC',
-  frankfurt: 'FRA', lisboa: 'LIS', lisbon: 'LIS', oporto: 'OPO', porto: 'OPO',
-  bruselas: 'BRU', praga: 'PRG', viena: 'VIE', zurich: 'ZRH', zúrich: 'ZRH',
-  atenas: 'ATH', athens: 'ATH', estambul: 'IST', istanbul: 'IST',
-  'nueva york': 'JFK', 'new york': 'JFK', 'los angeles': 'LAX', 'los ángeles': 'LAX',
-  tokio: 'HND', tokyo: 'HND', osaka: 'KIX', bangkok: 'BKK', singapur: 'SIN',
-  singapore: 'SIN', dubai: 'DXB', dublín: 'DUB', dublin: 'DUB', copenhague: 'CPH',
-  estocolmo: 'ARN', helsinki: 'HEL', varsovia: 'WAW', budapest: 'BUD',
-  bogota: 'BOG', bogotá: 'BOG', medellin: 'MDE', medellín: 'MDE',
-  cartagena: 'CTG', 'ciudad de mexico': 'MEX', 'ciudad de méxico': 'MEX',
-  'mexico city': 'MEX', 'buenos aires': 'EZE', 'sao paulo': 'GRU',
-  'são paulo': 'GRU', 'rio de janeiro': 'GIG',
-  miami: 'MIA', orlando: 'MCO', kioto: 'KIX', kyoto: 'KIX', madinah: 'MED',
-  madison: 'MSN', 'san francisco': 'SFO', chicago: 'ORD', boston: 'BOS',
-  lima: 'LIM', santiago: 'SCL', 'santiago de chile': 'SCL', cancun: 'CUN',
-  'la habana': 'HAV', habana: 'HAV', marrakech: 'RAK', 'el cairo': 'CAI',
-  napoles: 'NAP', 'nápoles': 'NAP', edimburgo: 'EDI', 'tenerife': 'TFS',
-};
-
 export function resolverAeropuerto(value: string, campo: string): string {
-  const limpio = value.trim();
-  if (/^[A-Z]{3}$/i.test(limpio)) return limpio.toUpperCase();
-  const normalizado = limpio.toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  const codigo = AEROPUERTOS[normalizado] ?? AEROPUERTOS[limpio.toLocaleLowerCase('es')];
-  if (codigo) return codigo;
-  throw new ErrorVuelos('parametros', `No he podido identificar el aeropuerto IATA de ${campo} ("${limpio}"). Prueba con un código IATA de tres letras, por ejemplo BIO, MAD o FCO.`);
+  return resolverAeropuertoVuelo(value, campo).iata;
 }
 
 function normalizarClave(value: string): string {
@@ -82,7 +48,8 @@ function obtenerCampo(objeto: Record<string, any>, aliases: string[]): any {
 
 function normalizarRegistroVuelo(value: Record<string, any>): Record<string, any> {
   const price = obtenerCampo(value, ['price', 'price_total', 'priceTotal', 'total_price', 'totalPrice']);
-  const currency = obtenerCampo(value, ['currency']) ?? 'EUR';
+  // Moneda: solo la que declara el actor (código ISO válido); si no la declara queda vacía («Moneda no confirmada»), nunca EUR por defecto.
+  const currency = monedaIso(obtenerCampo(value, ['currency'])) ?? monedaDesdeTexto(obtenerCampo(value, ['price'])) ?? '';
   const airline = obtenerCampo(value, ['airlines', 'airline(s)', 'airline', 'airlineName']);
   const departureAirport = obtenerCampo(value, ['departure_airport', 'departureAirport']);
   const arrivalAirport = obtenerCampo(value, ['arrival_airport', 'arrivalAirport']);
@@ -207,13 +174,15 @@ export async function buscarVuelosApify(
     max_pages: 1,
   };
 
+  // Límite económico (por ejecución, solo actores de pago por evento) y tiempo máximo de ejecución en Apify.
+  const limites = opcionesLimite(WAIT_SECS, topeCoste(process.env.APIFY_FLIGHTS_MAX_CHARGE_USD, TOPE_COSTE_VUELOS_USD_POR_DEFECTO));
   console.info('[APIFY_FLIGHTS] Starting actor', JSON.stringify({
-    actor: ACTOR_ID, build: ACTOR_BUILD, waitSecs: WAIT_SECS, input: actorInput,
+    actor: ACTOR_ID, build: ACTOR_BUILD, waitSecs: WAIT_SECS, ...limites, input: actorInput,
   }));
 
   let run: any;
   try {
-    run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: WAIT_SECS, build: ACTOR_BUILD });
+    run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: WAIT_SECS, build: ACTOR_BUILD, ...limites });
   } catch (error) {
     // Si la build fijada ya no existe, se reintenta una sola vez con la build por defecto del actor.
     const mensaje = error instanceof Error ? error.message : String(error);
@@ -221,11 +190,21 @@ export async function buscarVuelosApify(
       throw new ErrorVuelos('proveedor', `Apify no pudo ejecutar la búsqueda de vuelos: ${mensaje}`);
     }
     console.warn('[APIFY_FLIGHTS] Build fijada no disponible, reintentando con la build por defecto');
-    run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: WAIT_SECS });
+    run = await client.actor(ACTOR_ID).call(actorInput, { waitSecs: WAIT_SECS, ...limites });
   }
   console.info('[APIFY_FLIGHTS] Actor returned', JSON.stringify({
     runId: run.id, status: run.status, datasetId: run.defaultDatasetId ?? null,
   }));
+
+  // call() solo espera waitSecs: una ejecución todavía activa seguiría cobrando. Se cancela (lo ya guardado se aprovecha).
+  if (run.status === 'RUNNING' || run.status === 'READY') {
+    try {
+      if (run.id && client.run) await client.run(run.id).abort();
+      console.warn('[APIFY_FLIGHTS] Ejecución cancelada tras agotar la espera', JSON.stringify({ runId: run.id ?? null, status: run.status }));
+    } catch (error) {
+      console.warn('[APIFY_FLIGHTS] No se pudo cancelar la ejecución', JSON.stringify({ runId: run.id ?? null, error: error instanceof Error ? error.message : String(error) }));
+    }
+  }
 
   if (!run.defaultDatasetId) {
     throw new ErrorVuelos('proveedor', `Apify no devolvió un dataset para vuelos (estado: ${String(run.status ?? 'UNKNOWN')}).`);

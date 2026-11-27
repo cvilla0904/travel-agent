@@ -1,3 +1,7 @@
+import { resolverAeropuertoVuelo, type AeropuertoResuelto } from './aeropuertos-vuelos.js';
+import { aeropuertoFijadoPara } from './destino-fijado.js';
+import { bloqueVuelos, registrarBloque } from './resultados-estructurados.js';
+import { monedaComun, monedaDesdeTexto, monedaIso } from './moneda.js';
 /**
  * Vuelos (Apify / Google Flights): normalización y orquestación de la búsqueda.
  *
@@ -13,7 +17,8 @@
  *    de modo que nunca se confunda con "no hay vuelos";
  *  - no se combinan tramos sin precio (antes el total quedaba subestimado).
  */
-import { buscarVuelosApify, ErrorVuelos, type BuscarVuelosApifyParams } from './apify-flights.js';
+import { buscarVuelosApify, type BuscarVuelosApifyParams } from './apify-flights.js';
+import { ErrorVuelos } from './errores-vuelos.js';
 
 export function parsearDuracionMinutos(value: any): number {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -98,7 +103,7 @@ export function parsearPrecioApify(value: any): number {
 export function crearEnlaceBusquedaGoogleFlights(origen: string, destino: string, fechaIda: string, fechaVuelta = ''): string {
   const ida = `Flights from ${origen} to ${destino} on ${fechaIda}`;
   const consulta = fechaVuelta ? `${ida} through ${fechaVuelta}` : ida;
-  return `https://www.google.com/travel/flights?hl=es&gl=es&curr=EUR&q=${encodeURIComponent(consulta)}`;
+  return `https://www.google.com/travel/flights?hl=es&gl=es&q=${encodeURIComponent(consulta)}`;
 }
 
 export function normalizarVueloIdaVuelta(vuelo: any, ctx: {
@@ -114,7 +119,8 @@ export function normalizarVueloIdaVuelta(vuelo: any, ctx: {
     aerolinea: String(Array.isArray(vuelo.airlines) ? vuelo.airlines.join(' + ') : (vuelo.airlines || aerolineas.join(' + ') || 'Aerolínea no indicada')),
     precioPorPersona: Number(vuelo.pricePerPassenger ?? vuelo.price_per_passenger ?? (precioTotal / ctx.pasajeros)),
     precioTotal,
-    moneda: String(vuelo.currency ?? 'EUR'),
+    // Solo la moneda que declara el proveedor ('' = moneda no confirmada); nunca EUR por defecto.
+    moneda: monedaIso(vuelo.currency) ?? monedaDesdeTexto(vuelo.price) ?? '',
     enlace: String(vuelo.booking_url ?? vuelo.bookingUrl ?? vuelo.googleFlightsUrl ?? vuelo.google_flights_url ?? vuelo.url ?? crearEnlaceBusquedaGoogleFlights(ctx.origen, ctx.destino, ctx.fechaIda, ctx.fechaVuelta)),
     esIdaVuelta: true,
     tipo: 'Ida y vuelta',
@@ -149,7 +155,9 @@ export function combinarItinerarioAbierto(idaRaw: any, vueltaRaw: any, ctx: {
     aerolinea: [ida.aerolinea, vuelta.aerolinea].filter(Boolean).join(' + '),
     precioPorPersona: Math.round(precioTotal / ctx.pasajeros),
     precioTotal,
-    moneda: ida.moneda || vuelta.moneda || 'EUR',
+    // Dos tramos se suman solo si declaran la misma moneda; si no, queda sin confirmar (y se descarta la combinación).
+    moneda: monedaComun([ida.moneda, vuelta.moneda]),
+    monedasDistintas: Boolean(ida.moneda && vuelta.moneda && ida.moneda !== vuelta.moneda),
     enlace: crearEnlaceBusquedaGoogleFlights(ctx.origen, ctx.destino, ctx.fechaIda, ctx.fechaVuelta),
     esIdaVuelta: true,
     tipo: ctx.destinoRegreso === ctx.destino ? 'Ida y vuelta' : 'Itinerario abierto / multidestino',
@@ -231,8 +239,39 @@ export async function buscarVuelosConEstado(
   p: ParametrosVuelos,
   dependencias: DependenciasVuelos = {},
 ): Promise<ResultadoVuelos> {
+  const resultado = await buscarVuelosConEstadoInterno(p, dependencias);
+  // La web recibe los vuelos como datos (no como markdown escrito por el modelo): se registran para la respuesta de /api/chat.
+  registrarBloque(bloqueVuelos(resultado));
+  return resultado;
+}
+
+async function buscarVuelosConEstadoInterno(
+  p: ParametrosVuelos,
+  dependencias: DependenciasVuelos = {},
+): Promise<ResultadoVuelos> {
   const buscar = dependencias.buscar ?? buscarVuelosApify;
-  const destinoBusqueda = p.aeropuertoDestino?.trim() || p.destino;
+  // El aeropuerto se resuelve AQUÍ, con el nombre original que escribió el modelo (nunca traducido antes), y se envía al
+  // proveedor como código IATA. Si el usuario eligió el destino en el autocompletado, el servidor impone su aeropuerto:
+  // el modelo no puede sustituirlo con un código inventado en aeropuertoDestino.
+  const aeropuertoIndicado = p.aeropuertoDestino?.trim();
+  const resolver = (texto: string, campo: string, indicado?: string): AeropuertoResuelto | ErrorVuelos => {
+    try {
+      const fijado = aeropuertoFijadoPara(texto) ?? (indicado ? aeropuertoFijadoPara(indicado) : undefined);
+      if (fijado) return fijado;
+      return resolverAeropuertoVuelo(indicado || texto, campo);
+    } catch (e) {
+      return e instanceof ErrorVuelos ? e : new ErrorVuelos('parametros', e instanceof Error ? e.message : String(e));
+    }
+  };
+  const apOrigen = resolver(p.origen, 'origen');
+  const apDestino = resolver(p.destino, 'destino', aeropuertoIndicado);
+  const apRegreso = p.destinoRegreso ? resolver(p.destinoRegreso, 'destino de regreso') : apDestino;
+  const destinoBusqueda = p.destino;
+  const errorResolucion = [apOrigen, apDestino, apRegreso].find((x): x is ErrorVuelos => x instanceof ErrorVuelos);
+  const iata = (x: AeropuertoResuelto | ErrorVuelos) => (x instanceof ErrorVuelos ? '' : x.iata);
+  const origenProveedor = iata(apOrigen);
+  const destinoProveedor = iata(apDestino);
+  const regresoProveedor = iata(apRegreso);
   const hayVuelta = Boolean(p.fechaVuelta);
   const abierto = Boolean(p.destinoRegreso);
   const origenVuelta = p.destinoRegreso || destinoBusqueda;
@@ -241,18 +280,28 @@ export async function buscarVuelosConEstado(
     origen: p.origen,
     destino: p.destino,
     ...(p.destinoRegreso ? { destinoRegreso: p.destinoRegreso } : {}),
-    aeropuertoDestino: p.aeropuertoDestino?.trim().toUpperCase() || p.destino,
-    aeropuertoOrigen: p.origen,
+    // Códigos IATA realmente enviados al proveedor (vacío si no se pudo resolver el aeropuerto).
+    aeropuertoDestino: destinoProveedor || aeropuertoIndicado?.toUpperCase() || p.destino,
+    aeropuertoOrigen: origenProveedor || p.origen,
     fechaIda: p.fechaIda,
     fechaVuelta: p.fechaVuelta,
     pasajeros: p.pasajeros,
   };
 
+  if (errorResolucion) {
+    return {
+      ...base, estado: 'error_parametros', error: errorResolucion.message, direccionesConError: [], avisos: [errorResolucion.message], vuelos: [],
+    };
+  }
+  const avisosAeropuerto = [apOrigen, apDestino, apRegreso]
+    .filter((x): x is AeropuertoResuelto => !(x instanceof ErrorVuelos) && !!x.aviso)
+    .map((x) => x.aviso!);
+
   // Las dos direcciones son independientes: se lanzan a la vez y un fallo de una no cancela la otra.
   const [rIda, rVuelta] = await Promise.allSettled([
-    buscar({ origen: p.origen, destino: destinoBusqueda, fechaIda: p.fechaIda, pasajeros: p.pasajeros }),
+    buscar({ origen: origenProveedor, destino: destinoProveedor, fechaIda: p.fechaIda, pasajeros: p.pasajeros }),
     hayVuelta
-      ? buscar({ origen: origenVuelta, destino: p.origen, fechaIda: p.fechaVuelta, pasajeros: p.pasajeros })
+      ? buscar({ origen: regresoProveedor, destino: origenProveedor, fechaIda: p.fechaVuelta, pasajeros: p.pasajeros })
       : Promise.resolve([] as Record<string, any>[]),
   ]);
 
@@ -285,7 +334,7 @@ export async function buscarVuelosConEstado(
     .slice(0, MAX_VUELOS);
 
   const resultado = (estado: EstadoVuelos, vuelos: any[], error: string | null): ResultadoVuelos => ({
-    ...base, estado, error, direccionesConError, avisos, vuelos,
+    ...base, estado, error, direccionesConError, avisos: [...new Set(avisosAeropuerto), ...avisos], vuelos,
   });
 
   // Solo ida solicitada (sin fecha de vuelta).
@@ -303,7 +352,9 @@ export async function buscarVuelosConEstado(
           ? { origen: p.origen, destino: p.destino, destinoRegreso: p.destinoRegreso!, fechaIda: p.fechaIda, fechaVuelta: p.fechaVuelta, pasajeros: p.pasajeros }
           : { origen: p.origen, destino: destinoBusqueda, destinoRegreso: destinoBusqueda, fechaIda: p.fechaIda, fechaVuelta: p.fechaVuelta, pasajeros: p.pasajeros },
         )));
-      const lista = ordenar(combinados);
+      const compatibles = combinados.filter((c: any) => !c.monedasDistintas);
+      if (compatibles.length < combinados.length) avisos.push('Se omitieron combinaciones de ida y vuelta cuyos precios vienen en monedas distintas (no se suman ni se convierten).');
+      const lista = ordenar(compatibles);
       if (lista.length) return resultado('ok', lista, null);
     }
     // Una dirección respondió pero sin ningún vuelo con precio: se conservan las opciones válidas de la otra.

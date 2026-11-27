@@ -63,6 +63,7 @@
     .footer-links{display:flex;flex-wrap:wrap;gap:16px;margin-left:auto}
     .footer-links a{font-size:12px;color:var(--muted)}
     .footer-links a:hover{color:var(--navy);text-decoration:underline}
+    .footer-atribucion{margin-top:14px;font-size:11px;line-height:1.5;color:#8290a0}.footer-atribucion a{color:inherit;text-decoration:underline}.footer-atribucion a:hover{color:var(--navy)}
     @media(max-width:700px){.footer-links{width:100%;margin-left:0;gap:12px 16px}.city-suggestions{max-height:220px}}
 
   
@@ -192,6 +193,15 @@
     .preferences>span{margin-right:2px}
     .preferences label{gap:4px;padding:6px 8px;border:1px solid #e9e5dd;border-radius:7px;background:#fff;font-size:10px}
     .preferences input{accent-color:var(--coral);margin:0}
+    .actividades-form{margin:16px 0 0;padding:14px 16px 15px;border:1px solid #f3d9cf;border-left:4px solid var(--coral);border-radius:12px;background:#fff8f4;min-width:0}
+    .actividades-form legend{float:left;width:100%;padding:0;margin:0 0 4px;color:var(--navy);font:700 15px/1.3 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+    .actividades-form .act-ayuda{clear:both;margin:0 0 11px;color:#627185;font-size:12px;line-height:1.5}
+    .actividades-form .preferences{margin-top:0;font-size:12px;gap:8px}
+    .actividades-form .preferences label{padding:8px 12px;font-size:12px;cursor:pointer;border-radius:999px}
+    .actividades-form .preferences label:has(input:checked){border-color:var(--coral);background:#fff;box-shadow:0 0 0 1px var(--coral);color:var(--navy);font-weight:650}
+    .actividades-form .preferences input{width:15px;height:15px}
+    .actividades-form .act-cualquiera{border-style:dashed}
+    @media(max-width:600px){.actividades-form{padding:12px 12px 13px}.actividades-form .preferences label{padding:8px 11px}}
     .planner-bottom{margin-top:13px;padding-top:12px;border:0;border-top:1px solid #eee9e2;display:flex;gap:10px}
     .planner-hint{font-size:10px;line-height:1.4;color:#7c8794}
     .primary{background:var(--navy);border-radius:8px;padding:12px 16px;font-size:12px;white-space:nowrap}
@@ -304,6 +314,32 @@
       background-position: center 53%;
     }
   </style>
+<style id="hoteles-ofertas">
+/* --- Tarjetas de hotel (ancho completo) con ofertas de proveedores agrupadas --- */
+.hotel-category-grid{display:grid;grid-template-columns:1fr;gap:24px;align-items:start}
+.hotel-results{margin-top:14px;display:grid;grid-template-columns:1fr;gap:16px}
+.hotel-card{display:flex;flex-direction:column;align-items:stretch;gap:14px;padding:20px 22px}
+.hotel-card:before{content:none}
+.hotel-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:start}
+.hotel-name{font:600 18px/1.3 Georgia,'Times New Roman',serif;letter-spacing:0;overflow-wrap:anywhere}
+.hotel-meta{margin-top:5px;color:#4f6377;font-size:13px;font-weight:600}
+.hotel-loc,.hotel-cond{margin-top:4px;color:#718093;font-size:12.5px;line-height:1.5}
+.hotel-price{display:grid;gap:3px;text-align:right;min-width:0}
+.hotel-price strong{font-size:21px;line-height:1.15;color:var(--navy)}
+.hotel-price small{font-size:12px;color:#718093}
+.hotel-compare{border-top:1px solid #e8eef2;padding-top:13px}
+.hotel-compare-title{margin:0 0 9px;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#7b8b9c;font-weight:800}
+.hotel-offers{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.hotel-offer{display:grid;grid-template-columns:minmax(96px,.9fr) minmax(0,1.7fr) auto auto;align-items:center;gap:6px 14px;padding:10px 12px;border:1px solid #e3eaef;border-radius:12px;background:#fff}
+.hotel-offer[data-elegida="true"]{border-color:#e7775f;box-shadow:0 0 0 1px #e7775f;background:#fff8f4}
+.hotel-offer-provider{font-weight:750;color:var(--navy);font-size:14px;overflow-wrap:anywhere}
+.hotel-offer-price{display:grid;gap:1px;min-width:0}
+.hotel-offer-price strong{font-size:14px;color:#1e2c3d}
+.hotel-offer-price small{font-size:12px;color:#718093}
+.hotel-offer .hotel-offer-link{white-space:nowrap}
+.hotel-offer .mtb-select{margin:0;padding:8px 13px;font-size:12.5px;white-space:nowrap}
+@media(max-width:700px){.hotel-top{grid-template-columns:1fr;gap:10px}.hotel-price{text-align:left}.hotel-offer{grid-template-columns:minmax(0,1fr) auto}.hotel-offer-price{grid-column:1/2}.hotel-offer .hotel-offer-link,.hotel-offer .hotel-no-link{grid-column:2;grid-row:1;justify-self:end}.hotel-offer .mtb-select{grid-column:1/-1;width:100%;justify-content:center}}
+</style>
 </head>
 <body>
   <header>
@@ -337,12 +373,17 @@
           <label>Viajeros<select id="viajeros" aria-label="Número de viajeros"><option value="1">1 viajero</option><option value="2" selected>2 viajeros</option><option value="3">3 viajeros</option><option value="4">4 viajeros</option><option value="5">5 viajeros</option><option value="6">6 viajeros</option></select></label>
           <label>Presupuesto<input id="presupuesto" type="number" min="0" placeholder="€ 1.500"></label>
         </div>
-        <div class="preferences"><span>Me interesa:</span>
-          <label><input type="checkbox" value="cultura"> Cultura</label>
-          <label><input type="checkbox" value="gastronomía"> Gastronomía</label>
-          <label><input type="checkbox" value="naturaleza"> Naturaleza</label>
-          <label><input type="checkbox" value="aventura"> Aventura</label>
-        </div>
+        <fieldset class="actividades-form" id="actividadesForm">
+          <legend id="actividadesTitulo">¿Quieres añadir actividades a tu viaje?</legend>
+          <p class="act-ayuda" id="actividadesAyuda">Mogavel puede proponerte experiencias y actividades adaptadas al destino y a las fechas del viaje. Es opcional: si no marcas nada, no buscaremos actividades.</p>
+          <div class="preferences">
+            <label><input type="checkbox" value="cultura"> Cultura</label>
+            <label><input type="checkbox" value="gastronomía"> Gastronomía</label>
+            <label><input type="checkbox" value="naturaleza"> Naturaleza</label>
+            <label><input type="checkbox" value="aventura"> Aventura</label>
+            <label class="act-cualquiera"><input type="checkbox" value="cualquiera" id="actCualquiera"> Cualquier tipo</label>
+          </div>
+        </fieldset>
         <div class="planner-bottom"><span class="planner-hint">Opciones reales, adaptadas a tus gustos y presupuesto.</span><button class="primary" onclick="buscarViaje()">Crear mi viaje <span aria-hidden="true">→</span></button></div>
       </div>
     </div>
@@ -366,7 +407,7 @@
       <div class="journey-overlay"></div><div class="journey-content"><span class="journey-meta">10 DÍAS · ITALIA</span><h3>La Toscana, entre pueblos medievales y paisajes de postal</h3><p>De Pisa y Siena a San Gimignano, Volterra y Monteriggioni, para terminar entre el arte y la gastronomía de Florencia.</p><a class="journey-cta" href="/toscana.html">Descúbrelo al detalle <span>→</span></a></div>
     </article>
     <article class="journey-card journey-colombia">
-      <img src="/destinos/colombia.svg" alt="Ilustración de montañas verdes y palmeras de Colombia" loading="lazy">
+      <img src="https://images.unsplash.com/photo-1534943441045-1009d7cb0bb9?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Calle colonial de Cartagena de Indias con balcones de madera, un farol encendido y una torre amarilla" loading="lazy" onerror="this.onerror=null;this.src='/destinos/colombia.svg'">
       <div class="journey-overlay"></div><div class="journey-content"><span class="journey-meta">14 DÍAS · COLOMBIA</span><h3>Colombia, de los Andes cafeteros al Caribe colonial</h3><p>Bogotá, el Eje Cafetero, Medellín, Guatapé, el Parque Tayrona y Cartagena en una ruta que baja de la cordillera al mar.</p><a class="journey-cta" href="/colombia.html">Descúbrelo al detalle <span>→</span></a></div>
     </article>
     <article class="journey-card journey-jordan">
@@ -374,7 +415,7 @@
       <div class="journey-overlay"></div><div class="journey-content"><span class="journey-meta">7 DÍAS · JORDANIA</span><h3>Jordania, entre maravillas antiguas y desiertos infinitos</h3><p>Descubre Petra, duerme bajo las estrellas en Wadi Rum y relájate junto al mar Muerto en una ruta de historia y paisajes inolvidables.</p><a class="journey-cta" href="/jordania.html">Descúbrelo al detalle <span>→</span></a></div>
     </article>
     <article class="journey-card journey-corsica">
-      <img src="/destinos/corcega.svg" alt="Ilustración de costa corsa con montañas y un velero" loading="lazy">
+      <img src="https://images.unsplash.com/photo-1545129228-886291dac46f?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Costa de Córcega vista desde el aire, con una torre de vigilancia genovesa sobre un cabo rocoso y aguas turquesas" loading="lazy" onerror="this.onerror=null;this.src='/destinos/corcega.svg'">
       <div class="journey-overlay"></div><div class="journey-content"><span class="journey-meta">11 DÍAS · FRANCIA</span><h3>Córcega, la isla de la belleza entre mar y montaña</h3><p>Un circuito de 11 días: Cap Corse, Calvi, Scandola, las calanques de Piana, Bonifacio, Bavella y Corte, sin trayectos de más.</p><a class="journey-cta" href="/corcega.html">Descúbrelo al detalle <span>→</span></a></div>
     </article>
     <article class="journey-card journey-vienna">
@@ -382,11 +423,11 @@
       <div class="journey-overlay"></div><div class="journey-content"><span class="journey-meta">3 DÍAS · AUSTRIA</span><h3>Viena en tres días, historia imperial y planes a tu medida</h3><p>Palacios, museos, cafés históricos y paseos por la ciudad, con alternativas culturales o activas según tus gustos.</p><a class="journey-cta" href="/viena.html">Descúbrelo al detalle <span>→</span></a></div>
     </article>
     <article class="journey-card journey-rajasthan">
-      <img src="/destinos/rajastan.svg" alt="Ilustración de un fuerte de arenisca con cúpulas al atardecer en el desierto" loading="lazy">
+      <img src="https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Palacio de los Vientos (Hawa Mahal) de Jaipur, en Rajastán, con dos caballos blancos decorados en primer plano" loading="lazy" onerror="this.onerror=null;this.src='/destinos/rajastan.svg'">
       <div class="journey-overlay"></div><div class="journey-content"><span class="journey-meta">14 DÍAS · INDIA</span><h3>Rajastán, tierra de maharajás, fuertes y bazares</h3><p>Delhi, Agra, Jaipur, Pushkar, Jodhpur y Udaipur en un recorrido de fuertes, palacios, mercados y sabores locales.</p><a class="journey-cta" href="/rajastan.html">Descúbrelo al detalle <span>→</span></a></div>
     </article>
     <article class="journey-card journey-sarajevo">
-      <img src="/destinos/sarajevo.svg" alt="Ilustración de Sarajevo con un minarete entre colinas y tejados" loading="lazy">
+      <img src="https://images.unsplash.com/photo-1570831709673-03320e9d734f?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Plaza de Baščaršija, el bazar otomano de Sarajevo, con un minarete y las colinas al fondo" loading="lazy" onerror="this.onerror=null;this.src='/destinos/sarajevo.svg'">
       <div class="journey-overlay"></div><div class="journey-content"><span class="journey-meta">4 DÍAS · BOSNIA Y HERZEGOVINA</span><h3>Sarajevo, la ciudad donde se cruzan imperios</h3><p>Bazar otomano, arquitectura austrohúngara, historia viva, café bosnio y una excursión a Mostar en cuatro días.</p><a class="journey-cta" href="/sarajevo.html">Descúbrelo al detalle <span>→</span></a></div>
     </article>
   </div>
@@ -423,8 +464,9 @@
   <div class="wrap profile-card"><div class="profile-mark">✦</div><div><span class="section-kicker">Tu espacio personal</span><h2>Tus ideas de viaje, en un mismo lugar.</h2><p>Estamos preparando un espacio para que puedas guardar itinerarios, recuperar tus búsquedas y continuar organizando tus próximos viajes. El registro y el almacenamiento de viajes requieren completar la funcionalidad de cuenta; este botón no simula un registro que todavía no esté conectado.</p></div><a class="primary profile-cta" href="mailto:holamogavel@gmail.com?subject=Quiero%20crear%20mi%20perfil%20en%20Mogavel">Quiero crear mi perfil <span>→</span></a></div>
 </section>
   </main>
-  <footer><div class="footer-inner wrap"><span class="footer-brand">✦ Mogavel</span><span>Viajes pensados para ti.</span><nav class="footer-links" aria-label="Enlaces legales"><a href="#como-funciona">Cómo funciona</a><a href="#planifica-tu-viaje">Planifica tu viaje</a><a href="/sobre-mogavel.html">Sobre Mogavel</a><a href="mailto:holamogavel@gmail.com">Contacto</a><a href="#privacidad">Privacidad</a><a href="#cookies">Cookies</a><a href="#terminos">Términos y condiciones</a></nav></div></footer>
+  <footer><div class="footer-inner wrap"><span class="footer-brand">✦ Mogavel</span><span>Viajes pensados para ti.</span><nav class="footer-links" aria-label="Enlaces legales"><a href="#como-funciona">Cómo funciona</a><a href="#planifica-tu-viaje">Planifica tu viaje</a><a href="/sobre-mogavel.html">Sobre Mogavel</a><a href="mailto:holamogavel@gmail.com">Contacto</a><a href="#privacidad">Privacidad</a><a href="#cookies">Cookies</a><a href="#terminos">Términos y condiciones</a></nav></div><p class="footer-atribucion wrap">Datos geográficos de <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> (licencia <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, con modificaciones: normalización, índice propio y asociación de aeropuertos) y <a href="https://ourairports.com/" target="_blank" rel="noopener">OurAirports</a> (dominio público).</p></footer>
   <script src="/render-resultados.js"></script>
+  <script src="/render-datos.js"></script>
   <script src="/estado-busqueda.js"></script>
   <script>
     function prepararItinerario(destino, duracion, idea) {
@@ -437,6 +479,59 @@
     }
 
     let modoBusqueda = 'complete';
+
+    /* Campos del formulario que corresponden a cada modo. Un campo oculto no se envía aunque conserve un valor escrito antes. */
+    const CAMPOS_VISIBLES = {
+      complete: { origen: true, ida: true, vuelta: true },
+      flights: { origen: true, ida: true, vuelta: true },
+      hotels: { origen: false, ida: true, vuelta: true },
+      activities: { origen: false, ida: false, vuelta: false }
+    };
+    const ETIQUETAS_FECHAS = {
+      hotels: { ida: 'Fecha de entrada', vuelta: 'Fecha de salida' },
+      otros: { ida: 'Fecha de ida', vuelta: 'Fecha de vuelta' }
+    };
+    function aplicarCamposDelModo(modo) {
+      const visibles = CAMPOS_VISIBLES[modo] || CAMPOS_VISIBLES.complete;
+      const etiquetas = ETIQUETAS_FECHAS[modo] || ETIQUETAS_FECHAS.otros;
+      ['origen', 'ida', 'vuelta'].forEach(id => {
+        const etiqueta = document.querySelector('label:has(#' + id + ')');
+        if (!etiqueta) return;
+        etiqueta.style.display = visibles[id] ? '' : 'none';
+        // Solo cambia el texto de la etiqueta (primer nodo de texto), no su estructura ni su estilo.
+        if (id !== 'origen' && etiqueta.firstChild && etiqueta.firstChild.nodeType === 3) etiqueta.firstChild.nodeValue = etiquetas[id];
+      });
+      document.querySelectorAll('#ida, #vuelta').forEach(el => el.removeAttribute('aria-invalid'));
+      // Las actividades solo se buscan en «Viaje completo» y «Solo actividades»; en vuelos y hoteles el bloque no se muestra.
+      const bloqueActividades = document.getElementById('actividadesForm');
+      if (bloqueActividades) bloqueActividades.style.display = modo === 'flights' || modo === 'hotels' ? 'none' : '';
+      const titulo = document.getElementById('actividadesTitulo'), ayuda = document.getElementById('actividadesAyuda');
+      if (titulo) titulo.textContent = modo === 'activities' ? '¿Qué tipo de actividades te interesan?' : '¿Quieres añadir actividades a tu viaje?';
+      if (ayuda) ayuda.textContent = modo === 'activities'
+        ? 'Elige una o varias categorías, o «Cualquier tipo» para ver propuestas variadas. Si no marcas nada, buscaremos de todo un poco.'
+        : 'Mogavel puede proponerte experiencias y actividades adaptadas al destino y a las fechas del viaje. Es opcional: si no marcas nada, no buscaremos actividades.';
+    }
+    /* «Cualquier tipo» y las categorías concretas se excluyen entre sí. */
+    document.querySelectorAll('.actividades-form input[type=checkbox]').forEach(caja => caja.addEventListener('change', () => {
+      if (!caja.checked) return;
+      document.querySelectorAll('.actividades-form input[type=checkbox]').forEach(otra => {
+        if (otra !== caja && (caja.value === 'cualquiera' || otra.value === 'cualquiera')) otra.checked = false;
+      });
+    }));
+    /* Actividades que se envían al backend: null en los modos que no las buscan. En «Solo actividades» siempre se piden. */
+    function leerActividades() {
+      if (modoBusqueda === 'flights' || modoBusqueda === 'hotels') return null;
+      const marcadas = Array.from(document.querySelectorAll('.actividades-form input:checked')).map(i => i.value);
+      const cualquiera = marcadas.includes('cualquiera') || (modoBusqueda === 'activities' && !marcadas.length);
+      const tipos = cualquiera ? [] : marcadas;
+      return { solicitadas: modoBusqueda === 'activities' || cualquiera || tipos.length > 0, tipos, cualquiera };
+    }
+    /* Valor de un campo del formulario solo si el modo elegido lo muestra. */
+    function valorDeCampo(id) {
+      const visibles = CAMPOS_VISIBLES[modoBusqueda] || CAMPOS_VISIBLES.complete;
+      if (visibles[id] === false) return '';
+      return document.getElementById(id)?.value || '';
+    }
     document.querySelectorAll('.search-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         modoBusqueda = tab.dataset.mode || 'complete';
@@ -445,12 +540,7 @@
           item.classList.toggle('is-active', activo);
           item.setAttribute('aria-selected', activo ? 'true' : 'false');
         });
-        const origenLabel = document.querySelector('label:has(#origen)');
-        const fechasIda = document.querySelector('label:has(#ida)');
-        const fechasVuelta = document.querySelector('label:has(#vuelta)');
-        if (origenLabel) origenLabel.style.display = modoBusqueda === 'hotels' || modoBusqueda === 'activities' ? 'none' : '';
-        if (fechasIda) fechasIda.style.display = modoBusqueda === 'hotels' ? 'none' : '';
-        if (fechasVuelta) fechasVuelta.style.display = modoBusqueda === 'activities' ? 'none' : '';
+        aplicarCamposDelModo(modoBusqueda);
         document.querySelector('.planner-bottom .primary').innerHTML = (modoBusqueda === 'complete' ? 'Crear mi viaje' : modoBusqueda === 'flights' ? 'Buscar vuelos' : modoBusqueda === 'hotels' ? 'Buscar hoteles' : 'Descubrir actividades') + ' <span aria-hidden="true">→</span>';
       });
     });
@@ -466,7 +556,21 @@
     }
 
     /* Función común para comunicarnos con el agente. */
-    async function consultarAgente(message) {
+    /* Destino elegido en el autocompletado, si el texto visible sigue siendo el elegido (null para destinos escritos a mano). */
+    function leerDestinoSeleccionado() {
+      const el = document.getElementById('destino');
+      if (!el || !el.dataset.destinoGeo) return null;
+      try { return ptDestinoSeleccionadoVigente(JSON.parse(el.dataset.destinoGeo), String(el.value || '').trim()); } catch (_) { return null; }
+    }
+
+    /** Texto de la respuesta del agente (compatibilidad). La portada usa consultarAgenteDatos para recibir también los resultados estructurados. */
+    async function consultarAgente(message, destinoSeleccionado) {
+      const datos = await consultarAgenteDatos(message, destinoSeleccionado);
+      return typeof datos?.response === 'string' ? datos.response : '';
+    }
+
+    async function consultarAgenteDatos(message, destinoSeleccionado) {
+      const fIda = valorDeCampo('ida'), fVuelta = valorDeCampo('vuelta');
       const response =
         await fetch('/api/chat', {
           method: 'POST',
@@ -477,10 +581,14 @@
             message: (() => {
               const selected = window.MogavelTripBuilder?.snapshot?.() || [];
               if (!selected.length) return message;
-              const selection = selected.map(item => '- ' + item.type + ': ' + item.name + (item.price ? (item.price.free ? ' (gratuita según el proveedor)' : item.price.basis === 'desde' ? ' (precio orientativo "desde" del proveedor: ' + item.price.value + ' ' + item.price.currency + '; no es un precio final garantizado)' : ' (importe mostrado: ' + item.price.value + ' ' + item.price.currency + ')') : ' (importe no identificado)')).join('\n');
+              const selection = selected.map(item => '- ' + item.type + ': ' + item.name + (item.price ? (item.price.free ? ' (gratuita según el proveedor)' : item.price.basis === 'desde' ? ' (precio orientativo "desde" del proveedor: ' + item.price.value + ' ' + (item.price.currency || 'moneda no confirmada') + '; no es un precio final garantizado)' : ' (importe mostrado: ' + item.price.value + ' ' + (item.price.currency || 'moneda no confirmada') + (item.price.basis === 'noche' ? ' por noche' : '') + ')') : ' (importe no identificado)') + (item.proveedor ? ' [proveedor elegido: ' + item.proveedor + (item.precioTotal ? '; total de la estancia ' + item.precioTotal + ' ' + (item.moneda || 'moneda no confirmada') : '') + ']' : '')).join('\n');
               return message + '\n\n[Selección actual del viaje en la web; úsala como contexto. Si pido cambiar o quitar un elemento, actualiza la propuesta y confirma claramente el cambio. No inventes precios ni des por reservados los elementos.]\n' + selection;
             })(),
-            sessionId
+            sessionId,
+            modo: modoBusqueda,
+            ...(destinoSeleccionado ? { destinoSeleccionado } : {}),
+            ...(modoBusqueda === 'hotels' && fIda && fVuelta ? { fechas: { entrada: fIda, salida: fVuelta } } : {}),
+            ...(leerActividades() ? { actividades: leerActividades() } : {})
           })
         });
 
@@ -494,11 +602,37 @@
         );
       }
 
-      return data.response;
+      return data;
     }
 
 
-    /* Autocompletado visual de ciudades. Catálogo inicial local; no modifica las APIs de búsqueda. */
+    /* Respuesta de /api/chat ({ response, resultados, aviso }): con datos estructurados las tarjetas salen de los datos (no del texto). */
+    function mostrarRespuesta(datos) {
+      const results = document.getElementById('results');
+      const texto = typeof datos?.response === 'string' ? datos.response : '';
+      if (datos && datos.resultados && window.MogavelDatos) {
+        if (window.MogavelDatos.hayResultados(datos.resultados)) {
+          window.MogavelDatos.renderizar(datos.resultados, results);
+        } else if (!results.querySelector('.flight-card,.hotel-card,.activity-card')) {
+          results.replaceChildren();
+        }
+        Array.prototype.forEach.call(results.querySelectorAll('.res-explicacion'), (n) => n.remove());
+        if (!results.querySelector('.loading') || results.children.length > 1) Array.prototype.forEach.call(results.querySelectorAll('.loading'), (n) => n.remove());
+        if (texto || datos.aviso) {
+          const nota = document.createElement('div');
+          nota.className = 'result-text res-explicacion';
+          nota.textContent = [texto.replace(/[#*]{1,3}/g, ''), datos.aviso].filter(Boolean).join('\n\n');
+          nota.style.whiteSpace = 'pre-wrap';
+          nota.style.marginTop = '24px';
+          results.appendChild(nota);
+        }
+        return;
+      }
+      renderResultados(texto);
+    }
+
+    /* Autocompletado visual de ciudades: las sugerencias salen SOLO de /api/geo (catálogo de destinos). La lista siguiente
+       NO es un catálogo: solo ayuda a detectar contradicciones entre el formulario y el texto libre (componerPeticionViaje). */
     const ciudadesMogavel = [
       {ciudad:'Madrid',pais:'España',codigo:'MAD',aliases:['madrid','mad']},
       {ciudad:'Barcelona',pais:'España',codigo:'BCN',aliases:['barcelona','bcn']},
@@ -538,27 +672,76 @@
       if (!input || !panel) return;
       let opciones = [];
       let activo = -1;
+      let secuencia = 0;
+      let temporizador = null;
       function cerrar() { panel.classList.remove('is-open'); input.setAttribute('aria-expanded','false'); activo = -1; }
-      function elegir(opcion) { input.value = opcion.ciudad; input.dataset.codigoCiudad = opcion.codigo; input.dataset.paisCiudad = opcion.pais; cerrar(); input.dispatchEvent(new Event('change',{bubbles:true})); }
-      function pintar() {
-        const consulta = normalizarCiudad(input.value);
-        if (consulta.length < 3) { cerrar(); return; }
-        opciones = ciudadesMogavel.map(ciudad => ({...ciudad,puntuacion: ciudad.aliases.some(alias => normalizarCiudad(alias).startsWith(consulta)) ? 0 : normalizarCiudad(ciudad.ciudad + ' ' + ciudad.pais).includes(consulta) ? 1 : 2}))
-          .filter(ciudad => ciudad.puntuacion < 2)
-          .sort((a,b)=>a.puntuacion-b.puntuacion || a.ciudad.localeCompare(b.ciudad,'es'))
-          .slice(0,7);
-        if (!opciones.length) {
-          panel.innerHTML = '<div class="city-suggestion-empty">No hay coincidencias en la selección inicial. Puedes continuar escribiendo el destino completo.</div>';
-        } else {
-          panel.innerHTML = opciones.map((ciudad,index) => '<button type="button" class="city-suggestion" role="option" aria-selected="'+(index===activo)+'" data-index="'+index+'"><span class="city-suggestion-icon" aria-hidden="true">⌖</span><span class="city-suggestion-copy"><strong>'+escaparHtmlCiudad(ciudad.ciudad)+'</strong><small>'+escaparHtmlCiudad(ciudad.pais)+'</small></span><span class="city-suggestion-code">'+escaparHtmlCiudad(ciudad.codigo)+'</span></button>').join('');
-        }
-        panel.classList.add('is-open'); input.setAttribute('aria-expanded','true');
+      function elegir(opcion) {
+        // Con región («Salento, Apulia») se muestra también en el campo, para ver qué homónimo se ha elegido.
+        input.value = opcion.region ? opcion.ciudad + ', ' + opcion.region : opcion.ciudad;
+        input.dataset.codigoCiudad = opcion.codigo || '';
+        input.dataset.paisCiudad = opcion.pais || '';
+        if (opcion.id) input.dataset.geoId = opcion.id; else delete input.dataset.geoId;
+        if (opcion.tipo) input.dataset.geoTipo = opcion.tipo; else delete input.dataset.geoTipo;
+        // Identidad geográfica elegida (la única fuente fiable para el backend; el texto visible puede ser ambiguo).
+        input.dataset.destinoGeo = JSON.stringify({nombre: opcion.ciudad, pais: opcion.pais || '', codigoPais: opcion.codigoPais || '', region: opcion.region || '', id: opcion.id || '', tipo: opcion.tipo || ''});
+        cerrar();
+        input.dispatchEvent(new Event('change',{bubbles:true}));
       }
-      input.addEventListener('input',()=>{delete input.dataset.codigoCiudad; delete input.dataset.paisCiudad; activo=-1; pintar();});
+      function mostrar() {
+        if (!opciones.length) {
+          panel.innerHTML = '<div class="city-suggestion-empty">No hay coincidencias. Puedes continuar escribiendo el destino completo.</div>';
+        } else {
+          panel.innerHTML = opciones.map((ciudad,index) => {
+            const etiqueta = ciudad.codigos || ciudad.codigo || (ciudad.tipo === 'pais' ? 'PAÍS' : ciudad.tipo === 'region' ? 'REGIÓN' : ciudad.tipo === 'aeropuerto' ? 'AEROPUERTO' : 'DESTINO');
+            return '<button type="button" class="city-suggestion" role="option" aria-selected="'+(index===activo)+'" data-index="'+index+'"><span class="city-suggestion-icon" aria-hidden="true">⌖</span><span class="city-suggestion-copy"><strong>'+escaparHtmlCiudad(ciudad.ciudad)+'</strong><small>'+escaparHtmlCiudad(ciudad.region ? ciudad.region + ', ' + ciudad.pais : ciudad.pais)+'</small></span><span class="city-suggestion-code">'+escaparHtmlCiudad(etiqueta)+'</span></button>';
+          }).join('');
+        }
+        panel.classList.add('is-open');
+        input.setAttribute('aria-expanded','true');
+      }
+      async function pintar() {
+        const consultaTexto = input.value.trim();
+        const consulta = normalizarCiudad(consultaTexto);
+        const token = ++secuencia;
+        if (consulta.length < (/^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]+$/u.test(consulta) ? 2 : 3)) { cerrar(); return; }
+        try {
+          const response = await fetch('/api/geo?q=' + encodeURIComponent(consultaTexto) + '&limite=7', { headers: { 'Accept': 'application/json' } });
+          const data = await response.json();
+          if (token !== secuencia) return;
+          if (response.ok && data && data.ok && Array.isArray(data.resultados)) {
+            opciones = data.resultados.map(item => ({
+              ciudad: item.nombre,
+              pais: item.nombrePais || item.codigoPais || '',
+              codigo: Array.isArray(item.aeropuertos) && item.aeropuertos.length ? item.aeropuertos[0] : '',
+              codigos: Array.isArray(item.aeropuertos) ? item.aeropuertos.slice(0, 3).join(' · ') : '',
+              id: item.id,
+              tipo: item.tipo,
+              codigoPais: item.codigoPais || '',
+              region: item.region || ''
+            }));
+          } else {
+            throw new Error('Catálogo todavía no disponible');
+          }
+        } catch (_) {
+          // Sin catálogo no se inventan sugerencias: la única fuente de destinos es /api/geo.
+          opciones = [];
+        }
+        if (token === secuencia) mostrar();
+      }
+      input.addEventListener('input',()=>{
+        delete input.dataset.codigoCiudad;
+        delete input.dataset.paisCiudad;
+        delete input.dataset.geoId;
+        delete input.dataset.geoTipo;
+        delete input.dataset.destinoGeo;
+        activo=-1;
+        clearTimeout(temporizador);
+        temporizador=setTimeout(pintar,180);
+      });
       input.addEventListener('keydown',event=>{
         if (!panel.classList.contains('is-open')) return;
-        if (event.key==='ArrowDown') {event.preventDefault();activo=Math.min(activo+1,opciones.length-1);pintar();}
-        else if (event.key==='ArrowUp') {event.preventDefault();activo=Math.max(activo-1,0);pintar();}
+        if (event.key==='ArrowDown') {event.preventDefault();activo=Math.min(activo+1,opciones.length-1);mostrar();}
+        else if (event.key==='ArrowUp') {event.preventDefault();activo=Math.max(activo-1,0);mostrar();}
         else if (event.key==='Enter' && activo>=0 && opciones[activo]) {event.preventDefault();elegir(opciones[activo]);}
         else if (event.key==='Escape') cerrar();
       });
@@ -723,15 +906,66 @@
       return out;
     }
 
+    /* Destino elegido en el autocompletado: solo vale si el texto visible sigue siendo el elegido (si se editó a mano, se ignora). */
+    function ptDestinoSeleccionadoVigente(sel, destinoVisible) {
+      if (!sel || typeof sel !== 'object' || Array.isArray(sel)) return null;
+      const nombre = String(sel.nombre == null ? '' : sel.nombre).trim();
+      const t = valor => String(valor == null ? '' : valor).trim();
+      /* El campo muestra «Nombre» o, si el destino tiene región, «Nombre, Región» (así se distingue Salento de Apulia del de Quindío). */
+      const visibles = [nombre, t(sel.region) ? nombre + ', ' + t(sel.region) : ''].filter(Boolean);
+      if (!nombre || visibles.indexOf(destinoVisible) === -1) return null;
+      return {nombre: nombre, pais: t(sel.pais), codigoPais: t(sel.codigoPais), region: t(sel.region), id: t(sel.id), tipo: t(sel.tipo)};
+    }
+
+    /* «Salento, Quindío, Colombia»: nombre, región y país sin duplicar lo que el nombre ya contiene. */
+    function ptEtiquetaDestino(sel) {
+      const partes = [sel.nombre];
+      const yaEsta = p => !p || sel.nombre.toLowerCase().indexOf(p.toLowerCase()) !== -1;
+      if (!yaEsta(sel.region)) partes.push(sel.region);
+      if (!yaEsta(sel.pais)) partes.push(sel.pais);
+      return partes.join(', ');
+    }
+
+    /* Fecha «YYYY-MM-DD» real del calendario (rechaza 2027-02-30, 2027-13-01, texto, etc.). */
+    function ptFechaIsoValida(valor) {
+      if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return false;
+      const [a, m, d] = valor.split('-').map(Number);
+      const f = new Date(Date.UTC(a, m - 1, d));
+      return f.getUTCFullYear() === a && f.getUTCMonth() === m - 1 && f.getUTCDate() === d;
+    }
+
+    /* Fechas de «Solo hoteles». Sin ninguna fecha es válido (las puede dar el texto libre o pedirlas el agente); con alguna,
+       hacen falta las dos, reales, la entrada no puede ser anterior a hoy y la salida debe ser posterior a la entrada. `hoy` = «YYYY-MM-DD». */
+    function validarFechasHotel(entrada, salida, hoy) {
+      const e = String(entrada || '').trim(), s = String(salida || '').trim();
+      if (!e && !s) return {ok: true, vacio: true, entrada: '', salida: ''};
+      if (!e || !s) return {ok: false, campo: e ? 'vuelta' : 'ida', error: 'Indica la fecha de entrada y la de salida.'};
+      if (!ptFechaIsoValida(e)) return {ok: false, campo: 'ida', error: 'La fecha de entrada no es válida.'};
+      if (!ptFechaIsoValida(s)) return {ok: false, campo: 'vuelta', error: 'La fecha de salida no es válida.'};
+      if (hoy && e < hoy) return {ok: false, campo: 'ida', error: 'La fecha de entrada no puede ser anterior a hoy.'};
+      if (s <= e) return {ok: false, campo: 'vuelta', error: 'La fecha de salida debe ser posterior a la fecha de entrada.'};
+      return {ok: true, vacio: false, entrada: e, salida: s};
+    }
+
     function ptFraseFormulario(f, incluirViajeros) {
       const partes = [];
-      if (f.origen || f.destino) partes.push('Quiero viajar' + (f.origen ? ' de ' + f.origen : '') + (f.destino ? ' a ' + f.destino : ''));
+      if (f.modo === 'hotels') {
+        if (f.destino) partes.push('Quiero alojarme en ' + (f.destinoEtiqueta || f.destino));
+        if (f.ida && f.vuelta) partes.push('con entrada el ' + f.ida + ' y salida el ' + f.vuelta);
+        else if (f.ida) partes.push('con entrada el ' + f.ida);
+        else if (f.vuelta) partes.push('con salida el ' + f.vuelta);
+        if (f.viajeros && incluirViajeros) partes.push('para ' + f.viajeros + ' personas');
+        if (f.presupuesto) partes.push('con un presupuesto total de ' + f.presupuesto + ' euros');
+        return partes.join(' ');
+      }
+      if (f.origen || f.destino) partes.push('Quiero viajar' + (f.origen ? ' de ' + f.origen : '') + (f.destino ? ' a ' + (f.destinoEtiqueta || f.destino) : ''));
       if (f.ida && f.vuelta) partes.push('del ' + f.ida + ' al ' + f.vuelta);
       else if (f.ida) partes.push('con fecha de ida ' + f.ida);
       else if (f.vuelta) partes.push('con fecha de vuelta ' + f.vuelta);
       if (f.viajeros && incluirViajeros) partes.push('para ' + f.viajeros + ' personas');
       if (f.presupuesto) partes.push('con un presupuesto total de ' + f.presupuesto + ' euros');
-      if (f.preferencias.length) partes.push('y me interesan actividades relacionadas con ' + f.preferencias.join(', '));
+      if (f.preferencias.includes('cualquiera')) partes.push('y quiero añadir actividades de cualquier tipo, con propuestas variadas');
+      else if (f.preferencias.length) partes.push('y me interesan actividades relacionadas con ' + f.preferencias.join(', '));
       return partes.join(' ');
     }
 
@@ -741,10 +975,12 @@
       const f = {
         idea: limpio(entrada.idea), origen: limpio(entrada.origen), destino: limpio(entrada.destino),
         ida: limpio(entrada.ida), vuelta: limpio(entrada.vuelta), viajeros: limpio(entrada.viajeros),
-        presupuesto: limpio(entrada.presupuesto),
+        presupuesto: limpio(entrada.presupuesto), modo: limpio(entrada.modo),
+        destinoSeleccionado: ptDestinoSeleccionadoVigente(entrada.destinoSeleccionado, limpio(entrada.destino)),
         preferencias: Array.isArray(entrada.preferencias) ? entrada.preferencias.map(limpio).filter(Boolean) : [],
         viajerosTocado: !!entrada.viajerosTocado
       };
+      f.destinoEtiqueta = f.destinoSeleccionado ? ptEtiquetaDestino(f.destinoSeleccionado) : '';
       /* "viajeros" trae un valor por defecto: solo cuenta como dato del usuario si lo ha cambiado. */
       const hayFormulario = !!(f.origen || f.destino || f.ida || f.vuelta || f.presupuesto || f.preferencias.length || f.viajerosTocado);
 
@@ -784,15 +1020,35 @@
       // Evita lanzar dos búsquedas a la vez (doble clic): cada una consume créditos.
       if (busquedaEnCurso) return;
 
+      // «Solo hoteles»: fechas de entrada y salida válidas antes de buscar (cada búsqueda consume créditos).
+      if (modoBusqueda === 'hotels') {
+        const d = new Date();
+        const hoy = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        const v = validarFechasHotel(valorDeCampo('ida'), valorDeCampo('vuelta'), hoy);
+        document.querySelectorAll('#ida, #vuelta').forEach(el => el.removeAttribute('aria-invalid'));
+        if (!v.ok) {
+          const r = document.getElementById('results');
+          r.style.display = 'block'; r.style.whiteSpace = '';
+          r.textContent = v.error;
+          r.setAttribute('role', 'alert');
+          document.getElementById(v.campo)?.setAttribute('aria-invalid', 'true');
+          document.getElementById(v.campo)?.focus();
+          return;
+        }
+        document.getElementById('results').removeAttribute('role');
+      }
+
       const peticion = componerPeticionViaje({
+        modo: modoBusqueda,
         idea: document.getElementById('ideaViaje').value,
-        origen: document.getElementById('origen')?.value,
+        origen: valorDeCampo('origen'),
         destino: document.getElementById('destino')?.value,
-        ida: document.getElementById('ida')?.value,
-        vuelta: document.getElementById('vuelta')?.value,
+        destinoSeleccionado: leerDestinoSeleccionado(),
+        ida: valorDeCampo('ida'),
+        vuelta: valorDeCampo('vuelta'),
         viajeros: document.getElementById('viajeros')?.value,
         presupuesto: document.getElementById('presupuesto')?.value,
-        preferencias: Array.from(document.querySelectorAll('.preferences input:checked')).map(input => input.value),
+        preferencias: (a => a ? (a.cualquiera ? ['cualquiera'] : a.tipos) : [])(leerActividades()),
         viajerosTocado
       }, ciudadesMogavel);
 
@@ -812,6 +1068,7 @@
       // si usa exactamente los mismos datos que una búsqueda anterior.
       iniciarNuevaBusqueda();
       const message = peticion.mensaje;
+      const destinoSeleccionado = leerDestinoSeleccionado();
       busquedaEnCurso = true;
 
       // Los resultados se muestran en /resultados.html (pestañas Vuelos / Hoteles / Actividades).
@@ -822,12 +1079,14 @@
         modo: typeof modoBusqueda === 'string' ? modoBusqueda : 'complete',
         formulario: {
           idea: document.getElementById('ideaViaje').value,
-          origen: document.getElementById('origen')?.value || '',
+          origen: valorDeCampo('origen'),
           destino: document.getElementById('destino')?.value || '',
-          ida: document.getElementById('ida')?.value || '',
-          vuelta: document.getElementById('vuelta')?.value || '',
+          destinoSeleccionado: destinoSeleccionado,
+          ida: valorDeCampo('ida'),
+          vuelta: valorDeCampo('vuelta'),
           viajeros: document.getElementById('viajeros')?.value || '',
-          presupuesto: document.getElementById('presupuesto')?.value || ''
+          presupuesto: document.getElementById('presupuesto')?.value || '',
+          actividades: leerActividades()
         }
       })) {
         window.location.assign('/resultados.html');
@@ -840,9 +1099,9 @@
 
       try {
         const respuesta =
-          await consultarAgente(message);
+          await consultarAgenteDatos(message, destinoSeleccionado);
 
-        renderResultados(respuesta);
+        mostrarRespuesta(respuesta);
 
         document.getElementById('chatBox')
           .style.display = 'block';
@@ -888,9 +1147,9 @@
 
       try {
         const respuesta =
-          await consultarAgente(message);
+          await consultarAgenteDatos(message);
 
-        renderResultados(respuesta);
+        mostrarRespuesta(respuesta);
       } catch (error) {
         results.textContent =
           'Ha ocurrido un error: ' +

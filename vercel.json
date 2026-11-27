@@ -2,8 +2,19 @@
   "version": 2,
   "builds": [
     {
+      "src": "api/geo.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": "src/geo/data/{catalogo/**,regiones.json,destacados.json}"
+      }
+    },
+    {
       "src": "api/chat.ts",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": "src/geo/data/{catalogo/**,regiones.json,destacados.json}",
+        "maxDuration": 300
+      }
     },
     {
       "src": "index.html",
@@ -104,12 +115,20 @@
     {
       "src": "public/render-conversacion.js",
       "use": "@vercel/static"
+    },
+    {
+      "src": "public/render-datos.js",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/api/chat",
       "dest": "/api/chat.ts"
+    },
+    {
+      "src": "/api/geo",
+      "dest": "/api/geo.ts"
     },
     {
       "src": "/travel-agent-illustration.jpg",
@@ -210,6 +229,10 @@
     {
       "src": "/render-conversacion.js",
       "dest": "/public/render-conversacion.js"
+    },
+    {
+      "src": "/render-datos.js",
+      "dest": "/public/render-datos.js"
     },
     {
       "src": "/(.*)",

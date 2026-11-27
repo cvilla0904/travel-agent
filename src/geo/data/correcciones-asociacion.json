@@ -1,0 +1,17 @@
+{
+  "descripcion": "Correcciones deliberadas de la asociación de nombres curados (src/services/ciudades.ts) a ciudades del catálogo. Se aplican al construir o reclasificar el catálogo; no incorporan cambios de GeoNames. Verificadas contra el catálogo v2 (aa5e3df).",
+  "pines": {
+    "venice": "gn:3164603",
+    "porto": "gn:2735943",
+    "seoul": "gn:1835848",
+    "beijing": "gn:1816670",
+    "cairo": "gn:360630",
+    "brugge": "gn:2800931",
+    "ghent": "gn:2797656"
+  },
+  "retirar": [
+    { "clave": "venecia", "ciudad": "gn:4509884", "motivo": "Dayton (EE. UU.) no es Venecia: entrada inyectada por la asociación antigua («la ciudad más poblada que lleve el nombre»)" },
+    { "clave": "venezia", "ciudad": "gn:4509884", "motivo": "Idem: Dayton no es Venezia" },
+    { "clave": "oporto", "ciudad": "gn:3031582", "motivo": "Burdeos (Francia) no es Oporto: entrada inyectada por la asociación antigua" }
+  ]
+}

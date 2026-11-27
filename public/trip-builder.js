@@ -7,26 +7,75 @@
   const labels = { flight: 'Vuelo', hotel: 'Alojamiento', activity: 'Experiencia' };
   let panel;
   // Importe mostrado al usuario: conserva la naturaleza "desde" y distingue gratuita de pendiente.
+  // La moneda es la del dato (ISO 4217); si no se conoce se dice, nunca se asume EUR.
+  const formatMoney = (value, currency) => {
+    if (currency && /^[A-Z]{3}$/.test(currency)) {
+      try { return value.toLocaleString('es-ES', { style: 'currency', currency }); } catch (_) { return value.toLocaleString('es-ES') + ' ' + currency; }
+    }
+    return value.toLocaleString('es-ES') + ' (moneda no confirmada)';
+  };
   const amountLabel = price => {
     if (!price) return 'Precio por confirmar';
     if (price.free) return 'Gratuita';
-    const text = price.value.toLocaleString('es-ES',{style:'currency',currency:price.currency==='USD'?'USD':price.currency==='GBP'?'GBP':'EUR'});
-    return price.basis === 'desde' ? 'Desde ' + text : text;
+    const text = formatMoney(price.value, price.currency);
+    return price.basis === 'desde' ? 'Desde ' + text : price.basis === 'noche' ? text + ' por noche' : price.basis === 'total' ? text + ' total' : text;
+  };
+
+  // Total comparable de la selección. Solo se suma cuando TODOS los importes son del mismo concepto («total», «por noche» o
+  // «desde») y de la misma moneda confirmada; las actividades gratuitas aportan 0 y no cambian el concepto. Nunca se suman
+  // precios por noche con totales de estancia ni monedas distintas, y un elemento sin importe impide el total.
+  // Devuelve { total: {value, currency, basis} | null, motivos: [...], aviso: string | null }; cada elemento conserva su importe individual.
+  const MOTIVOS = {
+    sin_importe: 'Hay elementos sin importe confirmado.',
+    moneda_no_confirmada: 'Algún importe no tiene moneda confirmada.',
+    monedas_distintas: 'Los importes están en monedas distintas.',
+    conceptos_distintos: 'Los importes son de conceptos distintos (por noche, total o precio «desde»).'
+  };
+  function resumenPrecios(items) {
+    const lista = (items || []).filter(Boolean);
+    if (!lista.length) return { total: null, motivos: [], aviso: null };
+    const motivos = [];
+    if (lista.some(x => !x.price)) motivos.push('sin_importe');
+    const pagados = lista.filter(x => x.price && !x.price.free);
+    if (pagados.some(x => !(x.price.currency && /^[A-Z]{3}$/.test(x.price.currency)))) motivos.push('moneda_no_confirmada');
+    else if (new Set(pagados.map(x => x.price.currency)).size > 1) motivos.push('monedas_distintas');
+    if (new Set(pagados.map(x => x.price.basis || 'total')).size > 1) motivos.push('conceptos_distintos');
+    if (motivos.length) {
+      return { total: null, motivos, aviso: motivos.map(m => MOTIVOS[m]).join(' ') + ' No se calcula un total conjunto: consulta los importes en cada proveedor.' };
+    }
+    const value = Math.round(pagados.reduce((suma, x) => suma + x.price.value, 0) * 100) / 100;
+    const currency = pagados.length ? pagados[0].price.currency : null;
+    const basis = pagados.length ? (pagados[0].price.basis || 'total') : 'gratuita';
+    return { total: { value, currency, basis }, motivos: [], aviso: null };
+  }
+  const totalLabel = total => {
+    if (total.basis === 'gratuita') return 'Gratuita';
+    const text = formatMoney(total.value, total.currency);
+    if (total.basis === 'noche') return text + ' / noche';
+    if (total.basis === 'desde') return 'Desde ' + text;
+    return text;
   };
 
   const textOf = el => (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
   const titleOf = (card, kind) => {
+    if (card.dataset && card.dataset.titulo) return card.dataset.titulo;
     const selector = kind === 'flight' ? '.flight-airline' : kind === 'hotel' ? '.hotel-name' : '.activity-name';
     return textOf(card.querySelector(selector)) || textOf(card).slice(0, 110);
   };
   function moneyOf(card, kind) {
+    // Tarjetas construidas desde datos estructurados (render-datos.js): importe, moneda y base vienen en data-*.
+    if (card.dataset && card.dataset.kind) {
+      if (card.dataset.base === 'gratis') return { value: 0, currency: null, basis: 'gratuita', free: true };
+      const value = Number(card.dataset.importe);
+      if (card.dataset.importe === undefined || !Number.isFinite(value) || value <= 0) return null;
+      return { value, currency: card.dataset.moneda || null, basis: card.dataset.base || 'total' };
+    }
+    // Tarjetas antiguas (estados guardados por versiones anteriores, sin data-*): lectura del texto.
     const text = textOf(card);
     if (kind === 'activity') {
       const badge = card.querySelector('.activity-price-badge');
       const label = textOf(badge);
-      // Las etiquetas de estado no equivalen a una tarifa. Solo guardamos importes positivos explícitos.
-      // Gratuita (anunciada por el proveedor) NO es lo mismo que precio desconocido.
-      if (badge && /^GRATUITA$/i.test(label)) return { value: 0, currency: 'EUR', basis: 'gratuita', free: true };
+      if (badge && /^GRATUITA$/i.test(label)) return { value: 0, currency: null, basis: 'gratuita', free: true };
       if (!badge || /CONSULTAR PRECIO|PRECIO POR CONFIRMAR/i.test(label)) return null;
       const m = label.match(/(?:DESDE\s*)?(\d[\d.,]*)\s*€/i);
       if (!m) return null;
@@ -38,7 +87,7 @@
     const raw = matches[0][0].replace(/EUR|USD|GBP|€/gi, '').trim().replace(/\./g, '').replace(',', '.');
     const value = Number(raw);
     if (!Number.isFinite(value) || value < 0) return null;
-    const token = matches[0][0].match(/EUR|USD|GBP/i)?.[0]?.toUpperCase() || (matches[0][0].includes('$') ? 'USD' : 'EUR');
+    const token = matches[0][0].match(/EUR|USD|GBP/i)?.[0]?.toUpperCase() || (matches[0][0].includes('€') ? 'EUR' : null);
     return { value, currency: token };
   }
   // Pinta la propuesta («Un viaje elegido por ti») en el elemento dado. Misma salida que antes de extraerla.
@@ -74,7 +123,7 @@
       // En /resultados.html la propuesta se inserta en su posición cronológica dentro de la conversación.
       const mostrarPropuesta = window.MogavelResultados && window.MogavelResultados.mostrarPropuesta;
       if (typeof mostrarPropuesta === 'function') {
-        mostrarPropuesta(items.map(x => ({ kind: x.kind, type: x.type, name: x.name, price: x.price })));
+        mostrarPropuesta(items.map(x => ({ kind: x.kind, type: x.type, name: x.name, price: x.price, proveedor: x.proveedor || null })));
       } else if (chatBox) {
         let review = document.getElementById('mogavel-trip-review');
         if (!review) {
@@ -131,6 +180,16 @@
     `;
     document.head.appendChild(style);
   }
+  // Alojamiento elegido: proveedor, total de la estancia, fechas y condiciones tal como se mostraron en la oferta.
+  const fechaCorta = iso => /^\d{4}-\d{2}-\d{2}$/.test(iso || '') ? iso.split('-').reverse().join('/') : '';
+  function detalleHotel(x) {
+    if (x.kind !== 'hotel' || !x.proveedor) return '';
+    const partes = ['Proveedor: ' + x.proveedor];
+    if (x.precioTotal) partes.push(formatMoney(x.precioTotal, x.moneda) + ' total' + (x.impuestosIncluidos === true ? ' (impuestos incluidos)' : x.impuestosIncluidos === false ? ' (sin impuestos)' : ''));
+    if (x.entrada && x.salida) partes.push(fechaCorta(x.entrada) + ' → ' + fechaCorta(x.salida));
+    if (x.condiciones) partes.push(x.condiciones);
+    return '<small class="mtb-detalle" data-proveedor="' + esc(x.proveedor) + '">' + esc(partes.join(' · ')) + '</small>';
+  }
   function allSelected() {
     return [chosen.flight, chosen.hotel, ...chosen.activities.values()].filter(Boolean);
   }
@@ -144,7 +203,7 @@
     panel.querySelector('.mtb-items').innerHTML = items.length ? items.map((x, i) => {
       const icon = x.kind === 'flight' ? '✈️' : x.kind === 'hotel' ? '🏨' : '◇';
       const amount = amountLabel(x.price);
-      return '<div class="mtb-item"><div class="mtb-item-icon" aria-hidden="true">' + icon + '</div><div class="mtb-item-copy"><b>' + x.type + '</b><span>' + esc(x.name) + '</span><small>' + esc(amount) + '</small></div><button type="button" class="mtb-remove" data-i="' + i + '">Quitar</button></div>';
+      return '<div class="mtb-item"><div class="mtb-item-icon" aria-hidden="true">' + icon + '</div><div class="mtb-item-copy"><b>' + x.type + '</b><span>' + esc(x.name) + '</span><small>' + esc(amount) + '</small>' + detalleHotel(x) + '</div><button type="button" class="mtb-remove" data-i="' + i + '">Quitar</button></div>';
     }).join('') : '<p style="color:#718093;font-size:12px;margin:0">Elige un vuelo, un alojamiento y las experiencias que te interesen.</p>';
     panel.querySelectorAll('.mtb-remove').forEach(btn => btn.addEventListener('click', () => {
       const item = items[Number(btn.dataset.i)];
@@ -154,27 +213,34 @@
       document.querySelectorAll('.mtb-select').forEach(b => refreshButton(b));
       render();
     }));
-    const priced = items.filter(x => x.price);
-    const currencies = [...new Set(priced.map(x => x.price.currency))];
-    // Los proveedores expresan importes con unidades distintas (por viaje, noche, persona o actividad). No sumarlos sin una base común.
-    const complete = false;
-    const total = complete ? priced.reduce((sum,x) => sum + x.price.value,0) : null;
-    panel.querySelector('.mtb-total').innerHTML = total !== null
-      ? 'Total no calculado: los precios pueden corresponder a unidades diferentes.'
-      : 'Hay precios pendientes o monedas distintas. Consulta los importes en cada proveedor.';
+    // El total solo se calcula si los importes son comparables (resumenPrecios); si no, se dice la causa concreta.
+    const resumen = resumenPrecios(items);
+    const totalEl = panel.querySelector('.mtb-total');
+    totalEl.dataset.estado = !items.length ? 'vacio' : resumen.total ? 'total' : 'aviso';
+    totalEl.innerHTML = !items.length ? ''
+      : resumen.total
+        ? '<small>' + (items.length > 1 ? 'Total estimado' : 'Importe') + '</small><strong>' + esc(totalLabel(resumen.total)) + '</strong>'
+        : esc(resumen.aviso);
   }
   function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   function refreshButton(button) {
-    const kind=button.dataset.kind, id=button.dataset.id;
-    const active=kind==='flight'?chosen.flight?.id===id:kind==='hotel'?chosen.hotel?.id===id:chosen.activities.has(id);
+    const kind=button.dataset.kind, id=button.dataset.id, oferta=button.dataset.oferta;
+    const active=kind==='flight'?chosen.flight?.id===id:kind==='hotel'?(chosen.hotel?.id===id && (!oferta || chosen.hotel?.offerId===oferta)):chosen.activities.has(id);
     button.setAttribute('aria-pressed',String(Boolean(active)));
-    button.textContent=active?'✓ Seleccionado':'Añadir a mi viaje';
+    button.textContent=oferta?(active?'✓ Oferta elegida':'Elegir esta oferta'):(active?'✓ Seleccionado':'Añadir a mi viaje');
+    const fila=button.closest('.hotel-offer'); if(fila) fila.dataset.elegida=String(Boolean(active));
   }
   // Identificador estable: no depende del orden de las tarjetas ni de si su pestaña está visible.
   // Se calcula con título + enlace + importe; si dos tarjetas son idénticas se distinguen con un sufijo.
   const hashText = str => { let h = 5381; for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
-  const externalUrlOf = card => { const a = card.querySelector('a[href^="http"]'); return a ? a.getAttribute('href') : ''; };
+  const externalUrlOf = card => { if (card.dataset && card.dataset.url) return card.dataset.url; const a = card.querySelector('a[href^="http"]'); return a ? a.getAttribute('href') : ''; };
   function stableId(card, kind, price, vistos) {
+    if (card.dataset && card.dataset.id) {
+      const base0 = kind + ':' + card.dataset.id;
+      const n0 = (vistos.get(base0) || 0) + 1;
+      vistos.set(base0, n0);
+      return n0 > 1 ? base0 + '#' + n0 : base0;
+    }
     const clave = [titleOf(card, kind), externalUrlOf(card), price ? [price.value, price.currency, price.basis || ''].join('/') : ''].join('|').toLowerCase().replace(/\s+/g, ' ');
     const base = kind + ':' + hashText(clave);
     const n = (vistos.get(base) || 0) + 1;
@@ -191,6 +257,29 @@
       results.querySelectorAll(selector).forEach((card)=>{
         const price=moneyOf(card,kind);
         const id=stableId(card,kind,price,vistos);
+        // Hotel con ofertas de proveedores: se elige UNA oferta concreta (proveedor, importe, moneda y enlace), nunca la primera ni la más barata por defecto.
+        const filas=kind==='hotel'?[...card.querySelectorAll('.hotel-offer')]:[];
+        if(filas.length){
+          filas.forEach(fila=>{
+            if(fila.querySelector('.mtb-select')||fila.dataset.importe===undefined) return; // sin precio: no se ofrece elegirla
+            const d=fila.dataset;
+            const valor=Number(d.importe);
+            const item={id,kind,type:labels[kind],name:titleOf(card,kind),
+              price:Number.isFinite(valor)&&valor>0?{value:valor,currency:d.moneda||null,basis:d.base||'total'}:null,
+              url:d.url||'',offerId:d.ofertaId||'',proveedor:d.proveedor||'',
+              precioNoche:d.porNoche?Number(d.porNoche):null,precioTotal:d.total?Number(d.total):null,moneda:d.moneda||null,
+              impuestosIncluidos:d.impuestos==='si'?true:d.impuestos==='no'?false:null,
+              entrada:card.dataset.entrada||'',salida:card.dataset.salida||'',condiciones:(c=>c?textOf(c):'')(card.querySelector('.hotel-cond'))||null};
+            const boton=document.createElement('button');boton.type='button';boton.className='mtb-select mtb-select-oferta';
+            boton.dataset.kind='hotel';boton.dataset.id=id;boton.dataset.oferta=item.offerId;
+            fila.appendChild(boton);refreshButton(boton);
+            boton.addEventListener('click',()=>{
+              chosen.hotel=(chosen.hotel?.id===id&&chosen.hotel.offerId===item.offerId)?null:item;
+              document.querySelectorAll('.mtb-select').forEach(refreshButton);render();
+            });
+          });
+          return;
+        }
         let button=card.querySelector('.mtb-select'); if(button) return;
         const item={id,kind,type:labels[kind],name:titleOf(card,kind),price,url:externalUrlOf(card)};
         button=document.createElement('button');button.type='button';button.className='mtb-select';button.dataset.kind=kind;button.dataset.id=id;
@@ -210,13 +299,15 @@
   function contextoSeleccion(message) {
     const selected = window.MogavelTripBuilder.snapshot();
     if (!selected.length) return message;
-    const selection = selected.map(item => '- ' + item.type + ': ' + item.name + (item.price ? (item.price.free ? ' (gratuita según el proveedor)' : item.price.basis === 'desde' ? ' (precio orientativo "desde" del proveedor: ' + item.price.value + ' ' + item.price.currency + '; no es un precio final garantizado)' : ' (importe mostrado: ' + item.price.value + ' ' + item.price.currency + ')') : ' (importe no identificado)')).join('\n');
+    const selection = selected.map(item => '- ' + item.type + ': ' + item.name + (item.price ? (item.price.free ? ' (gratuita según el proveedor)' : item.price.basis === 'desde' ? ' (precio orientativo "desde" del proveedor: ' + item.price.value + ' ' + (item.price.currency || 'moneda no confirmada') + '; no es un precio final garantizado)' : ' (importe mostrado: ' + item.price.value + ' ' + (item.price.currency || 'moneda no confirmada') + (item.price.basis === 'noche' ? ' por noche' : '') + ')') : ' (importe no identificado)') + (item.proveedor ? ' [proveedor elegido: ' + item.proveedor + (item.precioTotal ? '; total de la estancia ' + item.precioTotal + ' ' + (item.moneda || 'moneda no confirmada') : '') + ']' : '')).join('\n');
     return message + '\n\n[Selección actual del viaje en la web; úsala como contexto. Si pido cambiar o quitar un elemento, actualiza la propuesta y confirma claramente el cambio. No inventes precios ni des por reservados los elementos.]\n' + selection;
   }
   window.MogavelTripBuilder = {
     contexto: contextoSeleccion,
+    resumenPrecios,
     rellenarPropuesta: fillReview,
-    snapshot: () => allSelected().map(item => ({ kind: item.kind, type: item.type, name: item.name, price: item.price })),
+    snapshot: () => allSelected().map(item => Object.assign({ kind: item.kind, type: item.type, name: item.name, price: item.price },
+      item.kind === 'hotel' && item.proveedor ? { proveedor: item.proveedor, offerId: item.offerId, precioNoche: item.precioNoche, precioTotal: item.precioTotal, moneda: item.moneda, impuestosIncluidos: item.impuestosIncluidos, enlace: item.url || null, entrada: item.entrada, salida: item.salida, condiciones: item.condiciones } : {})),
     reset: () => { chosen.flight = null; chosen.hotel = null; chosen.activities.clear(); try { sessionStorage.removeItem(storageKey); } catch (_) {} document.querySelectorAll('.mtb-select').forEach(refreshButton); render(); }
   };
   restore();

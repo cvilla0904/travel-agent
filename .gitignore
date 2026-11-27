@@ -2,3 +2,11 @@
 .env*
 
 node_modules/
+
+# Datos fuente descargados para construir el catálogo geográfico
+.cache/geo-source/
+
+# Formato antiguo del catálogo (reempaquetado a src/geo/data/catalogo, que SÍ se versiona; ver src/geo/README.md)
+src/geo/data/indice.json
+src/geo/data/paises.json
+src/geo/data/paises/

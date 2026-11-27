@@ -1,6 +1,9 @@
 import express from 'express';
 import { run, MemorySession } from '@openai/agents';
-import { travelAgent } from './index.js';
+import { agenteParaModo } from './index.js';
+import { mensajeConDestinoSeleccionado } from './services/destino-seleccionado.js';
+import { turnoChat } from './services/chat-contrato.js';
+import { resolverModo, validarModo, type ModoBusqueda, mensajeConActividades, mensajeConFechasHotel, validarActividades, validarFechasHotel } from './services/modo-busqueda.js';
 
 const app = express();
 
@@ -8,6 +11,7 @@ app.use(express.static('public'));
 app.use(express.json());
 
 const sessions = new Map<string, MemorySession>();
+const modos = new Map<string, ModoBusqueda>();
 
 app.post('/api/chat', async (req, res) => {
   try {
@@ -26,6 +30,14 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
+    const validacion = validarModo(req.body?.modo);
+    if (!validacion.ok) return res.status(validacion.status).json({ error: validacion.error });
+    const modo = resolverModo(validacion.modo, modos.get(sessionId));
+    const fechasHotel = validarFechasHotel(modo, req.body?.fechas);
+    if (!fechasHotel.ok) return res.status(fechasHotel.status).json({ error: fechasHotel.error });
+    const actividades = validarActividades(req.body?.actividades);
+    if (!actividades.ok) return res.status(actividades.status).json({ error: actividades.error });
+
     let session = sessions.get(sessionId);
 
     if (!session) {
@@ -33,17 +45,17 @@ app.post('/api/chat', async (req, res) => {
       sessions.set(sessionId, session);
     }
 
-    const result = await run(
-      travelAgent,
-      userMessage,
+    const turno = await turnoChat(req.body?.destinoSeleccionado, () => run(
+      agenteParaModo(modo),
+      mensajeConActividades(mensajeConFechasHotel(mensajeConDestinoSeleccionado(userMessage, req.body?.destinoSeleccionado), fechasHotel.fechas), actividades.actividades),
       {
         session,
       },
-    );
+    ));
 
-    return res.json({
-      response: result.finalOutput,
-    });
+    if (turno.status === 200) modos.set(sessionId, modo);
+
+    return res.status(turno.status).json(turno.body);
   } catch (error: any) {
     console.error(error);
 

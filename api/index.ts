@@ -1,7 +1,10 @@
 import express from 'express';
 import { run, MemorySession, type AgentInputItem } from '@openai/agents';
 import { Redis } from '@upstash/redis';
-import { travelAgent } from '../src/index.js';
+import { agenteParaModo } from '../src/index.js';
+import { mensajeConDestinoSeleccionado } from '../src/services/destino-seleccionado.js';
+import { turnoChat } from '../src/services/chat-contrato.js';
+import { claveModoSesion, resolverModo, validarModo, mensajeConActividades, mensajeConFechasHotel, validarActividades, validarFechasHotel } from '../src/services/modo-busqueda.js';
 
 const app = express();
 
@@ -27,29 +30,43 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
+    // Modo de búsqueda (complete | flights | hotels | activities): validado aquí; si la web no lo envía se usa el de la sesión.
+    const validacion = validarModo(req.body?.modo);
+    if (!validacion.ok) return res.status(validacion.status).json({ error: validacion.error });
+    const modo = resolverModo(validacion.modo, await redis.get<string>(claveModoSesion(sessionId)));
+    const fechasHotel = validarFechasHotel(modo, req.body?.fechas);
+    if (!fechasHotel.ok) return res.status(fechasHotel.status).json({ error: fechasHotel.error });
+    const actividades = validarActividades(req.body?.actividades);
+    if (!actividades.ok) return res.status(actividades.status).json({ error: actividades.error });
+
+    const mensajeAgente = mensajeConActividades(mensajeConFechasHotel(mensajeConDestinoSeleccionado(userMessage, req.body?.destinoSeleccionado), fechasHotel.fechas), actividades.actividades);
+
     const history = await redis.get<AgentInputItem[]>(`chat:session:${sessionId}`);
     const session = new MemorySession({
       sessionId,
       initialItems: history ?? [],
     });
 
-    const result = await run(
-      travelAgent,
-      userMessage,
+    // El destino elegido (validado por el servidor) se fija para toda la ejecución y los resultados de las herramientas se
+    // recogen como datos estructurados (chat-contrato.ts): la web los pinta sin interpretar el texto del modelo.
+    const turno = await turnoChat(req.body?.destinoSeleccionado, () => run(
+      agenteParaModo(modo),
+      mensajeAgente,
       {
         session,
       },
-    );
+    ));
 
-    await redis.set(
-      `chat:session:${sessionId}`,
-      await session.getItems(),
-      { ex: SESSION_TTL_SECONDS },
-    );
+    if (turno.status === 200) {
+      await redis.set(
+        `chat:session:${sessionId}`,
+        await session.getItems(),
+        { ex: SESSION_TTL_SECONDS },
+      );
+      await redis.set(claveModoSesion(sessionId), modo, { ex: SESSION_TTL_SECONDS });
+    }
 
-    return res.json({
-      response: result.finalOutput,
-    });
+    return res.status(turno.status).json(turno.body);
   } catch (error: any) {
     console.error(error);
 

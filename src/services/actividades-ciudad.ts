@@ -5,7 +5,7 @@
  * salen de `variantesCiudad()` (ciudades.ts), la misma fuente que usa Booking; aquí no hay tabla propia.
  */
 import { normalizarTexto, variantesCiudad, consultaProveedorParaCiudad, datosCiudad } from './ciudades.js';
-import { extraerPrecio, esGratisVerificado } from './precios-actividades.js';
+import { extraerPrecio, esGratisVerificado, extraerMoneda } from './precios-actividades.js';
 
 /** Quita los decorados que algunos proveedores añaden a la ciudad ("Things to do Vienna"). */
 function limpiarCiudadProveedor(ciudad: string): string {
@@ -182,7 +182,7 @@ export function actividadParaMultidestino(actividad: any, tiposPorDefecto: strin
     precio: extraerPrecio(actividad),
     esGratis: esGratisVerificado(actividad),
     precioTexto: typeof actividad.priceText === 'string' ? actividad.priceText : typeof actividad.priceLabel === 'string' ? actividad.priceLabel : null,
-    moneda: typeof actividad.priceCurrency === 'string' && actividad.priceCurrency.trim() ? actividad.priceCurrency.trim().toUpperCase() : 'EUR',
+    moneda: extraerMoneda(actividad),
     valoracion: Number(actividad.rating ?? 0) || 0,
     numeroResenas: Number(actividad.reviewCount ?? 0) || 0,
     duracion: actividad.durationText ?? '',

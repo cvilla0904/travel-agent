@@ -10,8 +10,10 @@
  */
 import type { EjecucionActor } from './apify.js';
 import { filtrarActividadesDeCiudad, type DiagnosticoActividades } from './actividades-ciudad.js';
-import { extraerPrecio, esGratisVerificado, parsearPrecio } from './precios-actividades.js';
+import { extraerPrecio, esGratisVerificado, extraerMoneda, parsearPrecio } from './precios-actividades.js';
 import { normalizarTexto } from './ciudades.js';
+import { plataformaPermitida } from './plataformas-actividades.js';
+import { bloqueActividades, registrarBloque } from './resultados-estructurados.js';
 
 export type EstadoActividades = 'ok' | 'parcial' | 'sin_resultados' | 'error';
 export type MotivoSinResultados = 'proveedor_sin_resultados' | 'descartadas_por_ubicacion' | 'sin_titulo_o_url';
@@ -36,7 +38,7 @@ function construirSalida(args: {
   estado: EstadoActividades;
   motivo: MotivoSinResultados | null;
   mensaje: string | null;
-  proveedor: { runId: string | null; status: string | null };
+  proveedor: { runId: string | null; status: string | null; completa?: boolean; esperaSegundos?: number; motivoIncompleta?: string };
   resultadosProveedor: number;
   diagnostico: DiagnosticoActividades | null;
   validas: any[];
@@ -75,7 +77,7 @@ function construirSalida(args: {
       precio: a._precioNormalizado as number | null,
       esGratis: a._esGratisVerificado as boolean,
       precioTexto: typeof a.priceText === 'string' ? a.priceText : typeof a.priceLabel === 'string' ? a.priceLabel : null,
-      moneda: typeof a.priceCurrency === 'string' && a.priceCurrency.trim() ? a.priceCurrency.trim().toUpperCase() : null,
+      moneda: extraerMoneda(a),
       valoracion: Number.isFinite(Number(a.rating)) ? Number(a.rating) : 0,
       numeroResenas: Number.isFinite(Number(a.reviewCount)) ? Number(a.reviewCount) : 0,
       duracion: typeof a.durationText === 'string' ? a.durationText : '',
@@ -93,6 +95,16 @@ function construirSalida(args: {
 }
 
 export async function buscarActividadesDestino(
+  params: { destino: string; tipos: string[] },
+  buscar?: (p: { destino: string }) => Promise<EjecucionActor>,
+) {
+  const salida = await buscarActividadesDestinoInterno(params, buscar);
+  // La web recibe las actividades como datos estructurados (resultados-estructurados.ts), no como markdown del modelo.
+  registrarBloque(bloqueActividades({ ...salida, tipos: params.tipos }));
+  return salida;
+}
+
+async function buscarActividadesDestinoInterno(
   params: { destino: string; tipos: string[] },
   // Import diferido: el cliente de Apify solo se carga si se usa el proveedor real (las pruebas inyectan uno simulado).
   buscar: (p: { destino: string }) => Promise<EjecucionActor> = async (p) => (await import('./apify.js')).buscarActividadesApifyDetallado(p),
@@ -115,19 +127,23 @@ export async function buscarActividadesDestino(
     });
   }
 
-  const { items, status, runId } = ejecucion;
+  const { status, runId } = ejecucion;
+  // Defensa: solo se muestran actividades de las plataformas activas (Civitatis). Si el actor devolviera otra, se descarta.
+  const items = ejecucion.items.filter((a: any) => plataformaPermitida(a?.platform));
+  const descartadasPorPlataforma = ejecucion.items.length - items.length;
+  if (descartadasPorPlataforma > 0) console.warn('[ACTIVITIES_DIAG] Resultados de plataformas no activas descartados', JSON.stringify({ destino, descartadas: descartadasPorPlataforma }));
   console.info('[ACTIVITIES_DIAG] Provider returned', JSON.stringify({ destino, runId, status, count: items.length, sampleFields: items[0] ? Object.keys(items[0]) : [] }));
   const { validas, diagnostico } = filtrarActividadesDeCiudad(items, destino);
   console.info('[ACTIVITIES_DIAG] City filter', JSON.stringify({ destino, ...diagnostico }));
-  const incompleta = status !== 'SUCCEEDED';
-  const proveedor = { runId, status };
+  const incompleta = status !== 'SUCCEEDED' || ejecucion.completa === false;
+  const proveedor = { runId, status, completa: !incompleta, ...(ejecucion.esperaSegundos !== undefined ? { esperaSegundos: ejecucion.esperaSegundos } : {}), ...(ejecucion.motivoIncompleta ? { motivoIncompleta: ejecucion.motivoIncompleta } : {}) };
 
   let estado: EstadoActividades;
   let motivo: MotivoSinResultados | null = null;
   let mensaje: string | null = null;
   if (validas.length > 0) {
     estado = incompleta ? 'parcial' : 'ok';
-    if (incompleta) mensaje = 'El proveedor no había terminado de buscar: puede haber más actividades de las mostradas.';
+    if (incompleta) mensaje = 'Resultados parciales: el proveedor no había terminado de buscar (se agotó el tiempo de espera), puede haber más actividades de las mostradas.';
   } else if (incompleta) {
     estado = 'parcial';
     mensaje = 'El proveedor no había terminado de buscar cuando se leyó el resultado; no se han podido verificar actividades todavía.';
